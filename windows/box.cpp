@@ -279,6 +279,11 @@ void uiBoxDelete(uiBox *b, int index)
 	uiWindowsControlMinimumSizeChanged(uiWindowsControl(b));
 }
 
+int uiBoxNumChildren(uiBox *b)
+{
+	return (int) b->controls->size();
+}
+
 int uiBoxPadded(uiBox *b)
 {
 	return b->padded;
