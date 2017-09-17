@@ -109,6 +109,11 @@ static void uiWindowShow(uiControl *c)
 	gtk_window_present(w->window);
 }
 
+static void uiWindowSetFocus(uiControl *c)
+{
+    gtk_window_present(GTK_WINDOW(uiWindow(c)->widget));
+}
+
 uiUnixControlDefaultHide(uiWindow)
 uiUnixControlDefaultEnabled(uiWindow)
 uiUnixControlDefaultEnable(uiWindow)
