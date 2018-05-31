@@ -109,6 +109,20 @@ static void defaultOnChanged(uiSlider *s, void *data)
 	// do nothing
 }
 
+void uiSliderSetRange(uiSlider *s, int min, int max)
+{
+	int temp;
+
+	if (min >= max) {
+		temp = min;
+		min = max;
+		max = temp;
+	}
+
+	[s->slider setMinValue:min];
+	[s->slider setMaxValue:max];
+}
+
 uiSlider *uiNewSlider(int min, int max)
 {
 	uiSlider *s;

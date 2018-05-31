@@ -68,6 +68,20 @@ void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
 	s->onChangedData = data;
 }
 
+void uiSliderSetRange(uiSlider *s, int min, int max)
+{
+	int temp;
+
+	if (min >= max) {
+		temp = min;
+		min = max;
+		max = temp;
+	}
+
+	SendMessageW(s->hwnd, TBM_SETRANGEMIN, (WPARAM) TRUE, (LPARAM) min);
+	SendMessageW(s->hwnd, TBM_SETRANGEMAX, (WPARAM) TRUE, (LPARAM) max);
+}
+
 uiSlider *uiNewSlider(int min, int max)
 {
 	uiSlider *s;
