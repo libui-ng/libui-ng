@@ -150,6 +150,16 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	gtk_window_set_title(w->window, title);
 }
 
+void uiWindowPosition(uiWindow *w, int *x, int *y)
+{
+	gtk_window_get_position(w->window, x, y);
+}
+
+void uiWindowSetPosition(uiWindow *w, int x, int y)
+{
+	gtk_window_move(w->window, x, y);
+}
+
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
 {
 	GtkAllocation allocation;

@@ -298,6 +298,32 @@ _UI_EXTERN char *uiWindowTitle(uiWindow *w);
 _UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
 
 /**
+ * Gets the window position.
+ *
+ * Coordinates are measured from the top left corner of the screen.
+ *
+ * @param w uiWindow instance.
+ * @param[out] x X position of the window.
+ * @param[out] y Y position of the window.
+ * @note This method may return inaccurate or dummy values on Unix platforms.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowPosition(uiWindow *w, int *x, int *y);
+
+/**
+ * Moves the window to the specified position.
+ *
+ * Coordinates are measured from the top left corner of the screen.
+ *
+ * @param w uiWindow instance.
+ * @param x New x position of the window.
+ * @param y New y position of the window.
+ * @note This method is merely a hint and may be ignored on Unix platforms.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetPosition(uiWindow *w, int x, int y);
+
+/**
  * Gets the window content size.
  *
  * @param w uiWindow instance.

@@ -331,6 +331,21 @@ static void windowMonitorRect(HWND hwnd, RECT *r)
 	*r = mi.rcMonitor;
 }
 
+void uiWindowPosition(uiWindow *w, int *x, int *y)
+{
+	RECT r;
+
+	uiWindowsEnsureGetWindowRect(w->hwnd, &r);
+	*x = r.left;
+	*y = r.top;
+}
+
+void uiWindowSetPosition(uiWindow *w, int x, int y)
+{
+	if (SetWindowPos(w->hwnd, NULL, x, y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER) == 0)
+		logLastError(L"error setting window position");
+}
+
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
 {
 	RECT r;

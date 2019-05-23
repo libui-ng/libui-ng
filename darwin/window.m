@@ -240,6 +240,34 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	[w->window setTitle:uiprivToNSString(title)];
 }
 
+void uiWindowPosition(uiWindow *w, int *x, int *y)
+{
+	NSRect screen;
+	NSRect window;
+	int screenHeightSansMenu;
+
+	screen = [[w->window screen] visibleFrame];
+	// Visible screen (no menu, no dock) + dock height
+	screenHeightSansMenu = screen.size.height + screen.origin.y;
+
+	window = [w->window frame];
+	*x = window.origin.x;
+	*y = screenHeightSansMenu - window.origin.y - window.size.height;
+}
+
+void uiWindowSetPosition(uiWindow *w, int x, int y)
+{
+	NSRect screen;
+	int screenHeightSansMenu;
+
+	screen = [[w->window screen] visibleFrame];
+	// Visible screen (no menu, no dock) + dock height
+	screenHeightSansMenu = screen.size.height + screen.origin.y;
+
+	y = screenHeightSansMenu - y;
+	[w->window setFrameTopLeftPoint:NSMakePoint(x, y)];
+}
+
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
 {
 	NSRect r;
