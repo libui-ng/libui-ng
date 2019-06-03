@@ -144,13 +144,13 @@ void uiDrawRestore(uiDrawContext *c)
 
 // ImageBuffer API
 
-uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height)
+uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha)
 {
 	uiImageBuffer *buf;
 
 	buf = uiprivNew(uiImageBuffer);
 
-	buf->buf = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+	buf->buf = cairo_image_surface_create(alpha ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24, width, height);
 	if (cairo_surface_status(buf->buf) != CAIRO_STATUS_SUCCESS)
 		uiprivImplBug("error creating ImageBuffer: %s",
 			cairo_status_to_string(cairo_surface_status(buf->buf)));

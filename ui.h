@@ -525,7 +525,7 @@ _UI_EXTERN void uiDrawSave(uiDrawContext *c);
 _UI_EXTERN void uiDrawRestore(uiDrawContext *c);
 
 // ImageBuffer API
-_UI_EXTERN uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height);
+_UI_EXTERN uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha);
 _UI_EXTERN void uiImageBufferUpdate(uiImageBuffer *buf, const void *data);
 _UI_EXTERN void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, int filter);
 _UI_EXTERN void uiFreeImageBuffer(uiImageBuffer *buf);
