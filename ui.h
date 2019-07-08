@@ -1470,6 +1470,22 @@ _UI_EXTERN void uiTableAppendButtonColumn(uiTable *t,
 // uiNewTable() creates a new uiTable with the specified parameters.
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
 
+// uiTableHeaderSetSortIndicator() sets the sort indicator of the table
+// header to display an appropriate arrow on the column header
+_UI_EXTERN void uiTableHeaderSetSortIndicator(uiTable *t,
+	int column,
+	uiSortIndicator indicator);
+
+// uiTableHeaderSortIndicator returns the sort indicator of the specified
+// column
+_UI_EXTERN uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column);
+
+// uiTableHeaderOnClicked() sets a callback function to be called
+// when a table column header is clicked
+_UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
+	void (*f)(uiTable *table, int column, void *data),
+	void *data);
+
 #ifdef __cplusplus
 }
 #endif

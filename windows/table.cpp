@@ -230,6 +230,59 @@ int uiprivTableProgress(uiTable *t, int item, int subitem, int modelColumn, LONG
 	return progress;
 }
 
+void uiTableHeaderSetSortIndicator(uiTable *t, int column, uiSortIndicator indicator)
+{
+	HWND lvhdr;
+	int fmt;
+
+	if (indicator == uiSortIndicatorAscending)
+		fmt = HDF_SORTUP;
+	else if (indicator == uiSortIndicatorDescending)
+		fmt = HDF_SORTDOWN;
+	else
+		fmt = 0;
+
+	lvhdr = (HWND) SendMessageW(t->hwnd, LVM_GETHEADER, 0, 0);
+	if (lvhdr) {
+		HDITEM hdri = {};
+		hdri.mask = HDI_FORMAT;
+		if (SendMessageW(lvhdr, HDM_GETITEM, (WPARAM) column, (LPARAM) &hdri)) {
+			hdri.fmt &= ~(HDF_SORTUP | HDF_SORTDOWN);
+			hdri.fmt |= fmt;
+			SendMessageW(lvhdr, HDM_SETITEM, (WPARAM) column, (LPARAM) &hdri);
+		}
+	}
+}
+
+uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column)
+{
+	HWND lvhdr;
+
+	lvhdr = (HWND) SendMessageW(t->hwnd, LVM_GETHEADER, 0, 0);
+	if (lvhdr) {
+		HDITEM hdri = {};
+		hdri.mask = HDI_FORMAT;
+		if (SendMessageW(lvhdr, HDM_GETITEM, (WPARAM) column, (LPARAM) &hdri)) {
+			if (hdri.fmt & HDF_SORTUP)
+				return uiSortIndicatorAscending;
+			if (hdri.fmt & HDF_SORTDOWN)
+				return uiSortIndicatorDescending;
+		}
+	}
+	return uiSortIndicatorNone;
+}
+
+void uiTableHeaderOnClicked(uiTable *t, void (*f)(uiTable *table, int column, void *data), void *data)
+{
+	t->headerOnClicked = f;
+	t->headerOnClickedData = data;
+}
+
+static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
+{
+	// do nothing
+}
+
 // TODO properly integrate compound statements
 static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 {
@@ -310,9 +363,20 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 			}
 			return FALSE;
 		}
+	case LVN_COLUMNCLICK:
+		{
+			NMLISTVIEW *nm = (NMLISTVIEW *) nmhdr;
+
+			hr = uiprivTableFinishEditingText(t);
+			if (hr != S_OK) {
+				// TODO
+				return FALSE;
+			}
+			t->headerOnClicked(t, nm->iSubItem, t->headerOnClickedData);
+			return TRUE;
+		}
 	// the real list view accepts changes when scrolling or clicking column headers
 	case LVN_BEGINSCROLL:
-	case LVN_COLUMNCLICK:
 		hr = uiprivTableFinishEditingText(t);
 		if (hr != S_OK) {
 			// TODO
@@ -490,6 +554,7 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->columns = new std::vector<uiprivTableColumnParams *>;
 	t->model = p->Model;
 	t->backgroundColumn = p->RowBackgroundColorModelColumn;
+	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
 
 	// WS_CLIPCHILDREN is here to prevent drawing over the edit box used for editing text
 	t->hwnd = uiWindowsEnsureCreateControlHWND(WS_EX_CLIENTEDGE,
