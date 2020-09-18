@@ -1261,6 +1261,12 @@ _UI_EXTERN uiTableValue *uiNewTableValueColor(double r, double g, double b, doub
 // TODO define whether all this, for both uiTableValue and uiAttribute, is undefined behavior or a caught error
 _UI_EXTERN void uiTableValueColor(const uiTableValue *v, double *r, double *g, double *b, double *a);
 
+_UI_ENUM(uiSortIndicator) {
+	uiSortIndicatorNone,
+	uiSortIndicatorAscending,
+	uiSortIndicatorDescending
+};
+
 // uiTableModel is an object that provides the data for a uiTable.
 // This data is returned via methods you provide in the
 // uiTableModelHandler struct.
