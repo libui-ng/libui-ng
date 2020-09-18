@@ -286,3 +286,15 @@ void uiTableHeaderSetSortIndicator(uiTable *t, int lcol, uiSortIndicator indicat
 		img = nil;
 	[t->tv setIndicatorImage:img inTableColumn:tc];
 }
+
+int uiTableColumnWidth(uiTable *t, int column)
+{
+	NSTableColumn *tc = [t->tv tableColumnWithIdentifier:[@(column) stringValue]];
+	return [tc width];
+}
+
+void uiTableColumnSetWidth(uiTable *t, int column, int width)
+{
+	NSTableColumn *tc = [t->tv tableColumnWithIdentifier:[@(column) stringValue]];
+	[tc setWidth: width];
+}

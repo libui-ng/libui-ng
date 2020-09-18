@@ -105,6 +105,20 @@ void headerVisibleToggled(uiCheckbox *c, void *data)
 	uiCheckboxSetChecked(c, uiTableHeaderVisible(t));
 }
 
+uiSpinbox *columnID;
+uiSpinbox *columnWidth;
+static void changedColumnID(uiSpinbox *s, void *data)
+{
+	uiTable *t = data;
+	uiSpinboxSetValue(columnWidth, uiTableColumnWidth(t, uiSpinboxValue(columnID)));
+}
+
+static void changedColumnWidth(uiSpinbox *s, void *data)
+{
+	uiTable *t = data;
+	uiTableColumnSetWidth(t, uiSpinboxValue(columnID), uiSpinboxValue(columnWidth));
+}
+
 static uiTableModel *m;
 
 static void headerOnClicked(uiTable *t, int col, void *data)
@@ -144,6 +158,7 @@ uiBox *makePage16(void)
 
 	page16 = newVerticalBox();
 	controls = newHorizontalBox();
+	uiBoxSetPadded(controls, 1);
 	uiBoxAppend(page16, uiControl(controls), 0);
 
 	mh.NumColumns = modelNumColumns;
@@ -184,6 +199,18 @@ uiBox *makePage16(void)
 	uiCheckboxSetChecked(headerVisible, uiTableHeaderVisible(t));
 	uiCheckboxOnToggled(headerVisible, headerVisibleToggled, t);
 	uiBoxAppend(controls, uiControl(headerVisible), 0);
+
+	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
+
+	uiBoxAppend(controls, uiControl(uiNewLabel("Column")), 0);
+	columnID = uiNewSpinbox(0, 5);
+	uiBoxAppend(controls, uiControl(columnID), 0);
+	uiBoxAppend(controls, uiControl(uiNewLabel("Width")), 0);
+	columnWidth = uiNewSpinbox(0, INT_MAX);
+	uiBoxAppend(controls, uiControl(columnWidth), 0);
+
+	uiSpinboxOnChanged(columnID, changedColumnID, t);
+	uiSpinboxOnChanged(columnWidth, changedColumnWidth, t);
 
 	return page16;
 }

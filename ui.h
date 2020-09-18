@@ -1506,6 +1506,12 @@ _UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
 	void (*f)(uiTable *table, int column, void *data),
 	void *data);
 
+// uiTableColumnWidth() return current table column width
+_UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
+
+// uiTableColumnSetWidth() set table column width
+_UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
+
 #ifdef __cplusplus
 }
 #endif
