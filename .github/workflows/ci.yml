@@ -1,0 +1,60 @@
+name: CI
+# pipeline doc see: `doc/ci-pipelines.md`
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  windows-build:
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows-latest, windows-2022
+        os: [windows-latest]
+        arch: [x86, x64]
+        libtype: [static, shared]
+        # debug, debugoptimized, release
+        buildtype: [debug]
+    runs-on: ${{ matrix.os }}
+    name: Win-${{ matrix.arch }}-${{ matrix.libtype }}
+    steps:
+      # Setup build env
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Meson+Ninja
+        run: |
+          python -m pip install --upgrade pip
+          pip install meson ninja
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Build
+        shell: cmd
+        run: |
+          meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
+          ninja -C builddir --verbose
+
+      # TODO: Add test
+      # - name: Run test
+      #   run: meson test -C builddir --verbose
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Win-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
+          # lib + header + examples + test + build-log
+          path: |
+            !builddir/meson-out/*.p/
+            builddir/meson-out/libui.*
+            ui_windows.h
+            ui.h
+            builddir/meson-out/*.exe
+            builddir/meson-out/*.pdb
+            builddir/meson-logs/*.txt
