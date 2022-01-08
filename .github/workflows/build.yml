@@ -51,11 +51,11 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
 
-      - name: Build
+      - name: Meson Setup Build
         shell: cmd
-        run: |
-          meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
-          ninja -C builddir --verbose
+        run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
+      - name: Ninja Build
+        run: ninja -C builddir --verbose
 
       # TODO: Add test
       # - name: Run test
