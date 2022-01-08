@@ -9,7 +9,18 @@ on:
 
 jobs:
   meson-linux:
-    runs-on: ubuntu-20.04
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-18.04, ubuntu-latest (ubuntu-20.04)
+        os: [ubuntu-latest]
+        # x86, x64
+        arch: [x64]
+        libtype: [static, shared]
+        # debug, debugoptimized, release
+        buildtype: [debug]
+    runs-on: ${{ matrix.os }}
+    name: Ubuntu-${{ matrix.arch }}-${{ matrix.libtype }}
     steps:
     - name: Install Meson and Linux Deps
       run: |
@@ -20,9 +31,20 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v2
     - name: Meson Setup Build
-      run: meson setup build
+      run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
     - name: Ninja Build
-      run: ninja -C build
+      run: ninja -C builddir --verbose
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ubuntu-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
+        # lib + header + examples + test + build-log
+        path: |
+          !builddir/meson-out/*.p/
+          builddir/meson-out/*
+          ui_unix.h
+          ui.h
+          builddir/meson-logs/*.txt
 
   meson-windows:
     strategy:
