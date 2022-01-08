@@ -1,8 +1,7 @@
 # libui: a portable GUI library for C
 
 This README is being written.<br>
-[![Build Status, Azure Pipelines](https://dev.azure.com/andlabs/libui/_apis/build/status/andlabs.libui?branchName=master)](https://dev.azure.com/andlabs/libui/_build/latest?definitionId=1&branchName=master)<br>
-[![Build Status, AppVeyor](https://ci.appveyor.com/api/projects/status/ouyk78c52mmisa31/branch/master?svg=true)](https://ci.appveyor.com/project/andlabs/libui/branch/master)
+[![Build Status, GitHub Actions](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml/badge.svg)](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml)
 
 ## Status
 
