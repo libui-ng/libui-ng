@@ -13,8 +13,8 @@ jobs:
     steps:
     - name: Install Meson and Linux Deps
       run: |
-        sudo python -m pip install --upgrade pip setuptools wheel
-        sudo pip install meson ninja
+        python3 -m pip install --upgrade pip setuptools wheel
+        pip3 install meson ninja
         sudo apt-get update -y
         sudo apt-get install -y libgtk-3-dev
     - name: Checkout
