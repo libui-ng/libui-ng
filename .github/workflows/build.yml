@@ -1,0 +1,45 @@
+# build libui-ng
+name: CI
+
+on: [push]
+
+jobs:
+  meson-linux:
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Install Meson and Linux Deps
+      run: |
+        sudo apt-get update
+        sudo apt-get install meson ninja libgtk-3-dev
+
+  meson-windows:
+    runs-on: windows-2019
+    steps:
+    - name: Install Meson and Windows Deps
+      run: |
+        choco install meson
+        choco install ninja
+
+  meson-macos:
+    runs-on: macos-11
+    steps:
+    - name: Install Meson and macOS Deps
+      run: |
+        brew update
+        brew install meson ninja
+
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macos-11]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Meson Setup Build
+      run: meson setup build
+    - name: Ninja Build
+      run: ninja -C build
+
