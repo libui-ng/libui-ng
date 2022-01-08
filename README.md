@@ -1,6 +1,6 @@
-# libui: a portable GUI library for C
+# libui-ng: a portable GUI library for C
 
-This README is being written.<br>
+Fork of [andlabs/libui](https://github.com/andlabs/libui). This README is being written.<br>
 [![Build Status, GitHub Actions](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml/badge.svg)](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml)
 
 ## Status
