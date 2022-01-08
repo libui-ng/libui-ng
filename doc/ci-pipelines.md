@@ -1,5 +1,13 @@
 # Continuous Integration Arch
 
+## Github Action
+
+### docs
++ Build matrix: [Workflow syntax for GitHub Actions - GitHub Docs](https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#jobsjob_idstrategymatrix)
++ Supported runners: [About GitHub-hosted runners - GitHub Docs](https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#supported-runners-and-hardware-resources)
++ Meson: [meson/Continuous-Integration.md at master · mesonbuild/meson](https://github.com/mesonbuild/meson/blob/master/docs/markdown/Continuous-Integration.md#github-actions)
+
+
 ## Old pipeline
 
 ### Appveyor
