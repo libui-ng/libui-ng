@@ -4,9 +4,7 @@
 
 ### Appveyor
 
-https://ci.appveyor.com/project/andlabs/libui
-
-6 build
+**6 build jobs**: [Current build - libui - AppVeyor](https://ci.appveyor.com/project/andlabs/libui)
 
 | No | Arch | libtype | compiler |
 |----|------|---------|----------|
@@ -17,3 +15,24 @@ https://ci.appveyor.com/project/andlabs/libui
 | 5  | x64  | static  | msvc2013 |
 | 6  | x64  | static  | mingw    |
 
+
+### Azure pipelines
+
+**14 build jobs**: [Pipelines - Runs for andlabs.libui](https://dev.azure.com/andlabs/libui/_build?definitionId=1)
+
+| No | platform     | Arch | libtype | compiler |
+|----|--------------|------|---------|----------|
+| 1  | ubuntu-16.04 | x86  | shared  | gcc      |
+| 2  | ubuntu-16.04 | x86  | static  | gcc      |
+| 3  | ubuntu-16.04 | x64  | shared  | gcc      |
+| 4  | ubuntu-16.04 | x64  | static  | gcc      |
+| 5  | windows      | x86  | shared  | msvc2015 |
+| 6  | windows      | x86  | static  | msvc2015 |
+| 7  | windows      | x64  | shared  | msvc2015 |
+| 8  | windows      | x64  | static  | msvc2015 |
+| 9  | windows      | x86  | shared  | msvc2017 |
+| 10 | windows      | x86  | static  | msvc2017 |
+| 11 | windows      | x64  | shared  | msvc2017 |
+| 12 | windows      | x64  | static  | msvc2017 |
+| 13 | macos-10.13  | x64  | shared  | clang    |
+| 14 | macos-10.13  | x64  | static  | clang    |
