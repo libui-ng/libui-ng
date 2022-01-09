@@ -5,7 +5,9 @@ Fork of [andlabs/libui](https://github.com/andlabs/libui). This README is being 
 
 ## Status
 
-*Old announcements can be found in the NEWS.md file.*
+See [CHANGELOG.md](CHANGELOG.md)
+
+*Old announcements can be found in the [news.md](old/news.md) file.*
 
 ## Runtime Requirements
 
@@ -112,7 +114,7 @@ See also [this](https://github.com/andlabs/libui/pull/20#issuecomment-211381971)
 
 ## Contributing
 
-See `CONTRIBUTING.md`.
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Screenshots
 
