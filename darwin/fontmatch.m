@@ -362,8 +362,9 @@ static CTFontDescriptorRef matchStyle(CTFontDescriptorRef against, uiFontDescrip
 	current = (CTFontDescriptorRef) CFArrayGetValueAtIndex(matching, 0);
 	d = [[uiprivFontStyleData alloc] initWithDescriptor:current];
 	axisDict = nil;
-	if ([d variation] != NULL)
-		axisDict = uiprivMakeVariationAxisDict([d variationAxes], [d table:kCTFontTableAvar]);
+	// FIXME fixed1616 FPE
+	// if ([d variation] != NULL)
+	//	axisDict = uiprivMakeVariationAxisDict([d variationAxes], [d table:kCTFontTableAvar]);
 
 	closeness = (struct closeness *) uiprivAlloc(n * sizeof (struct closeness), "struct closeness[]");
 	for (i = 0; i < n; i++) {
@@ -485,8 +486,9 @@ void uiprivFontDescriptorFromCTFontDescriptor(CTFontDescriptorRef ctdesc, uiFont
 
 	d = [[uiprivFontStyleData alloc] initWithDescriptor:ctdesc];
 	axisDict = nil;
-	if ([d variation] != NULL)
-		axisDict = uiprivMakeVariationAxisDict([d variationAxes], [d table:kCTFontTableAvar]);
+	// FIXME fixed1616 FPE
+	// if ([d variation] != NULL)
+	//	axisDict = uiprivMakeVariationAxisDict([d variationAxes], [d table:kCTFontTableAvar]);
 	fillDescStyleFields(d, axisDict, uidesc);
 	if (axisDict != nil)
 		[axisDict release];
