@@ -924,6 +924,7 @@ struct uiFontDescriptor {
 };
 
 _UI_EXTERN void uiLoadControlFont(uiFontDescriptor *f);
+_UI_EXTERN void uiFreeFontDescriptor(uiFontDescriptor *desc);
 
 // uiDrawTextLayout is a concrete representation of a
 // uiAttributedString that can be displayed in a uiDrawContext.

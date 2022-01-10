@@ -584,3 +584,8 @@ void uiLoadControlFont(uiFontDescriptor *f)
 	if (ReleaseDC(NULL, dc) == 0)
 		logLastError(L"error releasing DC");
 }
+
+void uiFreeFontDescriptor(uiFontDescriptor *desc)
+{
+	uiprivFree((char *) (desc->Family));
+}

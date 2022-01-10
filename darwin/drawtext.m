@@ -224,3 +224,9 @@ void uiLoadControlFont(uiFontDescriptor *f)
 	CFRelease(ctdesc);
 	f->Size = CTFontGetSize(ctfont);
 }
+
+void uiFreeFontDescriptor(uiFontDescriptor *desc)
+{
+	// TODO ensure this is synchronized with fontmatch.m
+	uiFreeText((char *) (desc->Family));
+}

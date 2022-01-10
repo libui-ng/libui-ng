@@ -95,3 +95,9 @@ void uiLoadControlFont(uiFontDescriptor *f)
 	pango_font_description_free(fontdesc);
 	g_object_unref(widget);
 }
+
+void uiFreeFontDescriptor(uiFontDescriptor *desc)
+{
+	// TODO ensure this is synchronized with fontmatch.c
+	uiFreeText((char *) (desc->Family));
+}

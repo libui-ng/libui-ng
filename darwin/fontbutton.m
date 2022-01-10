@@ -227,6 +227,5 @@ uiFontButton *uiNewFontButton(void)
 
 void uiFreeFontButtonFont(uiFontDescriptor *desc)
 {
-	// TODO ensure this is synchronized with fontmatch.m
-	uiFreeText((char *) (desc->Family));
+	uiFreeFontDescriptor(desc);
 }
