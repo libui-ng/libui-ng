@@ -51,7 +51,7 @@ void uiDrawPathNewFigure(uiDrawPath *p, double x, double y)
 	D2D1_POINT_2F pt;
 
 	if (p->sink == NULL)
-		userbug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
+		uiprivUserBug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
 
 	if (p->inFigure)
 		p->sink->EndFigure(D2D1_FIGURE_END_OPEN);
@@ -165,7 +165,7 @@ void uiDrawPathNewFigureWithArc(uiDrawPath *p, double xCenter, double yCenter, d
 	struct arc a;
 
 	if (p->sink == NULL)
-		userbug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
+		uiprivUserBug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
 
 	a.xCenter = xCenter;
 	a.yCenter = yCenter;
@@ -181,7 +181,7 @@ void uiDrawPathLineTo(uiDrawPath *p, double x, double y)
 	D2D1_POINT_2F pt;
 
 	if (p->sink == NULL)
-		userbug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
+		uiprivUserBug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
 
 	pt.x = x;
 	pt.y = y;
@@ -193,7 +193,7 @@ void uiDrawPathArcTo(uiDrawPath *p, double xCenter, double yCenter, double radiu
 	struct arc a;
 
 	if (p->sink == NULL)
-		userbug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
+		uiprivUserBug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
 
 	a.xCenter = xCenter;
 	a.yCenter = yCenter;
@@ -209,7 +209,7 @@ void uiDrawPathBezierTo(uiDrawPath *p, double c1x, double c1y, double c2x, doubl
 	D2D1_BEZIER_SEGMENT s;
 
 	if (p->sink == NULL)
-		userbug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
+		uiprivUserBug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
 
 	s.point1.x = c1x;
 	s.point1.y = c1y;
@@ -223,7 +223,7 @@ void uiDrawPathBezierTo(uiDrawPath *p, double c1x, double c1y, double c2x, doubl
 void uiDrawPathCloseFigure(uiDrawPath *p)
 {
 	if (p->sink == NULL)
-		userbug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
+		uiprivUserBug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
 
 	p->sink->EndFigure(D2D1_FIGURE_END_CLOSED);
 	p->inFigure = FALSE;
@@ -232,7 +232,7 @@ void uiDrawPathCloseFigure(uiDrawPath *p)
 void uiDrawPathAddRectangle(uiDrawPath *p, double x, double y, double width, double height)
 {
 	if (p->sink == NULL)
-		userbug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
+		uiprivUserBug("You cannot modify a uiDrawPath that has been ended. (path: %p)", p);
 
 	// this is the same algorithm used by cairo and Core Graphics, according to their documentations
 	uiDrawPathNewFigure(p, x, y);
@@ -262,6 +262,6 @@ void uiDrawPathEnd(uiDrawPath *p)
 ID2D1PathGeometry *pathGeometry(uiDrawPath *p)
 {
 	if (p->sink != NULL)
-		userbug("You cannot draw with a uiDrawPath that was not ended. (path: %p)", p);
+		uiprivUserBug("You cannot draw with a uiDrawPath that was not ended. (path: %p)", p);
 	return p->path;
 }
