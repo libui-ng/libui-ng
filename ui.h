@@ -29,6 +29,7 @@ extern "C" {
 #define _UI_EXTERN extern
 #endif
 
+/// Make enum anonymous in C++.
 /// C++ is really really really really really really dumb about enums, so screw that and just make them anonymous
 /// This has the advantage of being ABI-able should we ever need an ABI...
 #define _UI_ENUM(s) typedef unsigned int s; enum
@@ -387,7 +388,7 @@ _UI_ENUM(uiDrawLineJoin) {
 	uiDrawLineJoinBevel,
 };
 
-/// this is the default for botoh cairo and Direct2D (in the latter case, from the C++ helper functions)
+/// This is the default for botoh cairo and Direct2D. (in the latter case, from the C++ helper functions)
 /// Core Graphics doesn't explicitly specify a default, but NSBezierPath allows you to choose one, and this is the initial value
 /// so we're good to use it too!
 #define uiDrawDefaultMiterLimit 10.0
@@ -1351,7 +1352,7 @@ _UI_EXTERN void uiTableModelRowDeleted(uiTableModel *m, int oldIndex);
 /// uiTableModelColumnNeverEditable and
 /// uiTableModelColumnAlwaysEditable are the value of an editable
 /// model column parameter to one of the uiTable create column
-/// functions; if used, that jparticular uiTable colum is not editable
+/// functions. if used, that jparticular uiTable colum is not editable
 /// by the user and always editable by the user, respectively.
 #define uiTableModelColumnNeverEditable (-1)
 #define uiTableModelColumnAlwaysEditable (-2)
