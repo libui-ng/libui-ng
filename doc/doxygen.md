@@ -4,6 +4,14 @@
 - install doxygen: [Doxygen Manual: Installation](https://www.doxygen.nl/manual/install.html)
 - clone this repo: `git clone https://github.com/libui-ng/libui-ng.git`
 - switch dir: `cd libui-ng`
+- Clone doxygen theme:
+    Or you can follow [doxygen-awesome-css](https://github.com/jothepro/doxygen-awesome-css#installation) installation tutorial.
+    ```sh
+    cd doc/
+    git clone https://github.com/jothepro/doxygen-awesome-css
+    cd doxygen-awesome-css/
+    git checkout v1.6.1
+    ```
 
 **windows**
 - Open `Doxywizard`
