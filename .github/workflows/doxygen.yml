@@ -36,3 +36,9 @@ jobs:
         publish_dir: ./doc/html
         # make publish branch with only the latest commit
         force_orphan: true
+
+    - name: Upload html
+      uses: actions/upload-artifact@v2
+      with:
+        name: html-doc
+        path: doc/html/
