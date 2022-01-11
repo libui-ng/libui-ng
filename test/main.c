@@ -129,7 +129,7 @@ int main(int argc, char *argv[])
 	page7 = makePage7();
 	uiTabAppend(innerTab, "Page 7", uiControl(page7));
 
-	page8 = makePage8();
+/*	page8 = makePage8();
 	uiTabAppend(innerTab, "Page 8", uiControl(page8));
 
 	page9 = makePage9();
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
 
 	page10 = makePage10();
 	uiTabAppend(innerTab, "Page 10", uiControl(page10));
-
+*/
 	innerTab = newTab();
 	uiTabAppend(outerTab, "Pages 11-15", uiControl(innerTab));
 
@@ -174,6 +174,7 @@ int main(int argc, char *argv[])
 			;
 	}
 	printf("after uiMain()\n");
+	freePage16();
 	uiUninit();
 	printf("after uiUninit()\n");
 	return 0;

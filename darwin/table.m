@@ -1,396 +1,113 @@
-// 21 june 2016
+// 3 june 2018
 #import "uipriv_darwin.h"
+#import "table.h"
 
-// TODOs
-// - initial state of table view is off
-// - header cell seems off
-// - background color shows up for a line or two below selection
-// - editable NSTextFields have no intrinsic width
-// - changing a part property does not refresh views
-// - is the Y position of checkbox cells correct?
-// - progressbars appear ABOVE the table header
+// TODO is the initial scroll position still wrong?
 
-// LONGTERM
-// - reuse row views instead of creating a new one each time
-
-@interface tableModel : NSObject<NSTableViewDataSource, NSTableViewDelegate> {
-	uiTableModel *libui_m;
+@interface uiprivTableModel : NSObject<NSTableViewDataSource, NSTableViewDelegate> {
+	uiTableModel *m;
 }
-- (id)initWithModel:(uiTableModel *)m;
-- (IBAction)onAction:(id)sender;
+- (id)initWithModel:(uiTableModel *)model;
 @end
 
-enum {
-	partText,
-	partImage,
-	partButton,
-	partCheckbox,
-	partProgressBar,
-};
-
-@interface tablePart : NSObject
-@property int type;
-@property int textColumn;
-@property int textColorColumn;
-@property int imageColumn;
-@property int valueColumn;
-@property int expand;
-@property int editable;
-- (NSView *)mkView:(uiTableModel *)m row:(int)row;
+// TODO we really need to clean up the sharing of the table and model variables...
+@interface uiprivTableView : NSTableView {
+	uiTable *uiprivT;
+	uiTableModel *uiprivM;
+}
+- (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m;
 @end
 
-@interface tableColumn : NSTableColumn
-@property uiTableColumn *libui_col;
+@implementation uiprivTableView
+
+- (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m
+{
+	self = [super initWithFrame:r];
+	if (self) {
+		self->uiprivT = t;
+		self->uiprivM = m;
+	}
+	return self;
+}
+
+// TODO is this correct for overflow scrolling?
+static void setBackgroundColor(uiprivTableView *t, NSTableRowView *rv, NSInteger row)
+{
+	NSColor *color;
+	double r, g, b, a;
+
+	if (t->uiprivT->backgroundColumn == -1)
+		return;		// let Cocoa do its default thing
+	if (uiprivTableModelColorIfProvided(t->uiprivM, row, t->uiprivT->backgroundColumn, &r, &g, &b, &a))
+		color = [NSColor colorWithSRGBRed:r green:g blue:b alpha:a];
+	else {
+		NSArray *colors;
+		NSInteger index;
+
+		// this usage is primarily a guess; hopefully it is correct for the non-two color case... (TODO)
+		// it does seem to be correct for the two-color case, judging from comparing against the value of backgroundColor before changing it (and no, nil does not work; it just sets to white)
+		colors = [NSColor controlAlternatingRowBackgroundColors];
+		index = row % [colors count];
+		color = (NSColor *) [colors objectAtIndex:index];
+	}
+	[rv setBackgroundColor:color];
+	// color is autoreleased in all cases
+}
+
 @end
 
-@interface tableView : NSTableView
-@property uiTable *libui_t;
-@end
+@implementation uiprivTableModel
 
-struct uiTableModel {
-	uiTableModelHandler *mh;
-	tableModel *m;
-	NSMutableArray *tables;
-};
-
-struct uiTableColumn {
-	tableColumn *c;
-	NSMutableArray *parts;
-};
-
-struct uiTable {
-	uiDarwinControl c;
-	NSScrollView *sv;
-	tableView *tv;
-	struct scrollViewData *d;
-	int backgroundColumn;
-};
-
-@implementation tableModel
-
-- (id)initWithModel:(uiTableModel *)m
+- (id)initWithModel:(uiTableModel *)model
 {
 	self = [super init];
 	if (self)
-		self->libui_m = m;
+		self->m = model;
 	return self;
 }
 
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tv
 {
-	uiTableModelHandler *mh = self->libui_m->mh;
-
-	return (*(mh->NumRows))(mh, self->libui_m);
+	return uiprivTableModelNumRows(self->m);
 }
-
-// these are according to Interface Builder
-#define xleft 2
-#define xmiddle 7		/* between images and text, anyway; let's just use it for everything to be simpler */
-#define xright 3
 
  - (NSView *)tableView:(NSTableView *)tv viewForTableColumn:(NSTableColumn *)cc row:(NSInteger)row
 {
-	NSTableCellView *v;
-	tableColumn *c = (tableColumn *) cc;
-	tablePart *part;
-	NSMutableArray *views;
-	NSView *view, *prev;
+	uiprivTableColumn *c = (uiprivTableColumn *) cc;
+	uiprivTableCellView *cv;
 
-	v = [[NSTableCellView alloc] initWithFrame:NSZeroRect];
-
-	views = [NSMutableArray new];
-	for (part in c.libui_col->parts)
-		[views addObject:[part mkView:self->libui_m row:row]];
-	if ([views count] == 0)		// empty (TODO allow?)
-		goto done;
-
-	// add to v and arrange horizontally
-	prev = nil;
-	for (view in views) {
-		[v addSubview:view];
-		// TODO set [v imageView] and [v textField] as appropriate?
-		if (prev == nil) {			// first view
-			[v addConstraint:mkConstraint(v, NSLayoutAttributeLeading,
-				NSLayoutRelationEqual,
-				view, NSLayoutAttributeLeading,
-				1, -xleft,
-				@"uiTableColumn first part horizontal constraint")];
-			prev = view;
-			continue;
-		}
-		[v addConstraint:mkConstraint(prev, NSLayoutAttributeTrailing,
-			NSLayoutRelationEqual,
-			view, NSLayoutAttributeLeading,
-			1, -xmiddle,
-			@"uiTableColumn middle horizontal constraint")];
-		prev = view;
-	}
-	[v addConstraint:mkConstraint(prev, NSLayoutAttributeTrailing,
-		NSLayoutRelationEqual,
-		v, NSLayoutAttributeTrailing,
-		1, -xright,
-		@"uiTableColumn last part horizontal constraint")];
-
-	// and vertically
-	for (view in views) {
-		[v addConstraint:mkConstraint(view, NSLayoutAttributeCenterY,
-			NSLayoutRelationEqual,
-			v, NSLayoutAttributeCenterY,
-			1, 0,
-			@"uiTableColumn part vertical constraint")];
-		// TODO avoid the need for this hack
-		if ([view isKindOfClass:[NSImageView class]])
-			[v addConstraint:mkConstraint(view, NSLayoutAttributeTop,
-				NSLayoutRelationEqual,
-				v, NSLayoutAttributeTop,
-				1, 0,
-				@"uiTableColumn part vertical top constraint")];
-	}
-
-done:
-	[views release];
-	[v setTranslatesAutoresizingMaskIntoConstraints:NO];
-	// TODO autorelease?
-	return v;
+	cv = (uiprivTableCellView *) [tv makeViewWithIdentifier:[c identifier] owner:self];
+	if (cv == nil)
+		cv = [c uiprivMakeCellView];
+	[cv uiprivUpdate:row];
+	return cv;
 }
 
-- (void)tableView:(NSTableView *)nstv didAddRowView:(NSTableRowView *)rv forRow:(NSInteger)row
+- (void)tableView:(NSTableView *)tv didAddRowView:(NSTableRowView *)rv forRow:(NSInteger)row
 {
-	uiTableModel *m = self->libui_m;
-	tableView *tv = (tableView *) nstv;
-	uiTable *t = tv.libui_t;
-	NSColor *color;
-
-	if (t->backgroundColumn == -1)
-		return;
-	color = (NSColor *) ((*(m->mh->CellValue))(m->mh, m, row, t->backgroundColumn));
-	if (color == nil)
-		return;
-	[rv setBackgroundColor:color];
-	// TODO autorelease color? or release it?
-}
-
-- (IBAction)onAction:(id)sender
-{
-	uiTableModel *m = self->libui_m;
-	NSView *view = (NSView *) sender;
-	NSTableView *tv;
-	NSInteger row;
-	const void *data;
-
-	row = -1;
-	for (tv in m->tables) {
-		row = [tv rowForView:view];
-		if (row != -1)
-			break;
-	}
-	if (row == -1)
-		implbug("table model action triggered on view with no associated table");
-
-	if ([view isKindOfClass:[NSTextField class]])
-		data = [[((NSTextField *) view) stringValue] UTF8String];
-	else if ([view isKindOfClass:[NSButton class]]) {
-		NSButton *b;
-
-		b = (NSButton *) view;
-//		if ([b buttonType] == NSSwitchButton)
-			data = uiTableModelGiveInt([b state] == NSOnState);
-// TODO there is no buttonType getter
-if(1);		else
-			data = NULL;
-	} else
-		implbug("table model editing action triggered on non-editable view");
-
-	// note the use of [view tag] — we need the model column, which we store in the view tag for relevant views below
-	(*(m->mh->SetCellValue))(m->mh, m,
-		row, [view tag],
-		data);
-	// always refresh the value in case the model rejected it
-	// TODO only affect tv?
-	uiTableModelRowChanged(m, row);
+	setBackgroundColor((uiprivTableView *) tv, rv, row);
 }
 
 @end
-
-@implementation tablePart
-
-- (id)init
-{
-	self = [super init];
-	if (self) {
-		self.textColumn = -1;
-		self.textColorColumn = -1;
-	}
-	return self;
-}
-
-- (NSView *)mkView:(uiTableModel *)m row:(int)row
-{
-	void *data;
-	NSString *str;
-	NSView *view;
-	NSTextField *tf;
-	NSImageView *iv;
-	NSButton *b;
-	NSProgressIndicator *p;
-	int value;
-
-	switch (self.type) {
-	case partText:
-		data = (*(m->mh->CellValue))(m->mh, m, row, self.textColumn);
-		str = toNSString((char *) data);
-		uiFree(data);
-		tf = newLabel(str);
-		// TODO set wrap and ellipsize modes?
-		if (self.textColorColumn != -1) {
-			NSColor *color;
-
-			color = (NSColor *) ((*(m->mh->CellValue))(m->mh, m, row, self.textColorColumn));
-			if (color != nil)
-				[tf setTextColor:color];
-			// TODO release color
-		}
-		if (self.editable) {
-			[tf setEditable:YES];
-			[tf setTarget:m->m];
-			[tf setAction:@selector(onAction:)];
-		}
-		[tf setTag:self.textColumn];
-		view = tf;
-		break;
-	case partImage:
-		data = (*(m->mh->CellValue))(m->mh, m, row, self.imageColumn);
-		iv = [[NSImageView alloc] initWithFrame:NSZeroRect];
-		[iv setImage:imageImage((uiImage *) data)];
-		[iv setImageFrameStyle:NSImageFrameNone];
-		[iv setImageAlignment:NSImageAlignCenter];
-		[iv setImageScaling:NSImageScaleProportionallyDown];
-		[iv setAnimates:NO];
-		[iv setEditable:NO];
-		[iv addConstraint:mkConstraint(iv, NSLayoutAttributeWidth,
-			NSLayoutRelationEqual,
-			iv, NSLayoutAttributeHeight,
-			1, 0,
-			@"uiTable image squareness constraint")];
-		[iv setTag:self.imageColumn];
-		view = iv;
-		break;
-	case partButton:
-		// TODO buttons get clipped
-		data = (*(m->mh->CellValue))(m->mh, m, row, self.textColumn);
-		str = toNSString((char *) data);
-		b = [[NSButton alloc] initWithFrame:NSZeroRect];
-		[b setTitle:str];
-		[b setButtonType:NSMomentaryPushInButton];
-		[b setBordered:YES];
-		[b setBezelStyle:NSRoundRectBezelStyle];
-		uiDarwinSetControlFont(b, NSRegularControlSize);
-		if (self.editable) {
-			[b setTarget:m->m];
-			[b setAction:@selector(onAction:)];
-		} else
-			[b setEnabled:NO];
-		[b setTag:self.textColumn];
-		view = b;
-		break;
-	case partCheckbox:
-		data = (*(m->mh->CellValue))(m->mh, m, row, self.valueColumn);
-		b = [[NSButton alloc] initWithFrame:NSZeroRect];
-		[b setTitle:@""];
-		[b setButtonType:NSSwitchButton];
-		// doesn't seem to have an associated bezel style
-		[b setBordered:NO];
-		[b setTransparent:NO];
-		uiDarwinSetControlFont(b, NSRegularControlSize);
-		if (uiTableModelTakeInt(data) != 0)
-			[b setState:NSOnState];
-		else
-			[b setState:NSOffState];
-		if (self.editable) {
-			[b setTarget:m->m];
-			[b setAction:@selector(onAction:)];
-		} else
-			[b setEnabled:NO];
-		[b setTag:self.valueColumn];
-		view = b;
-		break;
-	case partProgressBar:
-		data = (*(m->mh->CellValue))(m->mh, m, row, self.valueColumn);
-		value = uiTableModelTakeInt(data);
-		// TODO no intrinsic width
-		p = [[NSProgressIndicator alloc] initWithFrame:NSZeroRect];
-		[p setControlSize:NSRegularControlSize];
-		[p setBezeled:YES];
-		[p setStyle:NSProgressIndicatorBarStyle];
-		if (value == -1) {
-			[p setIndeterminate:YES];
-			[p startAnimation:p];
-		} else if (value == 100) {
-			[p setIndeterminate:NO];
-			[p setMaxValue:101];
-			[p setDoubleValue:101];
-			[p setDoubleValue:100];
-			[p setMaxValue:100];
-		} else {
-			[p setIndeterminate:NO];
-			[p setDoubleValue:(value + 1)];
-			[p setDoubleValue:value];
-		}
-		view = p;
-		break;
-	}
-
-	// if stretchy, don't hug, otherwise hug forcibly
-	if (self.expand)
-		[view setContentHuggingPriority:NSLayoutPriorityDefaultLow forOrientation:NSLayoutConstraintOrientationHorizontal];
-	else
-		[view setContentHuggingPriority:NSLayoutPriorityRequired forOrientation:NSLayoutConstraintOrientationHorizontal];
-	[view setTranslatesAutoresizingMaskIntoConstraints:NO];
-	// TODO autorelease?
-	return view;
-}
-
-@end
-
-@implementation tableColumn
-@end
-
-@implementation tableView
-@end
-
-void *uiTableModelStrdup(const char *str)
-{
-	// TODO don't we have this already?
-	char *dup;
-
-	dup = (char *) uiAlloc((strlen(str) + 1) * sizeof (char), "char[]");
-	strcpy(dup, str);
-	return dup;
-}
 
 uiTableModel *uiNewTableModel(uiTableModelHandler *mh)
 {
 	uiTableModel *m;
 
-	m = uiNew(uiTableModel);
+	m = uiprivNew(uiTableModel);
 	m->mh = mh;
-	m->m = [[tableModel alloc] initWithModel:m];
+	m->m = [[uiprivTableModel alloc] initWithModel:m];
 	m->tables = [NSMutableArray new];
 	return m;
-}
-
-void *uiTableModelGiveColor(double r, double g, double b, double a)
-{
-	return [[NSColor colorWithSRGBRed:r green:g blue:b alpha:a] retain];
 }
 
 void uiFreeTableModel(uiTableModel *m)
 {
 	if ([m->tables count] != 0)
-		userbug("You cannot free a uiTableModel while uiTables are using it.");
+		uiprivUserBug("You cannot free a uiTableModel while uiTables are using it.");
 	[m->tables release];
 	[m->m release];
-	uiFree(m);
+	uiprivFree(m);
 }
 
 void uiTableModelRowInserted(uiTableModel *m, int newIndex)
@@ -406,17 +123,22 @@ void uiTableModelRowInserted(uiTableModel *m, int newIndex)
 
 void uiTableModelRowChanged(uiTableModel *m, int index)
 {
-	NSTableView *tv;
-	NSIndexSet *set, *cols;
+	uiprivTableView *tv;
+	NSTableRowView *rv;
+	NSUInteger i, n;
+	uiprivTableCellView *cv;
 
-	set = [NSIndexSet indexSetWithIndex:index];
 	for (tv in m->tables) {
-		cols = [[NSIndexSet alloc] initWithIndexesInRange:NSMakeRange(0, [[tv tableColumns] count])];
-		[tv reloadDataForRowIndexes:set columnIndexes:cols];
-		// TODO this isn't enough
-		[cols release];
+		rv = [tv rowViewAtRow:index makeIfNecessary:NO];
+		if (rv != nil)
+			setBackgroundColor(tv, rv, index);
+		n = [[tv tableColumns] count];
+		for (i = 0; i < n; i++) {
+			cv = (uiprivTableCellView *) [tv viewAtColumn:i row:index makeIfNecessary:NO];
+			if (cv != nil)
+				[cv uiprivUpdate:index];
+		}
 	}
-	// set is autoreleased
 }
 
 void uiTableModelRowDeleted(uiTableModel *m, int oldIndex)
@@ -430,77 +152,9 @@ void uiTableModelRowDeleted(uiTableModel *m, int oldIndex)
 	// set is autoreleased
 }
 
-void uiTableColumnAppendTextPart(uiTableColumn *c, int modelColumn, int expand)
+uiTableModelHandler *uiprivTableModelHandler(uiTableModel *m)
 {
-	tablePart *part;
-
-	part = [tablePart new];
-	part.type = partText;
-	part.textColumn = modelColumn;
-	part.expand = expand;
-	[c->parts addObject:part];
-}
-
-void uiTableColumnAppendImagePart(uiTableColumn *c, int modelColumn, int expand)
-{
-	tablePart *part;
-
-	part = [tablePart new];
-	part.type = partImage;
-	part.imageColumn = modelColumn;
-	part.expand = expand;
-	[c->parts addObject:part];
-}
-
-void uiTableColumnAppendButtonPart(uiTableColumn *c, int modelColumn, int expand)
-{
-	tablePart *part;
-
-	part = [tablePart new];
-	part.type = partButton;
-	part.textColumn = modelColumn;
-	part.expand = expand;
-	part.editable = 1;		// editable by default
-	[c->parts addObject:part];
-}
-
-void uiTableColumnAppendCheckboxPart(uiTableColumn *c, int modelColumn, int expand)
-{
-	tablePart *part;
-
-	part = [tablePart new];
-	part.type = partCheckbox;
-	part.valueColumn = modelColumn;
-	part.expand = expand;
-	part.editable = 1;		// editable by default
-	[c->parts addObject:part];
-}
-
-void uiTableColumnAppendProgressBarPart(uiTableColumn *c, int modelColumn, int expand)
-{
-	tablePart *part;
-
-	part = [tablePart new];
-	part.type = partProgressBar;
-	part.valueColumn = modelColumn;
-	part.expand = expand;
-	[c->parts addObject:part];
-}
-
-void uiTableColumnPartSetEditable(uiTableColumn *c, int part, int editable)
-{
-	tablePart *p;
-
-	p = (tablePart *) [c->parts objectAtIndex:part];
-	p.editable = editable;
-}
-
-void uiTableColumnPartSetTextColor(uiTableColumn *c, int part, int modelColumn)
-{
-	tablePart *p;
-
-	p = (tablePart *) [c->parts objectAtIndex:part];
-	p.textColorColumn = modelColumn;
+	return m->mh;
 }
 
 uiDarwinControlAllDefaultsExceptDestroy(uiTable, sv)
@@ -509,48 +163,28 @@ static void uiTableDestroy(uiControl *c)
 {
 	uiTable *t = uiTable(c);
 
-	// TODO
+	[t->m->tables removeObject:t->tv];
+	uiprivScrollViewFreeData(t->sv, t->d);
+	[t->tv release];
 	[t->sv release];
 	uiFreeControl(uiControl(t));
 }
 
-uiTableColumn *uiTableAppendColumn(uiTable *t, const char *name)
-{
-	uiTableColumn *c;
-
-	c = uiNew(uiTableColumn);
-	c->c = [[tableColumn alloc] initWithIdentifier:@""];
-	c->c.libui_col = c;
-	// via Interface Builder
-	[c->c setResizingMask:(NSTableColumnAutoresizingMask | NSTableColumnUserResizingMask)];
-	// 10.10 adds -[NSTableColumn setTitle:]; before then we have to do this
-	[[c->c headerCell] setStringValue:toNSString(name)];
-	// TODO is this sufficient?
-	[[c->c headerCell] setFont:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
-	c->parts = [NSMutableArray new];
-	[t->tv addTableColumn:c->c];
-	return c;
-}
-
-void uiTableSetRowBackgroundColorModelColumn(uiTable *t, int modelColumn)
-{
-	t->backgroundColumn = modelColumn;
-}
-
-uiTable *uiNewTable(uiTableModel *model)
+uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
-	struct scrollViewCreateParams p;
+	uiprivScrollViewCreateParams sp;
 
 	uiDarwinNewControl(uiTable, t);
+	t->m = p->Model;
+	t->backgroundColumn = p->RowBackgroundColorModelColumn;
 
-	t->tv = [[tableView alloc] initWithFrame:NSZeroRect];
-	t->tv.libui_t = t;
+	t->tv = [[uiprivTableView alloc] initWithFrame:NSZeroRect uiprivT:t uiprivM:t->m];
 
-	[t->tv setDataSource:model->m];
-	[t->tv setDelegate:model->m];
+	[t->tv setDataSource:t->m->m];
+	[t->tv setDelegate:t->m->m];
 	[t->tv reloadData];
-	[model->tables addObject:t->tv];
+	[t->m->tables addObject:t->tv];
 
 	// TODO is this sufficient?
 	[t->tv setAllowsColumnReordering:NO];
@@ -564,18 +198,21 @@ uiTable *uiNewTable(uiTableModel *model)
 	[t->tv setAllowsTypeSelect:YES];
 	// TODO floatsGroupRows — do we even allow group rows?
 
-	memset(&p, 0, sizeof (struct scrollViewCreateParams));
-	p.DocumentView = t->tv;
+	memset(&sp, 0, sizeof (uiprivScrollViewCreateParams));
+	sp.DocumentView = t->tv;
 	// this is what Interface Builder sets it to
 	// TODO verify
-	p.BackgroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:1.0];
-	p.DrawsBackground = YES;
-	p.Bordered = YES;
-	p.HScroll = YES;
-	p.VScroll = YES;
-	t->sv = mkScrollView(&p, &(t->d));
+	sp.BackgroundColor = [NSColor colorWithCalibratedWhite:1.0 alpha:1.0];
+	sp.DrawsBackground = YES;
+	sp.Bordered = YES;
+	sp.HScroll = YES;
+	sp.VScroll = YES;
+	t->sv = uiprivMkScrollView(&sp, &(t->d));
 
-	t->backgroundColumn = -1;
+	// TODO WHY DOES THIS REMOVE ALL GRAPHICAL GLITCHES?
+	// I got the idea from http://jwilling.com/blog/optimized-nstableview-scrolling/ but that was on an unrelated problem I didn't seem to have (although I have small-ish tables to start with)
+	// I don't get layer-backing... am I supposed to layer-back EVERYTHING manually? I need to check Interface Builder again...
+	[t->sv setWantsLayer:YES];
 
 	return t;
 }

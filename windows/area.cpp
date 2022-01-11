@@ -2,6 +2,8 @@
 #include "uipriv_windows.hpp"
 #include "area.hpp"
 
+// TODO handle WM_DESTROY/WM_NCDESTROY
+// TODO same for other Direct2D stuff
 static LRESULT CALLBACK areaWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	uiArea *a;
@@ -166,7 +168,7 @@ uiArea *uiNewArea(uiAreaHandler *ah)
 
 	a->ah = ah;
 	a->scrolling = FALSE;
-	clickCounterReset(&(a->cc));
+	uiprivClickCounterReset(&(a->cc));
 
 	// a->hwnd is assigned in areaWndProc()
 	uiWindowsEnsureCreateControlHWND(0,
@@ -188,7 +190,7 @@ uiArea *uiNewScrollingArea(uiAreaHandler *ah, int width, int height)
 	a->scrolling = TRUE;
 	a->scrollWidth = width;
 	a->scrollHeight = height;
-	clickCounterReset(&(a->cc));
+	uiprivClickCounterReset(&(a->cc));
 
 	// a->hwnd is assigned in areaWndProc()
 	uiWindowsEnsureCreateControlHWND(0,

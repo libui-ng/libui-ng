@@ -10,18 +10,15 @@ struct uiImage {
 static void freeImageRep(gpointer item)
 {
 	cairo_surface_t *cs = (cairo_surface_t *) item;
-	unsigned char *buf;
 
-	buf = cairo_image_surface_get_data(cs);
 	cairo_surface_destroy(cs);
-	uiFree(buf);
 }
 
 uiImage *uiNewImage(double width, double height)
 {
 	uiImage *i;
 
-	i = uiNew(uiImage);
+	i = uiprivNew(uiImage);
 	i->width = width;
 	i->height = height;
 	i->images = g_ptr_array_new_with_free_func(freeImageRep);
@@ -31,30 +28,47 @@ uiImage *uiNewImage(double width, double height)
 void uiFreeImage(uiImage *i)
 {
 	g_ptr_array_free(i->images, TRUE);
-	uiFree(i);
+	uiprivFree(i);
 }
 
-void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int pixelStride)
+void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride)
 {
 	cairo_surface_t *cs;
-	unsigned char *buf, *p;
-	uint8_t *src = (uint8_t *) pixels;
-	int cstride;
-	int y;
+	uint8_t *data, *pix;
+	int realStride;
+	int x, y;
 
-	cstride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, pixelWidth);
-	buf = (unsigned char *) uiAlloc((cstride * pixelHeight * 4) * sizeof (unsigned char), "unsigned char[]");
-	p = buf;
-	for (y = 0; y < pixelStride * pixelHeight; y += pixelStride) {
-		memmove(p, src + y, cstride);
-		p += cstride;
-	}
-	cs = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_ARGB32,
-		pixelWidth, pixelHeight,
-		cstride);
+	// note that this is native-endian
+	cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+		pixelWidth, pixelHeight);
 	if (cairo_surface_status(cs) != CAIRO_STATUS_SUCCESS)
 		/* TODO */;
 	cairo_surface_flush(cs);
+
+	pix = (uint8_t *) pixels;
+	data = (uint8_t *) cairo_image_surface_get_data(cs);
+	realStride = cairo_image_surface_get_stride(cs);
+	for (y = 0; y < pixelHeight; y++) {
+		for (x = 0; x < pixelWidth * 4; x += 4) {
+			union {
+				uint32_t v32;
+				uint8_t v8[4];
+			} v;
+
+			v.v32 = ((uint32_t) (pix[x + 3])) << 24;
+			v.v32 |= ((uint32_t) (pix[x])) << 16;
+			v.v32 |= ((uint32_t) (pix[x + 1])) << 8;
+			v.v32 |= ((uint32_t) (pix[x + 2]));
+			data[x] = v.v8[0];
+			data[x + 1] = v.v8[1];
+			data[x + 2] = v.v8[2];
+			data[x + 3] = v.v8[3];
+		}
+		pix += byteStride;
+		data += realStride;
+	}
+
+	cairo_surface_mark_dirty(cs);
 	g_ptr_array_add(i->images, cs);
 }
 
@@ -105,7 +119,7 @@ writeMatch:
 	m->distY = abs(m->targetY - y);
 }
 
-cairo_surface_t *imageAppropriateSurface(uiImage *i, GtkWidget *w)
+cairo_surface_t *uiprivImageAppropriateSurface(uiImage *i, GtkWidget *w)
 {
 	struct matcher m;
 

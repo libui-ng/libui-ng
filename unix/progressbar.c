@@ -1,6 +1,9 @@
 // 11 june 2015
 #include "uipriv_unix.h"
 
+// LONGTERM:
+// - in GTK+ 3.22 at least, running both a GtkProgressBar and a GtkCellRendererProgress in pulse mode with our code will cause the former to slow down and eventually stop, and I can't tell why at all
+
 struct uiProgressBar {
 	uiUnixControl c;
 	GtkWidget *widget;
@@ -53,7 +56,7 @@ void uiProgressBarSetValue(uiProgressBar *p, int value)
 	}
 
 	if (value < 0 || value > 100)
-		userbug("Value %d is out of range for a uiProgressBar.", value);
+		uiprivUserBug("Value %d is out of range for a uiProgressBar.", value);
 
 	gtk_progress_bar_set_fraction(p->pbar, ((gdouble) value) / 100);
 }

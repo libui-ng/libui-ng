@@ -1,0 +1,175 @@
+# build libui-ng
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  meson-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-18.04, ubuntu-latest (ubuntu-20.04)
+        os: [ubuntu-latest]
+        # x86, x64
+        arch: [x64]
+        libtype: [static, shared]
+        # debug, debugoptimized, release
+        buildtype: [debug]
+    runs-on: ${{ matrix.os }}
+    name: Ubuntu-${{ matrix.arch }}-${{ matrix.libtype }}
+    steps:
+    - name: Install Meson and Linux Deps
+      run: |
+        python3 -m pip install --upgrade pip setuptools wheel
+        pip3 install meson ninja
+        sudo apt-get update -y
+        sudo apt-get install -y libgtk-3-dev
+    - name: Checkout
+      uses: actions/checkout@v2
+    - name: Meson Setup Build
+      run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
+    - name: Ninja Build
+      run: ninja -C builddir --verbose
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: Ubuntu-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
+        # lib + header + examples + test + build-log
+        path: |
+          !builddir/meson-out/*.p/
+          builddir/meson-out/*
+          ui_unix.h
+          ui.h
+          builddir/meson-logs/*.txt
+
+  meson-windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        # windows-latest, windows-2022
+        os: [windows-latest]
+        arch: [x86, x64]
+        libtype: [static, shared]
+        # debug, debugoptimized, release
+        buildtype: [debug]
+    runs-on: ${{ matrix.os }}
+    name: Win-${{ matrix.arch }}-${{ matrix.libtype }}
+    steps:
+      # Setup build env
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.x'
+      - name: Install Meson+Ninja
+        run: |
+          python -m pip install --upgrade pip
+          pip install meson ninja
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Meson Setup Build
+        shell: cmd
+        run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
+      - name: Ninja Build
+        run: ninja -C builddir --verbose
+
+      # TODO: Add test
+      # - name: Run test
+      #   run: meson test -C builddir --verbose
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Win-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
+          # lib + header + examples + test + build-log
+          path: |
+            !builddir/meson-out/*.p/
+            builddir/meson-out/libui.*
+            ui_windows.h
+            ui.h
+            builddir/meson-out/*.exe
+            builddir/meson-out/*.pdb
+            builddir/meson-logs/*.txt
+
+  meson-windows-mingw:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest]
+        arch: [x64]
+        # only support static
+        libtype: [static]
+        # debug, debugoptimized, release
+        buildtype: [release]
+    runs-on: ${{ matrix.os }}
+    name: Mingw-${{ matrix.arch }}-${{ matrix.libtype }}
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      # Setup build env
+      - uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          install: >-
+            base-devel
+            git
+          pacboy: >-
+            toolchain:x
+            meson:x
+      - uses: actions/checkout@v2
+      - name: Meson Setup Build
+        run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=static
+      - name: Ninja Build
+        run: ninja -C builddir --verbose
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: Mingw-${{ matrix.arch }}-static-${{ matrix.buildtype }}
+          # lib + header + examples + test + build-log
+          path: |
+            builddir/meson-out/libui.a
+            ui_windows.h
+            ui.h
+            builddir/meson-out/*.exe
+            builddir/meson-logs/*.txt
+
+  meson-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        # macos-latest (macos-10.15), macos-11
+        os: [macos-11]
+        libtype: [static, shared]
+        # debug, debugoptimized, release
+        buildtype: [debug]
+    runs-on: ${{ matrix.os }}
+    name: macOS-x64-${{ matrix.libtype }}
+    steps:
+      - name: Install Meson and macOS Deps
+        run: |
+          brew update
+          brew install meson ninja
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Meson Setup Build
+        run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
+      - name: Ninja Build
+        run: ninja -C builddir --verbose
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: macOS-x64-${{ matrix.libtype }}-${{ matrix.buildtype }}
+          # lib + header + examples + test + build-log
+          path: |
+            !builddir/meson-out/*.p/
+            builddir/meson-out/*
+            ui_darwin.h
+            ui.h
+            builddir/meson-logs/*.txt

@@ -1,5 +1,6 @@
 // 6 september 2015
 #import "uipriv_darwin.h"
+#import "draw.h"
 
 struct uiDrawPath {
 	CGMutablePathRef path;
@@ -11,7 +12,7 @@ uiDrawPath *uiDrawNewPath(uiDrawFillMode mode)
 {
 	uiDrawPath *p;
 
-	p = uiNew(uiDrawPath);
+	p = uiprivNew(uiDrawPath);
 	p->path = CGPathCreateMutable();
 	p->fillMode = mode;
 	return p;
@@ -20,13 +21,13 @@ uiDrawPath *uiDrawNewPath(uiDrawFillMode mode)
 void uiDrawFreePath(uiDrawPath *p)
 {
 	CGPathRelease((CGPathRef) (p->path));
-	uiFree(p);
+	uiprivFree(p);
 }
 
 void uiDrawPathNewFigure(uiDrawPath *p, double x, double y)
 {
 	if (p->ended)
-		userbug("You cannot call uiDrawPathNewFigure() on a uiDrawPath that has already been ended. (path; %p)", p);
+		uiprivUserBug("You cannot call uiDrawPathNewFigure() on a uiDrawPath that has already been ended. (path; %p)", p);
 	CGPathMoveToPoint(p->path, NULL, x, y);
 }
 
@@ -36,7 +37,7 @@ void uiDrawPathNewFigureWithArc(uiDrawPath *p, double xCenter, double yCenter, d
 	double startx, starty;
 
 	if (p->ended)
-		userbug("You cannot call uiDrawPathNewFigureWithArc() on a uiDrawPath that has already been ended. (path; %p)", p);
+		uiprivUserBug("You cannot call uiDrawPathNewFigureWithArc() on a uiDrawPath that has already been ended. (path; %p)", p);
 	sinStart = sin(startAngle);
 	cosStart = cos(startAngle);
 	startx = xCenter + radius * cosStart;
@@ -49,7 +50,7 @@ void uiDrawPathLineTo(uiDrawPath *p, double x, double y)
 {
 	// TODO refine this to require being in a path
 	if (p->ended)
-		implbug("attempt to add line to ended path in uiDrawPathLineTo()");
+		uiprivImplBug("attempt to add line to ended path in uiDrawPathLineTo()");
 	CGPathAddLineToPoint(p->path, NULL, x, y);
 }
 
@@ -59,7 +60,7 @@ void uiDrawPathArcTo(uiDrawPath *p, double xCenter, double yCenter, double radiu
 
 	// TODO likewise
 	if (p->ended)
-		implbug("attempt to add arc to ended path in uiDrawPathArcTo()");
+		uiprivImplBug("attempt to add arc to ended path in uiDrawPathArcTo()");
 	if (sweep > 2 * uiPi)
 		sweep = 2 * uiPi;
 	cw = false;
@@ -76,7 +77,7 @@ void uiDrawPathBezierTo(uiDrawPath *p, double c1x, double c1y, double c2x, doubl
 {
 	// TODO likewise
 	if (p->ended)
-		implbug("attempt to add bezier to ended path in uiDrawPathBezierTo()");
+		uiprivImplBug("attempt to add bezier to ended path in uiDrawPathBezierTo()");
 	CGPathAddCurveToPoint(p->path, NULL,
 		c1x, c1y,
 		c2x, c2y,
@@ -87,14 +88,14 @@ void uiDrawPathCloseFigure(uiDrawPath *p)
 {
 	// TODO likewise
 	if (p->ended)
-		implbug("attempt to close figure of ended path in uiDrawPathCloseFigure()");
+		uiprivImplBug("attempt to close figure of ended path in uiDrawPathCloseFigure()");
 	CGPathCloseSubpath(p->path);
 }
 
 void uiDrawPathAddRectangle(uiDrawPath *p, double x, double y, double width, double height)
 {
 	if (p->ended)
-		userbug("You cannot call uiDrawPathAddRectangle() on a uiDrawPath that has already been ended. (path; %p)", p);
+		uiprivUserBug("You cannot call uiDrawPathAddRectangle() on a uiDrawPath that has already been ended. (path; %p)", p);
 	CGPathAddRect(p->path, NULL, CGRectMake(x, y, width, height));
 }
 
@@ -113,19 +114,19 @@ struct uiDrawContext {
 	CGFloat height;				// needed for text; see below
 };
 
-uiDrawContext *newContext(CGContextRef ctxt, CGFloat height)
+uiDrawContext *uiprivDrawNewContext(CGContextRef ctxt, CGFloat height)
 {
 	uiDrawContext *c;
 
-	c = uiNew(uiDrawContext);
+	c = uiprivNew(uiDrawContext);
 	c->c = ctxt;
 	c->height = height;
 	return c;
 }
 
-void freeContext(uiDrawContext *c)
+void uiprivDrawFreeContext(uiDrawContext *c)
 {
-	uiFree(c);
+	uiprivFree(c);
 }
 
 // a stroke is identical to a fill of a stroked path
@@ -141,7 +142,7 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 	uiDrawPath p2;
 
 	if (!path->ended)
-		userbug("You cannot call uiDrawStroke() on a uiDrawPath that has not been ended. (path: %p)", path);
+		uiprivUserBug("You cannot call uiDrawStroke() on a uiDrawPath that has not been ended. (path: %p)", path);
 
 	switch (p->Cap) {
 	case uiDrawLineCapFlat:
@@ -169,7 +170,7 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 	// create a temporary path identical to the previous one
 	dashPath = (CGPathRef) path->path;
 	if (p->NumDashes != 0) {
-		dashes = (CGFloat *) uiAlloc(p->NumDashes * sizeof (CGFloat), "CGFloat[]");
+		dashes = (CGFloat *) uiprivAlloc(p->NumDashes * sizeof (CGFloat), "CGFloat[]");
 		for (i = 0; i < p->NumDashes; i++)
 			dashes[i] = p->Dashes[i];
 		dashPath = CGPathCreateCopyByDashingPath(path->path,
@@ -177,7 +178,7 @@ void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStro
 			p->DashPhase,
 			dashes,
 			p->NumDashes);
-		uiFree(dashes);
+		uiprivFree(dashes);
 	}
 	// the documentation is wrong: this produces a path suitable for calling CGPathCreateCopyByStrokingPath(), not for filling directly
 	// the cast is safe; we never modify the CGPathRef and always cast it back to a CGPathRef anyway
@@ -227,10 +228,14 @@ static void fillGradient(CGContextRef ctxt, uiDrawPath *p, uiDrawBrush *b)
 	// gradients need a color space
 	// for consistency with windows, use sRGB
 	colorspace = CGColorSpaceCreateWithName(kCGColorSpaceSRGB);
+	if (colorspace == NULL) {
+		// TODO
+	}
+	// TODO add NULL check to other uses of CGColorSpace
 
 	// make the gradient
-	colors = uiAlloc(b->NumStops * 4 * sizeof (CGFloat), "CGFloat[]");
-	locations = uiAlloc(b->NumStops * sizeof (CGFloat), "CGFloat[]");
+	colors = uiprivAlloc(b->NumStops * 4 * sizeof (CGFloat), "CGFloat[]");
+	locations = uiprivAlloc(b->NumStops * sizeof (CGFloat), "CGFloat[]");
 	for (i = 0; i < b->NumStops; i++) {
 		colors[i * 4 + 0] = b->Stops[i].R;
 		colors[i * 4 + 1] = b->Stops[i].G;
@@ -239,8 +244,8 @@ static void fillGradient(CGContextRef ctxt, uiDrawPath *p, uiDrawBrush *b)
 		locations[i] = b->Stops[i].Pos;
 	}
 	gradient = CGGradientCreateWithColorComponents(colorspace, colors, locations, b->NumStops);
-	uiFree(locations);
-	uiFree(colors);
+	uiprivFree(locations);
+	uiprivFree(colors);
 
 	// because we're mucking with clipping, we need to save the graphics state and restore it later
 	CGContextSaveGState(ctxt);
@@ -285,7 +290,7 @@ static void fillGradient(CGContextRef ctxt, uiDrawPath *p, uiDrawBrush *b)
 void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b)
 {
 	if (!path->ended)
-		userbug("You cannot call uiDrawStroke() on a uiDrawPath that has not been ended. (path: %p)", path);
+		uiprivUserBug("You cannot call uiDrawStroke() on a uiDrawPath that has not been ended. (path: %p)", path);
 	CGContextAddPath(c->c, (CGPathRef) (path->path));
 	switch (b->Type) {
 	case uiDrawBrushTypeSolid:
@@ -299,7 +304,7 @@ void uiDrawFill(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b)
 		// TODO
 		return;
 	}
-	userbug("Unknown brush type %d passed to uiDrawFill().", b->Type);
+	uiprivUserBug("Unknown brush type %d passed to uiDrawFill().", b->Type);
 }
 
 static void m2c(uiDrawMatrix *m, CGAffineTransform *c)
@@ -339,7 +344,7 @@ void uiDrawMatrixScale(uiDrawMatrix *m, double xCenter, double yCenter, double x
 	m2c(m, &c);
 	xt = x;
 	yt = y;
-	scaleCenter(xCenter, yCenter, &xt, &yt);
+	uiprivScaleCenter(xCenter, yCenter, &xt, &yt);
 	c = CGAffineTransformTranslate(c, xt, yt);
 	c = CGAffineTransformScale(c, x, y);
 	c = CGAffineTransformTranslate(c, -xt, -yt);
@@ -359,7 +364,7 @@ void uiDrawMatrixRotate(uiDrawMatrix *m, double x, double y, double amount)
 
 void uiDrawMatrixSkew(uiDrawMatrix *m, double x, double y, double xamount, double yamount)
 {
-	fallbackSkew(m, x, y, xamount, yamount);
+	uiprivFallbackSkew(m, x, y, xamount, yamount);
 }
 
 void uiDrawMatrixMultiply(uiDrawMatrix *dest, uiDrawMatrix *src)
@@ -430,7 +435,7 @@ void uiDrawTransform(uiDrawContext *c, uiDrawMatrix *m)
 void uiDrawClip(uiDrawContext *c, uiDrawPath *path)
 {
 	if (!path->ended)
-		userbug("You cannot call uiDrawCilp() on a uiDrawPath that has not been ended. (path: %p)", path);
+		uiprivUserBug("You cannot call uiDrawCilp() on a uiDrawPath that has not been ended. (path: %p)", path);
 	CGContextAddPath(c->c, (CGPathRef) (path->path));
 	switch (path->fillMode) {
 	case uiDrawFillModeWinding:
@@ -451,9 +456,4 @@ void uiDrawSave(uiDrawContext *c)
 void uiDrawRestore(uiDrawContext *c)
 {
 	CGContextRestoreGState(c->c);
-}
-
-void uiDrawText(uiDrawContext *c, double x, double y, uiDrawTextLayout *layout)
-{
-	doDrawText(c->c, c->height, x, y, layout);
 }

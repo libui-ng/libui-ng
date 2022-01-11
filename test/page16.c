@@ -8,15 +8,15 @@ static int modelNumColumns(uiTableModelHandler *mh, uiTableModel *m)
 	return 9;
 }
 
-static uiTableModelColumnType modelColumnType(uiTableModelHandler *mh, uiTableModel *m, int column)
+static uiTableValueType modelColumnType(uiTableModelHandler *mh, uiTableModel *m, int column)
 {
 	if (column == 3 || column == 4)
-		return uiTableModelColumnColor;
+		return uiTableValueTypeColor;
 	if (column == 5)
-		return uiTableModelColumnImage;
+		return uiTableValueTypeImage;
 	if (column == 7 || column == 8)
-		return uiTableModelColumnInt;
-	return uiTableModelColumnString;
+		return uiTableValueTypeInt;
+	return uiTableValueTypeString;
 }
 
 static int modelNumRows(uiTableModelHandler *mh, uiTableModel *m)
@@ -29,39 +29,39 @@ static char row9text[1024];
 static int yellowRow = -1;
 static int checkStates[15];
 
-static void *modelCellValue(uiTableModelHandler *mh, uiTableModel *m, int row, int col)
+static uiTableValue *modelCellValue(uiTableModelHandler *mh, uiTableModel *m, int row, int col)
 {
 	char buf[256];
 
 	if (col == 3) {
 		if (row == yellowRow)
-			return uiTableModelGiveColor(1, 1, 0, 1);
+			return uiNewTableValueColor(1, 1, 0, 1);
 		if (row == 3)
-			return uiTableModelGiveColor(1, 0, 0, 1);
+			return uiNewTableValueColor(1, 0, 0, 1);
 		if (row == 11)
-			return uiTableModelGiveColor(0, 0.5, 1, 0.5);
+			return uiNewTableValueColor(0, 0.5, 1, 0.5);
 		return NULL;
 	}
 	if (col == 4) {
 		if ((row % 2) == 1)
-			return uiTableModelGiveColor(0.5, 0, 0.75, 1);
+			return uiNewTableValueColor(0.5, 0, 0.75, 1);
 		return NULL;
 	}
 	if (col == 5) {
 		if (row < 8)
-			return img[0];
-		return img[1];
+			return uiNewTableValueImage(img[0]);
+		return uiNewTableValueImage(img[1]);
 	}
 	if (col == 7)
-		return uiTableModelGiveInt(checkStates[row]);
+		return uiNewTableValueInt(checkStates[row]);
 	if (col == 8) {
 		if (row == 0)
-			return uiTableModelGiveInt(0);
+			return uiNewTableValueInt(0);
 		if (row == 13)
-			return uiTableModelGiveInt(100);
+			return uiNewTableValueInt(100);
 		if (row == 14)
-			return uiTableModelGiveInt(-1);
-		return uiTableModelGiveInt(50);
+			return uiNewTableValueInt(-1);
+		return uiNewTableValueInt(50);
 	}
 	switch (col) {
 	case 0:
@@ -69,7 +69,7 @@ static void *modelCellValue(uiTableModelHandler *mh, uiTableModel *m, int row, i
 		break;
 	case 2:
 		if (row == 9)
-			return uiTableModelStrdup(row9text);
+			return uiNewTableValueString(row9text);
 		// fall through
 	case 1:
 		strcpy(buf, "Part");
@@ -78,25 +78,34 @@ static void *modelCellValue(uiTableModelHandler *mh, uiTableModel *m, int row, i
 		strcpy(buf, "Make Yellow");
 		break;
 	}
-	return uiTableModelStrdup(buf);
+	return uiNewTableValueString(buf);
 }
 
-static void modelSetCellValue(uiTableModelHandler *mh, uiTableModel *m, int row, int col, const void *val)
+static void modelSetCellValue(uiTableModelHandler *mh, uiTableModel *m, int row, int col, const uiTableValue *val)
 {
 	if (row == 9 && col == 2)
-		strcpy(row9text, (const char *) val);
-	if (col == 6)
+		strcpy(row9text, uiTableValueString(val));
+	if (col == 6) {
+		int prevYellowRow;
+
+		prevYellowRow = yellowRow;
 		yellowRow = row;
+		if (prevYellowRow != -1)
+			uiTableModelRowChanged(m, prevYellowRow);
+		uiTableModelRowChanged(m, yellowRow);
+	}
 	if (col == 7)
-		checkStates[row] = uiTableModelTakeInt(val);
+		checkStates[row] = uiTableValueInt(val);
 }
+
+static uiTableModel *m;
 
 uiBox *makePage16(void)
 {
 	uiBox *page16;
-	uiTableModel *m;
 	uiTable *t;
-	uiTableColumn *tc;
+	uiTableParams p;
+	uiTableTextColumnOptionalParams tp;
 
 	img[0] = uiNewImage(16, 16);
 	appendImageNamed(img[0], "andlabs_16x16test_24june2016.png");
@@ -118,26 +127,37 @@ uiBox *makePage16(void)
 	mh.SetCellValue = modelSetCellValue;
 	m = uiNewTableModel(&mh);
 
-	t = uiNewTable(m);
+	memset(&p, 0, sizeof (uiTableParams));
+	p.Model = m;
+	p.RowBackgroundColorModelColumn = 3;
+	t = uiNewTable(&p);
 	uiBoxAppend(page16, uiControl(t), 1);
 
-	uiTableAppendTextColumn(t, "Column 1", 0);
+	uiTableAppendTextColumn(t, "Column 1",
+		0, uiTableModelColumnNeverEditable, NULL);
 
-	tc = uiTableAppendColumn(t, "Column 2");
-	uiTableColumnAppendImagePart(tc, 5, 0);
-	uiTableColumnAppendTextPart(tc, 1, 0);
-	uiTableColumnAppendTextPart(tc, 2, 1);
-	uiTableColumnPartSetTextColor(tc, 1, 4);
-	uiTableColumnPartSetEditable(tc, 2, 1);
+	memset(&tp, 0, sizeof (uiTableTextColumnOptionalParams));
+	tp.ColorModelColumn = 4;
+	uiTableAppendImageTextColumn(t, "Column 2",
+		5,
+		1, uiTableModelColumnNeverEditable, &tp);
+	uiTableAppendTextColumn(t, "Editable",
+		2, uiTableModelColumnAlwaysEditable, NULL);
 
-	uiTableSetRowBackgroundColorModelColumn(t, 3);
+	uiTableAppendCheckboxColumn(t, "Checkboxes",
+		7, uiTableModelColumnAlwaysEditable);
+	uiTableAppendButtonColumn(t, "Buttons",
+		6, uiTableModelColumnAlwaysEditable);
 
-	tc = uiTableAppendColumn(t, "Buttons");
-	uiTableColumnAppendCheckboxPart(tc, 7, 0);
-	uiTableColumnAppendButtonPart(tc, 6, 1);
-
-	tc = uiTableAppendColumn(t, "Progress Bar");
-	uiTableColumnAppendProgressBarPart(tc, 8, 0);
+	uiTableAppendProgressBarColumn(t, "Progress Bar",
+		8);
 
 	return page16;
+}
+
+void freePage16(void)
+{
+	uiFreeTableModel(m);
+	uiFreeImage(img[1]);
+	uiFreeImage(img[0]);
 }

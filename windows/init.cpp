@@ -1,5 +1,6 @@
 // 6 april 2015
 #include "uipriv_windows.hpp"
+#include "attrstr.hpp"
 
 HINSTANCE hInstance;
 int nCmdShow;
@@ -21,25 +22,25 @@ static const char *initerr(const char *message, const WCHAR *label, DWORD value)
 
 	hassysmsg = FormatMessageW(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS, NULL, value, 0, (LPWSTR) (&sysmsg), 0, NULL) != 0;
 	if (!hassysmsg)
-		sysmsg = L"";
+		sysmsg = (WCHAR *) L"";			// TODO
 	wmessage = toUTF16(message + 1);
 	wout = strf(L"-error initializing libui: %s; code %I32d (0x%08I32X) %s",
 		wmessage,
 		value, value,
 		sysmsg);
-	uiFree(wmessage);
+	uiprivFree(wmessage);
 	if (hassysmsg)
 		LocalFree(sysmsg);		// ignore error
 	out = toUTF8(wout);
-	uiFree(wout);
+	uiprivFree(wout);
 	return out + 1;
 }
 
 #define ieLastErr(msg) initerr("=" msg, L"GetLastError() ==", GetLastError())
 #define ieHRESULT(msg, hr) initerr("=" msg, L"HRESULT", (DWORD) hr)
 
-// LONGTERM make common
-uiInitOptions options;
+// LONGTERM put this declaration in a common file
+uiInitOptions uiprivOptions;
 
 #define wantedICCClasses ( \
 	ICC_STANDARD_CLASSES |	/* user32.dll controls */		\
@@ -61,7 +62,7 @@ const char *uiInit(uiInitOptions *o)
 	INITCOMMONCONTROLSEX icc;
 	HRESULT hr;
 
-	options = *o;
+	uiprivOptions = *o;
 
 	initAlloc();
 
@@ -117,7 +118,7 @@ const char *uiInit(uiInitOptions *o)
 	if (hr != S_OK)
 		return ieHRESULT("initializing Direct2D", hr);
 
-	hr = initDrawText();
+	hr = uiprivInitDrawText();
 	if (hr != S_OK)
 		return ieHRESULT("initializing DirectWrite", hr);
 
@@ -130,16 +131,22 @@ const char *uiInit(uiInitOptions *o)
 	if (registerD2DScratchClass(hDefaultIcon, hDefaultCursor) == 0)
 		return ieLastErr("initializing D2D scratch window class");
 
+	hr = uiprivInitImage();
+	if (hr != S_OK)
+		return ieHRESULT("initializing WIC", hr);
+
 	return NULL;
 }
 
 void uiUninit(void)
 {
+	uiprivUninitTimers();
+	uiprivUninitImage();
 	uninitMenus();
 	unregisterD2DScratchClass();
 	unregisterMessageFilter();
 	unregisterArea();
-	uninitDrawText();
+	uiprivUninitDrawText();
 	uninitDraw();
 	CoUninitialize();
 	if (DeleteObject(hollowBrush) == 0)
@@ -156,7 +163,7 @@ void uiUninit(void)
 void uiFreeInitError(const char *err)
 {
 	if (*(err - 1) == '-')
-		uiFree((void *) (err - 1));
+		uiprivFree((void *) (err - 1));
 }
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
