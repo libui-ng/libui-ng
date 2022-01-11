@@ -878,14 +878,7 @@ INPUT                  = ./README.md \
                          ./CHANGELOG.md \
                          ./CONTRIBUTING.md \
                          ./old/news.md \
-                         ./common/ \
-                         ./darwin/ \
-                         ./unix/ \
-                         ./windows/ \
-                         ./ui.h \
-                         ./ui_darwin.h \
-                         ./ui_unix.h \
-                         ./ui_windows.h
+                         ./ui.h
 
 # This tag can be used to specify the character encoding of the source files
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding. Doxygen uses
