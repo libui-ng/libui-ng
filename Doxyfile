@@ -875,6 +875,7 @@ WARN_LOGFILE           =
 # Note: If this tag is empty the current directory is searched.
 
 INPUT                  = ./README.md \
+                         ./doc/doxygen-subpage-api.md \
                          ./CHANGELOG.md \
                          ./CONTRIBUTING.md \
                          ./old/news.md \
