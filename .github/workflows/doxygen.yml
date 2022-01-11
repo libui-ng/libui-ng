@@ -1,0 +1,26 @@
+name: Auto build and deploy doc
+
+on:
+  push:
+    branches: [ master ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Doxygen Action
+      uses: mattnotmitt/doxygen-action@v1
+      with:
+        doxyfile-path: "./Doxyfile"
+        working-directory: "."
+
+    - name: Deploy to github pages
+      # doc: https://github.com/peaceiris/actions-gh-pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc/html
+        # make publish branch with only the latest commit
+        force_orphan: true
