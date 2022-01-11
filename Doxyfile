@@ -876,6 +876,8 @@ WARN_LOGFILE           =
 
 INPUT                  = ./README.md \
                          ./CHANGELOG.md \
+                         ./CONTRIBUTING.md \
+                         ./old/news.md \
                          ./common/ \
                          ./darwin/ \
                          ./unix/ \
