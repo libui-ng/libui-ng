@@ -109,11 +109,6 @@ int uiDrawPathEnded(uiDrawPath *p)
 	return p->ended == TRUE ? 1 : 0;
 }
 
-struct uiDrawContext {
-	CGContextRef c;
-	CGFloat height;				// needed for text; see below
-};
-
 uiDrawContext *uiprivDrawNewContext(CGContextRef ctxt, CGFloat height)
 {
 	uiDrawContext *c;
