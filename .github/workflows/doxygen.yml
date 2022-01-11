@@ -3,6 +3,8 @@ name: Auto build and deploy doc
 on:
   push:
     branches: [ master ]
+  pull_request:
+    branches: [ master ]
 
 
 jobs:
@@ -19,6 +21,8 @@ jobs:
     - name: Deploy to github pages
       # doc: https://github.com/peaceiris/actions-gh-pages
       uses: peaceiris/actions-gh-pages@v3
+      # Only run deploy on master
+      if: ${{ github.ref == 'refs/heads/master' }}
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         publish_dir: ./doc/html
