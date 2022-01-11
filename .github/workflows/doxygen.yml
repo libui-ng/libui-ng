@@ -12,8 +12,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Check out Doxygen theme
+      uses: actions/checkout@v2
+      with:
+        repository: jothepro/doxygen-awesome-css
+        path: doc/doxygen-awesome-css
+        # v1.6.1
+        ref: e5d9fd7d4c77cd5343e4de53b93dac433698012d
     - name: Doxygen Action
-      uses: mattnotmitt/doxygen-action@v1
+      # Note: Dark Mode Toggle need doxygen 1.9.2+
+      uses: mattnotmitt/doxygen-action@v1.9.2
       with:
         doxyfile-path: "./Doxyfile"
         working-directory: "."
