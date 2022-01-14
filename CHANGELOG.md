@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- uiDrawPathEnded() API
+- Automatic dark mode detection on macOS
+- uiFreeFontDescriptor() API
+- uiLoadControlFont() API
+- Doxygen documentation generator
 - GitHub Actions CI
 
 ### Removed
