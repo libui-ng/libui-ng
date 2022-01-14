@@ -476,6 +476,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	uiWindowsNewControl(uiWindow, w);
 
+	w->resizeable = TRUE;
 	hasMenubarBOOL = FALSE;
 	if (hasMenubar)
 		hasMenubarBOOL = TRUE;

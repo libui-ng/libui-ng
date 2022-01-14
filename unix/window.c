@@ -247,6 +247,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	uiUnixNewControl(uiWindow, w);
 
+	w->resizeable = TRUE;
 	w->widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	w->container = GTK_CONTAINER(w->widget);
 	w->window = GTK_WINDOW(w->widget);
