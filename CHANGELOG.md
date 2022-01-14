@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- uiWindowResizeable() API
+- uiWindowSetResizeable() API
 - uiDrawPathEnded() API
 - Automatic dark mode detection on macOS
 - uiFreeFontDescriptor() API
