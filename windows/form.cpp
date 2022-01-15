@@ -289,6 +289,11 @@ void uiFormDelete(uiForm *f, int index)
 	uiWindowsControlMinimumSizeChanged(uiWindowsControl(f));
 }
 
+int uiFormNumChildren(uiForm *f)
+{
+	return (int) f->controls->size();
+}
+
 int uiFormPadded(uiForm *f)
 {
 	return f->padded;
