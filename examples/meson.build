@@ -48,7 +48,7 @@ libui_examples = {
 	'datetime': {
 		'sources':		['datetime/main.c'],
 	},
-	'hello-window': {
+	'hello-world': {
 		'sources':		['hello-world/main.c'],
 	},	
 }
