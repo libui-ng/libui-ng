@@ -50,7 +50,10 @@ libui_examples = {
 	},
 	'hello-world': {
 		'sources':		['hello-world/main.c'],
-	},	
+	},
+	'hello-window': {
+		'sources':		['hello-window/main.c'],
+	},
 }
 foreach name, args : libui_examples
 	# TODO once we upgrade to 0.49.0, add pie: true
