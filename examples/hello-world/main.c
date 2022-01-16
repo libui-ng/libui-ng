@@ -18,7 +18,7 @@ int main(void)
     if (uiInit(&o) != NULL) exit(1);
 
     // Create a new window
-    w = uiNewWindow("Hello Window", 300, 30, 0);
+    w = uiNewWindow("Hello, World!", 300, 30, 0);
 
     uiWindowOnClosing(w, onClosing, NULL);
     uiControlShow(uiControl(w));
