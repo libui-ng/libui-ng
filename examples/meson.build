@@ -49,7 +49,7 @@ libui_examples = {
 		'sources':		['datetime/main.c'],
 	},
 	'hello-window': {
-		'sources':		['hello-window/main.c'],
+		'sources':		['hello-world/main.c'],
 	},	
 }
 foreach name, args : libui_examples
