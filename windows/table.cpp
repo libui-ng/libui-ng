@@ -481,12 +481,12 @@ void uiTableAppendButtonColumn(uiTable *t, const char *name, int buttonModelColu
 
 int uiTableHeaderVisible(uiTable *t)
 {
-	HWND header = ListView_GetHeader(t->hwnd);
+	HWND header =  (HWND) SendMessageW(t->hwnd, LVM_GETHEADER, 0, 0);
 	if (header) {
 		LONG style = GetWindowLong(header, GWL_STYLE);
 		return !(style & HDS_HIDDEN);
 	}
-	// TODO abort here?
+	uiprivImplBug("window handle %p unknown error from send LVM_GETHEADER", t->hwnd);
 	return 0;
 }
 
