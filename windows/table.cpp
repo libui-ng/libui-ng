@@ -459,6 +459,26 @@ void uiTableAppendButtonColumn(uiTable *t, const char *name, int buttonModelColu
 	p->buttonClickableModelColumn = buttonClickableModelColumn;
 }
 
+int uiTableHeaderVisible(uiTable *t)
+{
+	HWND header =  (HWND) SendMessageW(t->hwnd, LVM_GETHEADER, 0, 0);
+	if (header) {
+		LONG style = GetWindowLong(header, GWL_STYLE);
+		return !(style & HDS_HIDDEN);
+	}
+	uiprivImplBug("window handle %p unknown error from send LVM_GETHEADER", t->hwnd);
+	return 0;
+}
+
+void uiTableHeaderSetVisible(uiTable *t, int visible)
+{
+	LONG style = GetWindowLong(t->hwnd, GWL_STYLE);
+	if (visible)
+		SetWindowLong(t->hwnd, GWL_STYLE, style & ~LVS_NOCOLUMNHEADER);
+	else
+		SetWindowLong(t->hwnd, GWL_STYLE, style | LVS_NOCOLUMNHEADER);
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
