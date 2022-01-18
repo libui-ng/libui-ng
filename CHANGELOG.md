@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- uiBoxNumChildren() API
+- uiFormNumChildren() API
+- uiComboboxInsertAt() API
+- uiComboboxDelete() API
+- uiComboboxClear() API
 - uiWindowResizeable() API
 - uiWindowSetResizeable() API
 - uiDrawPathEnded() API

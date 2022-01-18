@@ -40,6 +40,7 @@
 - (void)establishOurConstraints;
 - (void)append:(NSString *)label c:(uiControl *)c stretchy:(int)stretchy;
 - (void)delete:(int)n;
+- (int)numChildren;
 - (int)isPadded;
 - (void)setPadded:(int)p;
 - (BOOL)hugsTrailing;
@@ -417,6 +418,11 @@ struct uiForm {
 			uiDarwinNotifyEdgeHuggingChanged(uiDarwinControl(self->f));
 }
 
+- (int)numChildren
+{
+	return (int) [self->children count];
+}
+
 - (int)isPadded
 {
 	return self->padded;
@@ -537,6 +543,11 @@ void uiFormAppend(uiForm *f, const char *label, uiControl *c, int stretchy)
 void uiFormDelete(uiForm *f, int n)
 {
 	[f->view delete:n];
+}
+
+int uiFormNumChildren(uiForm *f)
+{
+	return [f->view numChildren];
 }
 
 int uiFormPadded(uiForm *f)

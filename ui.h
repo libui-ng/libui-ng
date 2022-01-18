@@ -144,6 +144,7 @@ _UI_EXTERN uiButton *uiNewButton(const char *text);
 typedef struct uiBox uiBox;
 #define uiBox(this) ((uiBox *) (this))
 _UI_EXTERN void uiBoxAppend(uiBox *b, uiControl *child, int stretchy);
+_UI_EXTERN int uiBoxNumChildren(uiBox *b);
 _UI_EXTERN void uiBoxDelete(uiBox *b, int index);
 _UI_EXTERN int uiBoxPadded(uiBox *b);
 _UI_EXTERN void uiBoxSetPadded(uiBox *b, int padded);
@@ -228,6 +229,9 @@ _UI_EXTERN uiSeparator *uiNewVerticalSeparator(void);
 typedef struct uiCombobox uiCombobox;
 #define uiCombobox(this) ((uiCombobox *) (this))
 _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
+_UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int n, const char *text);
+_UI_EXTERN void uiComboboxDelete(uiCombobox *c, int n);
+_UI_EXTERN void uiComboboxClear(uiCombobox *c);
 _UI_EXTERN int uiComboboxSelected(uiCombobox *c);
 _UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int n);
 _UI_EXTERN void uiComboboxOnSelected(uiCombobox *c, void (*f)(uiCombobox *c, void *data), void *data);
@@ -1106,6 +1110,7 @@ _UI_EXTERN uiColorButton *uiNewColorButton(void);
 typedef struct uiForm uiForm;
 #define uiForm(this) ((uiForm *) (this))
 _UI_EXTERN void uiFormAppend(uiForm *f, const char *label, uiControl *c, int stretchy);
+_UI_EXTERN int uiFormNumChildren(uiForm *f);
 _UI_EXTERN void uiFormDelete(uiForm *f, int index);
 _UI_EXTERN int uiFormPadded(uiForm *f);
 _UI_EXTERN void uiFormSetPadded(uiForm *f, int padded);
@@ -1336,11 +1341,13 @@ _UI_EXTERN uiTableModel *uiNewTableModel(uiTableModelHandler *mh);
 // free table models currently associated with a uiTable.
 _UI_EXTERN void uiFreeTableModel(uiTableModel *m);
 
-// uiTableModelRowInserted() tells any uiTable associated with m
-// that a new row has been added to m at index index. You call
-// this function when the number of rows in your model has
-// changed; after calling it, NumRows() should returm the new row
-// count.
+// uiTableModelRowInserted() tell all uiTables associated with
+// the uiTableModel m that a new row has been added to m at
+// index newIndex.
+// You must insert the row data in your model before calling this
+// function.
+// NumRows() must represent the new row count before you call
+// this function.
 _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 
 // uiTableModelRowChanged() tells any uiTable associated with m
@@ -1349,12 +1356,13 @@ _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 // this if your data changes at some other point.
 _UI_EXTERN void uiTableModelRowChanged(uiTableModel *m, int index);
 
-// uiTableModelRowDeleted() tells any uiTable associated with m
-// that the row at index index has been deleted. You call this
-// function when the number of rows in your model has changed;
-// after calling it, NumRows() should returm the new row
-// count.
-// TODO for this and Inserted: make sure the "after" part is right; clarify if it's after returning or after calling
+// uiTableModelRowDeleted() tells all uiTables associated with
+// the uiTableModel m that the row at index oldIndex has been
+// deleted.
+// You must delete the row from your model before you call this
+// function.
+// NumRows() must represent the new row count before you call
+// this function.
 _UI_EXTERN void uiTableModelRowDeleted(uiTableModel *m, int oldIndex);
 // TODO reordering/moving
 
@@ -1466,6 +1474,13 @@ _UI_EXTERN void uiTableAppendButtonColumn(uiTable *t,
 	const char *name,
 	int buttonModelColumn,
 	int buttonClickableModelColumn);
+
+// uiTableHeaderVisible() returns whether the table header is visible
+// or not.
+_UI_EXTERN int uiTableHeaderVisible(uiTable *t);
+
+// uiTableHeaderSetVisible() sets the visibility of the table header.
+_UI_EXTERN void uiTableHeaderSetVisible(uiTable *t, int visible);
 
 // uiNewTable() creates a new uiTable with the specified parameters.
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);

@@ -181,6 +181,8 @@ struct textColumnCreateParams {
 			[self->cb setTransparent:NO];
 			uiDarwinSetControlFont(self->cb, NSRegularControlSize);
 			[self->cb setTranslatesAutoresizingMaskIntoConstraints:NO];
+			[self->cb setTarget:self];
+			[self->cb setAction:@selector(uiprivOnCheckboxAction:)];
 			[self addSubview:self->cb];
 
 			if (self->tf != nil) {
@@ -292,9 +294,6 @@ struct textColumnCreateParams {
 	value = uiNewTableValueString([[self->tf stringValue] UTF8String]);
 	uiprivTableModelSetCellValue(self->m, row, self->textModelColumn, value);
 	uiFreeTableValue(value);
-	// always refresh the value in case the model rejected it
-	// TODO document that we do this, but not for the whole row (or decide to do both, or do neither...)
-	[self uiprivUpdate:row];
 }
 
 - (IBAction)uiprivOnCheckboxAction:(id)sender
@@ -306,8 +305,6 @@ struct textColumnCreateParams {
 	value = uiNewTableValueInt([self->cb state] != NSOffState);
 	uiprivTableModelSetCellValue(self->m, row, self->checkboxModelColumn, value);
 	uiFreeTableValue(value);
-	// always refresh the value in case the model rejected it
-	[self uiprivUpdate:row];
 }
 
 @end
@@ -539,8 +536,6 @@ struct textColumnCreateParams {
 
 	row = [self->t->tv rowForView:self->b];
 	uiprivTableModelSetCellValue(self->m, row, self->modelColumn, NULL);
-	// TODO document we DON'T update the cell after doing this
-	// TODO or decide what to do instead
 }
 
 @end

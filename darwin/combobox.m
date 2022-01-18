@@ -78,7 +78,33 @@ static void uiComboboxDestroy(uiControl *cc)
 
 void uiComboboxAppend(uiCombobox *c, const char *text)
 {
+	if ([[c->pbac arrangedObjects] count] == 0)
+		uiControlEnable(uiControl(c));
 	[c->pbac addObject:uiprivToNSString(text)];
+}
+
+void uiComboboxInsertAt(uiCombobox *c, int n, const char *text)
+{
+	if ([[c->pbac arrangedObjects] count] == 0)
+		uiControlEnable(uiControl(c));
+	[c->pbac insertObject:uiprivToNSString(text) atArrangedObjectIndex:n];
+}
+
+void uiComboboxDelete(uiCombobox *c, int n)
+{
+	[c->pbac removeObjectAtArrangedObjectIndex:n];
+	if ([[c->pbac arrangedObjects] count] == 0)
+		uiControlDisable(uiControl(c));
+}
+
+void uiComboboxClear(uiCombobox *c)
+{
+	[c->pbac removeObjectsAtArrangedObjectIndexes:[[c->pbac arrangedObjects]
+		indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+			// remove all items
+			return TRUE;
+	}]];
+	uiControlDisable(uiControl(c));
 }
 
 int uiComboboxSelected(uiCombobox *c)
@@ -140,6 +166,8 @@ uiCombobox *uiNewCombobox(void)
 	}
 	[comboboxDelegate registerCombobox:c];
 	uiComboboxOnSelected(c, defaultOnSelected, NULL);
+	// default behavior for empty combobox
+	uiControlDisable(uiControl(c));
 
 	return c;
 }
