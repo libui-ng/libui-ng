@@ -17,6 +17,7 @@
 	NSTableHeaderView *headerViewRef;
 }
 - (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m;
+- (uiTable *)uiTable;
 - (void)restoreHeaderView;
 @end
 
@@ -31,6 +32,11 @@
 		self->headerViewRef = [self headerView];
 	}
 	return self;
+}
+
+- (uiTable *)uiTable
+{
+	return self->uiprivT;
 }
 
 - (void)restoreHeaderView
@@ -94,6 +100,12 @@ static void setBackgroundColor(uiprivTableView *t, NSTableRowView *rv, NSInteger
 - (void)tableView:(NSTableView *)tv didAddRowView:(NSTableRowView *)rv forRow:(NSInteger)row
 {
 	setBackgroundColor((uiprivTableView *) tv, rv, row);
+}
+
+- (void)tableView:(uiprivTableView *)tv didClickTableColumn:(NSTableColumn *) tc
+{
+	uiTable *t = [tv uiTable];
+	t->headerOnClicked(t, [[tc identifier] intValue], t->headerOnClickedData);
 }
 
 @end
@@ -191,6 +203,17 @@ void uiTableHeaderSetVisible(uiTable *t, int visible)
 		[t->tv setHeaderView:nil];
 }
 
+void uiTableHeaderOnClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->headerOnClicked = f;
+	t->headerOnClickedData = data;
+}
+
+static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
+{
+	// do nothing
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
@@ -230,10 +253,36 @@ uiTable *uiNewTable(uiTableParams *p)
 	sp.VScroll = YES;
 	t->sv = uiprivMkScrollView(&sp, &(t->d));
 
+	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
+
 	// TODO WHY DOES THIS REMOVE ALL GRAPHICAL GLITCHES?
 	// I got the idea from http://jwilling.com/blog/optimized-nstableview-scrolling/ but that was on an unrelated problem I didn't seem to have (although I have small-ish tables to start with)
 	// I don't get layer-backing... am I supposed to layer-back EVERYTHING manually? I need to check Interface Builder again...
 	[t->sv setWantsLayer:YES];
 
 	return t;
+}
+
+uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int lcol)
+{
+	NSTableColumn *tc = [t->tv tableColumnWithIdentifier:[@(lcol) stringValue]];
+	NSString *si = [[t->tv indicatorImageInTableColumn:tc] name];
+	if ([si isEqualToString:@"NSAscendingSortIndicator"])
+		return uiSortIndicatorAscending;
+	else if ([si isEqualToString:@"NSDescendingSortIndicator"])
+		return uiSortIndicatorDescending;
+	return uiSortIndicatorNone;
+}
+
+void uiTableHeaderSetSortIndicator(uiTable *t, int lcol, uiSortIndicator indicator)
+{
+	NSTableColumn *tc = [t->tv tableColumnWithIdentifier:[@(lcol) stringValue]];
+	NSImage *img;
+	if (indicator == uiSortIndicatorAscending)
+		img = [NSImage imageNamed:@"NSAscendingSortIndicator"];
+	else if (indicator == uiSortIndicatorDescending)
+		img = [NSImage imageNamed:@"NSDescendingSortIndicator"];
+	else
+		img = nil;
+	[t->tv setIndicatorImage:img inTableColumn:tc];
 }

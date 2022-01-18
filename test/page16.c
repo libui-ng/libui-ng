@@ -107,6 +107,21 @@ void headerVisibleToggled(uiCheckbox *c, void *data)
 
 static uiTableModel *m;
 
+static void headerOnClicked(uiTable *t, int col, void *data)
+{
+	static int prev = 0;
+
+	if (prev != col)
+		uiTableHeaderSetSortIndicator(t, prev, uiSortIndicatorNone);
+
+	if (uiTableHeaderSortIndicator(t, col) == uiSortIndicatorAscending)
+		uiTableHeaderSetSortIndicator(t, col, uiSortIndicatorDescending);
+	else
+		uiTableHeaderSetSortIndicator(t, col, uiSortIndicatorAscending);
+
+	prev = col;
+}
+
 uiBox *makePage16(void)
 {
 	uiBox *page16;
@@ -162,6 +177,8 @@ uiBox *makePage16(void)
 
 	uiTableAppendProgressBarColumn(t, "Progress Bar",
 		8);
+
+	uiTableHeaderOnClicked(t, headerOnClicked, NULL);
 
 	headerVisible = uiNewCheckbox("Header Visible");
 	uiCheckboxSetChecked(headerVisible, uiTableHeaderVisible(t));
