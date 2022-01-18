@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- uiTableHeaderSortIndicator() API
+- uiTableHeaderSetSortIndicator() API
+- uiTableHeaderOnClicked() API
+- uiTableHeaderVisible() API
+- uiTableHeaderSetVisible() API
 - uiBoxNumChildren() API
 - uiFormNumChildren() API
 - uiComboboxInsertAt() API
