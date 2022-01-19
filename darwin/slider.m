@@ -26,7 +26,7 @@ struct uiSlider {
 	NSSlider *slider;
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
-	bool hasToolTip;
+	BOOL hasToolTip;
 };
 
 static void _uiSliderUpdateToolTip(uiSlider *s);
