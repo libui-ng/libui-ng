@@ -5,6 +5,9 @@ static uiSpinbox *spinbox;
 static uiSlider *slider;
 static uiProgressBar *pbar;
 static uiCheckbox *checkbox;
+static uiSpinbox *spinboxFrom;
+static uiSpinbox *spinboxTo;
+
 
 #define CHANGED(what) \
 	static void on ## what ## Changed(ui ## what *this, void *data) \
@@ -103,6 +106,25 @@ static void sliderDisableToolTip(uiButton *b, void *data)
 	uiCheckboxSetChecked(checkbox, uiSliderHasToolTip(uiSlider(data)));
 }
 
+static void setSliderRange(uiSpinbox *spinbox, void *data)
+{
+	uiSlider *s = data;
+
+	uiSliderSetRange(s, uiSpinboxValue(spinboxFrom), uiSpinboxValue(spinboxTo));
+}
+
+static void onRangeSliderChanged(uiSlider *s, void *data)
+{
+	char str[128];
+	uiLabel *lbl = data;
+
+	// snprintf() is not supported by visual studio 2013:
+	// http://blogs.msdn.com/b/vcblog/archive/2013/07/19/c99-library-support-in-visual-studio-2013.aspx
+	// we can't use _snprintf() in the test suite because that's msvc-only, so sprintf() it is.
+	sprintf(str, "%d", uiSliderValue(s));
+	uiLabelSetText(lbl, str);
+}
+
 uiBox *makePage4(void)
 {
 	uiBox *page4;
@@ -110,6 +132,7 @@ uiBox *makePage4(void)
 	uiSpinbox *xsb;
 	uiButton *b;
 	uiSlider *xsl;
+	uiLabel *lbl;
 
 	page4 = newVerticalBox();
 
@@ -161,6 +184,24 @@ uiBox *makePage4(void)
 	b = uiNewButton("Bad High");
 	uiButtonOnClicked(b, setSliderTooHigh, xsl);
 	uiBoxAppend(hbox, uiControl(b), 0);
+	uiBoxAppend(page4, uiControl(hbox), 0);
+
+	uiBoxAppend(page4, uiControl(uiNewHorizontalSeparator()), 0);
+
+	lbl = uiNewLabel("100");
+	uiBoxAppend(page4, uiControl(lbl), 0);
+	hbox = newHorizontalBox();
+	spinboxFrom = uiNewSpinbox(0, 1000);
+	uiSpinboxSetValue(spinboxFrom, 100);
+	uiBoxAppend(hbox, uiControl(spinboxFrom), 1);
+	xsl = uiNewSlider(100, 200);
+	uiSpinboxOnChanged(spinboxFrom, setSliderRange, xsl);
+	uiBoxAppend(hbox, uiControl(xsl), 1);
+	uiSliderOnChanged(xsl, onRangeSliderChanged, lbl);
+	spinboxTo = uiNewSpinbox(0, 1000);
+	uiSpinboxSetValue(spinboxTo, 200);
+	uiSpinboxOnChanged(spinboxTo, setSliderRange, xsl);
+	uiBoxAppend(hbox, uiControl(spinboxTo), 1);
 	uiBoxAppend(page4, uiControl(hbox), 0);
 
 	uiBoxAppend(page4, uiControl(uiNewHorizontalSeparator()), 0);
