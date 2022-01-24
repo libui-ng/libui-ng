@@ -26,7 +26,10 @@ struct uiSlider {
 	NSSlider *slider;
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
+	BOOL hasToolTip;
 };
+
+static void _uiSliderUpdateToolTip(uiSlider *s);
 
 @interface sliderDelegateClass : NSObject {
 	uiprivMap *sliders;
@@ -58,6 +61,9 @@ struct uiSlider {
 
 	s = (uiSlider *) uiprivMapGet(self->sliders, sender);
 	(*(s->onChanged))(s, s->onChangedData);
+
+	if (s->hasToolTip)
+		_uiSliderUpdateToolTip(s);
 }
 
 - (void)registerSlider:(uiSlider *)s
@@ -86,6 +92,26 @@ static void uiSliderDestroy(uiControl *c)
 	[sliderDelegate unregisterSlider:s];
 	[s->slider release];
 	uiFreeControl(uiControl(s));
+}
+
+static void _uiSliderUpdateToolTip(uiSlider *s)
+{
+	[s->slider setToolTip:[NSString stringWithFormat:@"%ld", [s->slider integerValue]]];
+}
+
+int uiSliderHasToolTip(uiSlider *s)
+{
+	return s->hasToolTip;
+}
+
+void uiSliderSetHasToolTip(uiSlider *s, int hasToolTip)
+{
+	s->hasToolTip = hasToolTip;
+
+	if (hasToolTip)
+		_uiSliderUpdateToolTip(s);
+	else
+		[s->slider setToolTip:nil];
 }
 
 int uiSliderValue(uiSlider *s)
@@ -156,6 +182,8 @@ uiSlider *uiNewSlider(int min, int max)
 	}
 	[sliderDelegate registerSlider:s];
 	uiSliderOnChanged(s, defaultOnChanged, NULL);
+
+	uiSliderSetHasToolTip(s, 1);
 
 	return s;
 }
