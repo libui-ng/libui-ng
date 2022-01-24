@@ -16,7 +16,8 @@
 
 #define windowHWND(w) ((HWND) uiControlHandle(uiControl(w)))
 
-char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOPTIONS optsadd)
+char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOPTIONS optsadd,
+                       const char *defaultPath, const char *defaultName, const char *filter)
 {
 	IFileDialog *d = NULL;
 	FILEOPENDIALOGOPTIONS opts;
@@ -24,6 +25,13 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 	WCHAR *wname = NULL;
 	char *name = NULL;
 	HRESULT hr;
+
+	COMDLG_FILTERSPEC filterspec[8];
+	wchar_t _filter[256];
+	wchar_t* fp = &_filter[0];
+	wchar_t* fname;
+	int i;
+	int s = 0;
 
 	hr = CoCreateInstance(clsid,
 		NULL, CLSCTX_INPROC_SERVER,
@@ -33,6 +41,13 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 		// always return NULL on error
 		goto out;
 	}
+
+	if (defaultName != NULL && strlen(defaultName) > 0) {
+		WCHAR *wName = toUTF16(defaultName);
+		d->SetFileName(wName);
+		uiprivFree(wName);
+	}
+
 	hr = d->GetOptions(&opts);
 	if (hr != S_OK) {
 		logHRESULT(L"error getting current options", hr);
@@ -46,6 +61,26 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 		logHRESULT(L"error setting options", hr);
 		goto out;
 	}
+
+	for (i = s = 0; i < 255; i++) {
+		if (filter[i] == '|' || filter[i] == '\0') {
+			_filter[i] = '\0';
+			if (s & 1) {
+				filterspec[s >> 1].pszName = fname;
+				filterspec[s >> 1].pszSpec = fp;
+			} else {
+				fname = fp;
+			}
+			fp = &_filter[i + 1];
+			s++;
+			if (s >= 8) break;
+			if (filter[i] == '\0') break;
+		} else {
+			_filter[i] = filter[i];
+		}
+	}
+	d->SetFileTypes(s >> 1, filterspec);
+
 	hr = d->Show(parent);
 	if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED))
 		// cancelled; return NULL like we have ready
@@ -76,38 +111,65 @@ out:
 	return name;
 }
 
-char *uiOpenFile(uiWindow *parent)
+char *uiOpenFile(uiWindow *parent, const char *defaultPath, const char *filter)
 {
 	char *res;
 
 	disableAllWindowsExcept(parent);
 	res = commonItemDialog(windowHWND(parent),
 		CLSID_FileOpenDialog, IID_IFileOpenDialog,
-		FOS_NOCHANGEDIR | FOS_ALLNONSTORAGEITEMS | FOS_NOVALIDATE | FOS_PATHMUSTEXIST | FOS_FILEMUSTEXIST | FOS_SHAREAWARE | FOS_NOTESTFILECREATE | FOS_NODEREFERENCELINKS | FOS_FORCESHOWHIDDEN | FOS_DEFAULTNOMINIMODE);
+		FOS_NOCHANGEDIR
+		| FOS_FORCEFILESYSTEM
+		| FOS_NOVALIDATE
+		| FOS_PATHMUSTEXIST
+		| FOS_FILEMUSTEXIST
+		| FOS_SHAREAWARE
+		| FOS_NOTESTFILECREATE
+		| FOS_FORCESHOWHIDDEN
+		| FOS_DEFAULTNOMINIMODE,
+		defaultPath, NULL, filter);
 	enableAllWindowsExcept(parent);
 	return res;
 }
 
-char *uiOpenFolder(uiWindow *parent)
+char *uiOpenFolder(uiWindow *parent, const char *defaultPath)
 {
 	char *res;
 
 	disableAllWindowsExcept(parent);
 	res = commonItemDialog(windowHWND(parent),
 		CLSID_FileOpenDialog, IID_IFileOpenDialog,
-		FOS_NOCHANGEDIR | FOS_ALLNONSTORAGEITEMS | FOS_NOVALIDATE | FOS_PATHMUSTEXIST | FOS_PICKFOLDERS | FOS_SHAREAWARE | FOS_NOTESTFILECREATE | FOS_NODEREFERENCELINKS | FOS_FORCESHOWHIDDEN | FOS_DEFAULTNOMINIMODE);
+		FOS_NOCHANGEDIR
+		| FOS_ALLNONSTORAGEITEMS
+		| FOS_NOVALIDATE
+		| FOS_PATHMUSTEXIST
+		| FOS_PICKFOLDERS
+		| FOS_SHAREAWARE
+		| FOS_NOTESTFILECREATE
+		| FOS_NODEREFERENCELINKS
+		| FOS_FORCESHOWHIDDEN
+		| FOS_DEFAULTNOMINIMODE,
+		defaultPath, NULL, NULL);
 	enableAllWindowsExcept(parent);
 	return res;
 }
 
-char *uiSaveFile(uiWindow *parent)
+char *uiSaveFile(uiWindow *parent, const char *defaultPath, const char *defaultName, const char *filter)
 {
 	char *res;
 
 	disableAllWindowsExcept(parent);
 	res = commonItemDialog(windowHWND(parent),
 		CLSID_FileSaveDialog, IID_IFileSaveDialog,
-		FOS_OVERWRITEPROMPT | FOS_NOCHANGEDIR | FOS_ALLNONSTORAGEITEMS | FOS_NOVALIDATE | FOS_SHAREAWARE | FOS_NOTESTFILECREATE | FOS_NODEREFERENCELINKS | FOS_FORCESHOWHIDDEN | FOS_DEFAULTNOMINIMODE);
+		FOS_OVERWRITEPROMPT
+		| FOS_NOCHANGEDIR
+		| FOS_FORCEFILESYSTEM
+		| FOS_NOVALIDATE
+		| FOS_SHAREAWARE
+		| FOS_NOTESTFILECREATE
+		| FOS_FORCESHOWHIDDEN
+		| FOS_DEFAULTNOMINIMODE,
+		defaultPath, defaultName, filter);
 	enableAllWindowsExcept(parent);
 	return res;
 }

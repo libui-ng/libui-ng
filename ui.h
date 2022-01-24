@@ -1913,6 +1913,8 @@ _UI_EXTERN uiMenu *uiNewMenu(const char *name);
  * File chooser dialog window to select a single file.
  *
  * @param parent Parent window.
+ * @param defaultPath Path to default directory to open in.
+ * @param filter Filter files shown as options to user.
  * @returns File path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
@@ -1920,12 +1922,13 @@ _UI_EXTERN uiMenu *uiNewMenu(const char *name);
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
-_UI_EXTERN char *uiOpenFile(uiWindow *parent);
+_UI_EXTERN char *uiOpenFile(uiWindow *parent, const char *defaultPath, const char *filter);
 
 /**
  * Folder chooser dialog window to select a single folder.
  *
  * @param parent Parent window.
+ * @param defaultPath Path to default directory to open in.
  * @returns Folder path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
@@ -1933,7 +1936,7 @@ _UI_EXTERN char *uiOpenFile(uiWindow *parent);
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
-_UI_EXTERN char *uiOpenFolder(uiWindow *parent);
+_UI_EXTERN char *uiOpenFolder(uiWindow *parent, const char *defaultPath);
 
 /**
  * Save file dialog window.
@@ -1942,6 +1945,9 @@ _UI_EXTERN char *uiOpenFolder(uiWindow *parent);
  * file path already exist on the system.
  *
  * @param parent Parent window.
+ * @param defaultPath Path to default directory to open in.
+ * @param defaultName Default filename to suggest to user.
+ * @param filter File extensions allowed for new file.
  * @returns File path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
@@ -1949,7 +1955,7 @@ _UI_EXTERN char *uiOpenFolder(uiWindow *parent);
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
-_UI_EXTERN char *uiSaveFile(uiWindow *parent);
+_UI_EXTERN char *uiSaveFile(uiWindow *parent, const char *defaultPath, const char *defaultName, const char *filter);
 
 /**
  * Message box dialog window.

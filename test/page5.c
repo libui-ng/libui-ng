@@ -7,7 +7,7 @@ static void openFile(uiButton *b, void *data)
 {
 	char *fn;
 
-	fn = uiOpenFile(parent);
+	fn = uiOpenFile(parent, NULL, "DS ROM (*.nds)|*.nds;*.srl|Any file|*.*");
 	if (fn == NULL)
 		uiLabelSetText(uiLabel(data), "(cancelled)");
 	else {
@@ -20,7 +20,7 @@ static void openFolder(uiButton *b, void *data)
 {
 	char *fn;
 
-	fn = uiOpenFolder(parent);
+	fn = uiOpenFolder(parent, NULL);
 	if (fn == NULL)
 		uiLabelSetText(uiLabel(data), "(cancelled)");
 	else {
@@ -33,7 +33,7 @@ static void saveFile(uiButton *b, void *data)
 {
 	char *fn;
 
-	fn = uiSaveFile(parent);
+	fn = uiSaveFile(parent, NULL, "untitled", "melonDS savestate (*.mln)|*.mln");
 	if (fn == NULL)
 		uiLabelSetText(uiLabel(data), "(cancelled)");
 	else {
