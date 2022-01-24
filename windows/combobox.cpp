@@ -101,6 +101,16 @@ void uiComboboxClear(uiCombobox *c)
 		logLastError(L"error clearing items from uiCombobox");
 }
 
+int uiComboboxNumItems(uiCombobox *c)
+{
+	LRESULT n;
+
+	n = SendMessage(c->hwnd, CB_GETCOUNT, 0, 0);
+	if (n == (LRESULT) CB_ERR)
+		return -1;
+	return n;
+}
+
 int uiComboboxSelected(uiCombobox *c)
 {
 	LRESULT n;
