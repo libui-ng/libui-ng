@@ -262,7 +262,7 @@ static uiControl *makeDataChoosersPage(void)
 	uiGridSetPadded(grid, 1);
 	uiBoxAppend(vbox, uiControl(grid), 0);
 
-	button = uiNewButton("Open File");
+	button = uiNewButton("  Open File  ");
 	entry = uiNewEntry();
 	uiEntrySetReadOnly(entry, 1);
 	uiButtonOnClicked(button, onOpenFileClicked, entry);
@@ -284,7 +284,7 @@ static uiControl *makeDataChoosersPage(void)
 		1, 1, 1, 1,
 		1, uiAlignFill, 0, uiAlignFill);
 
-	button = uiNewButton("Save File");
+	button = uiNewButton("  Save File  ");
 	entry = uiNewEntry();
 	uiEntrySetReadOnly(entry, 1);
 	uiButtonOnClicked(button, onSaveFileClicked, entry);
