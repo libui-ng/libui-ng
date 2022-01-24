@@ -45,6 +45,14 @@ void uiComboboxClear(uiCombobox *c)
 	gtk_combo_box_text_remove_all(c->comboboxText);
 }
 
+int uiComboboxNumItems(uiCombobox *c)
+{
+	GtkListStore *store;
+
+	store = GTK_LIST_STORE(gtk_combo_box_get_model(c->combobox));
+	return gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store), NULL);
+}
+
 int uiComboboxSelected(uiCombobox *c)
 {
 	return gtk_combo_box_get_active(c->combobox);

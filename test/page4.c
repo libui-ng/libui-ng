@@ -32,30 +32,46 @@ SETTOO(Spinbox, High, 80)
 SETTOO(Slider, Low, -80)
 SETTOO(Slider, High, 80)
 
+static uiLabel *cboxLbl;
 static uiCombobox *cbox;
 static uiEditableCombobox *editable;
 static uiRadioButtons *rb;
+
+static void updateCB()
+{
+	char str[128];
+
+	// snprintf() is not supported by visual studio 2013:
+	// http://blogs.msdn.com/b/vcblog/archive/2013/07/19/c99-library-support-in-visual-studio-2013.aspx
+	// we can't use _snprintf() in the test suite because that's msvc-only, so sprintf() it is.
+	sprintf(str, "%d", uiComboboxNumItems(cbox));
+	uiLabelSetText(cboxLbl, str);
+}
 
 static void appendCBRB(uiButton *b, void *data)
 {
 	uiComboboxAppend(cbox, "New Item");
 	uiEditableComboboxAppend(editable, "New Item");
 	uiRadioButtonsAppend(rb, "New Item");
+	updateCB();
 }
 
 static void insertCB(uiButton *b, void *data)
 {
 	uiComboboxInsertAt(cbox, 0, "Inserted item");
+	updateCB();
 }
 
 static void deleteCB(uiButton *b, void *data)
 {
 	uiComboboxDelete(cbox, 0);
+	updateCB();
 }
 
 static void clearCB(uiButton *b, void *data)
 {
 	uiComboboxClear(cbox);
+	updateCB();
 }
 
 static void onCBChanged(uiCombobox *c, void *data)
@@ -206,12 +222,17 @@ uiBox *makePage4(void)
 
 	uiBoxAppend(page4, uiControl(uiNewHorizontalSeparator()), 0);
 
+	hbox = newHorizontalBox();
+	cboxLbl = uiNewLabel("0");
+	uiBoxAppend(hbox, uiControl(cboxLbl), 0);
 	cbox = uiNewCombobox();
 	uiComboboxAppend(cbox, "Item 1");
 	uiComboboxAppend(cbox, "Item 2");
 	uiComboboxAppend(cbox, "Item 3");
 	uiComboboxOnSelected(cbox, onCBChanged, "noneditable");
-	uiBoxAppend(page4, uiControl(cbox), 0);
+	updateCB();
+	uiBoxAppend(hbox, uiControl(cbox), 1);
+	uiBoxAppend(page4, uiControl(hbox), 0);
 
 	editable = uiNewEditableCombobox();
 	uiEditableComboboxAppend(editable, "Editable Item 1");

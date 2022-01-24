@@ -100,6 +100,11 @@ void uiComboboxClear(uiCombobox *c)
 	}]];
 }
 
+int uiComboboxNumItems(uiCombobox *c)
+{
+	return [[c->pbac arrangedObjects] count];
+}
+
 int uiComboboxSelected(uiCombobox *c)
 {
 	return [c->pb indexOfSelectedItem];
