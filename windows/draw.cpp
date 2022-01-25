@@ -560,7 +560,7 @@ void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, ui
 	D2D_RECT_F _srcrect = D2D1::RectF(srcrect->X, srcrect->Y, srcrect->X+srcrect->Width, srcrect->Y+srcrect->Height);
 	D2D_RECT_F _dstrect = D2D1::RectF(dstrect->X, dstrect->Y, dstrect->X+dstrect->Width, dstrect->Y+dstrect->Height);
 
-	c->rt->ImageBuffer(buf->buf, &_dstrect, 1.0f,
+	c->rt->DrawBitmap(buf->buf, &_dstrect, 1.0f,
 		filter ? D2D1_BITMAP_INTERPOLATION_MODE_LINEAR : D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR, &_srcrect);
 }
 
