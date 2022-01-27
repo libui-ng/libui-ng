@@ -32,6 +32,7 @@
 	return nil;			// appease compiler
 }
 
+// Fallback for macOS < 10.10
 static void setTitle(uiprivTableColumn *col, NSString *str)
 {
 	if ([col respondsToSelector:@selector(setTitle:)]) {
