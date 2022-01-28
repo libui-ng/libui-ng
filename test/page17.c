@@ -154,7 +154,7 @@ static void populateData(void)
 	int row;
 	char text[ROWXX_SIZE];
 
-	data.numRows = 10;
+	data.numRows = 100000;
 	data.rows = malloc(data.numRows * sizeof(*data.rows));
 	assert(data.rows != NULL);
 
