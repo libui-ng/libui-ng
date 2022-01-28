@@ -588,10 +588,10 @@ uiTable *uiNewTable(uiTableParams *p)
 
 int uiTableColumnWidth(uiTable *t, int column)
 {
-	return ListView_GetColumnWidth(t->hwnd, column);
+	return SendMessageW(t->hwnd, LVM_GETCOLUMNWIDTH, (WPARAM) column, 0);
 }
 
 void uiTableColumnSetWidth(uiTable *t, int column, int width)
 {
-	ListView_SetColumnWidth(t->hwnd, column, width);
+	SendMessageW(t->hwnd, LVM_SETCOLUMNWIDTH, (WPARAM) column, (LPARAM) width);
 }
