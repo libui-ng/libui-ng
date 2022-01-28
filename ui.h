@@ -1510,6 +1510,8 @@ _UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
 _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
 
 // uiTableColumnSetWidth() set table column width
+// Setting width to -1 will restore automatic column sizing matching either
+// the width of the content or header title (which ever one is bigger)
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
 
 #ifdef __cplusplus

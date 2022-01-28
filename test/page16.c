@@ -206,7 +206,7 @@ uiBox *makePage16(void)
 	columnID = uiNewSpinbox(0, 5);
 	uiBoxAppend(controls, uiControl(columnID), 0);
 	uiBoxAppend(controls, uiControl(uiNewLabel("Width")), 0);
-	columnWidth = uiNewSpinbox(0, INT_MAX);
+	columnWidth = uiNewSpinbox(-1, INT_MAX);
 	uiBoxAppend(controls, uiControl(columnWidth), 0);
 
 	uiSpinboxOnChanged(columnID, changedColumnID, t);
