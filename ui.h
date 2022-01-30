@@ -1277,22 +1277,22 @@ _UI_ENUM(uiSortIndicator) {
 	uiSortIndicatorDescending
 };
 
-// uiTableModel is an object that provides the data for a uiTable.
-// This data is returned via methods you provide in the
-// uiTableModelHandler struct.
-//
-// uiTableModel represents data using a table, but this table does
-// not map directly to uiTable itself. Instead, you can have data
-// columns which provide instructions for how to render a given
-// uiTable's column — for instance, one model column can be used
-// to give certain rows of a uiTable a different background color.
-// Row numbers DO match with uiTable row numbers.
-//
-// Once created, the number and data types of columns of a
-// uiTableModel cannot change.
-//
-// Row and column numbers start at 0. A uiTableModel can be
-// associated with more than one uiTable at a time.
+/// uiTableModel is an object that provides the data for a uiTable.
+/// This data is returned via methods you provide in the
+/// uiTableModelHandler struct.
+///
+/// uiTableModel represents data using a table, but this table does
+/// not map directly to uiTable itself. Instead, you can have data
+/// columns which provide instructions for how to render a given
+/// uiTable's column — for instance, one model column can be used
+/// to give certain rows of a uiTable a different background color.
+/// Row numbers DO match with uiTable row numbers.
+///
+/// Once created, the number and data types of columns of a
+/// uiTableModel cannot change.
+///
+/// Row and column numbers start at 0. A uiTableModel can be
+/// associated with more than one uiTable at a time.
 typedef struct uiTableModel uiTableModel;
 
 /// uiTableModelHandler defines the methods that uiTableModel
@@ -1346,13 +1346,13 @@ _UI_EXTERN uiTableModel *uiNewTableModel(uiTableModelHandler *mh);
 /// free table models currently associated with a uiTable.
 _UI_EXTERN void uiFreeTableModel(uiTableModel *m);
 
-// uiTableModelRowInserted() tell all uiTables associated with
-// the uiTableModel m that a new row has been added to m at
-// index newIndex.
-// You must insert the row data in your model before calling this
-// function.
-// NumRows() must represent the new row count before you call
-// this function.
+/// uiTableModelRowInserted() tell all uiTables associated with
+/// the uiTableModel m that a new row has been added to m at
+/// index newIndex.
+/// You must insert the row data in your model before calling this
+/// function.
+/// NumRows() must represent the new row count before you call
+/// this function.
 _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 
 /// uiTableModelRowChanged() tells any uiTable associated with m
@@ -1361,13 +1361,13 @@ _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 /// this if your data changes at some other point.
 _UI_EXTERN void uiTableModelRowChanged(uiTableModel *m, int index);
 
-// uiTableModelRowDeleted() tells all uiTables associated with
-// the uiTableModel m that the row at index oldIndex has been
-// deleted.
-// You must delete the row from your model before you call this
-// function.
-// NumRows() must represent the new row count before you call
-// this function.
+/// uiTableModelRowDeleted() tells all uiTables associated with
+/// the uiTableModel m that the row at index oldIndex has been
+/// deleted.
+/// You must delete the row from your model before you call this
+/// function.
+/// NumRows() must represent the new row count before you call
+/// this function.
 _UI_EXTERN void uiTableModelRowDeleted(uiTableModel *m, int oldIndex);
 // TODO reordering/moving
 
@@ -1480,28 +1480,28 @@ _UI_EXTERN void uiTableAppendButtonColumn(uiTable *t,
 	int buttonModelColumn,
 	int buttonClickableModelColumn);
 
-// uiTableHeaderVisible() returns whether the table header is visible
-// or not.
+/// uiTableHeaderVisible() returns whether the table header is visible
+/// or not.
 _UI_EXTERN int uiTableHeaderVisible(uiTable *t);
 
-// uiTableHeaderSetVisible() sets the visibility of the table header.
+/// uiTableHeaderSetVisible() sets the visibility of the table header.
 _UI_EXTERN void uiTableHeaderSetVisible(uiTable *t, int visible);
 
-// uiNewTable() creates a new uiTable with the specified parameters.
+/// uiNewTable() creates a new uiTable with the specified parameters.
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
 
-// uiTableHeaderSetSortIndicator() sets the sort indicator of the table
-// header to display an appropriate arrow on the column header
+/// uiTableHeaderSetSortIndicator() sets the sort indicator of the table
+/// header to display an appropriate arrow on the column header
 _UI_EXTERN void uiTableHeaderSetSortIndicator(uiTable *t,
 	int column,
 	uiSortIndicator indicator);
 
-// uiTableHeaderSortIndicator returns the sort indicator of the specified
-// column
+/// uiTableHeaderSortIndicator returns the sort indicator of the specified
+/// column
 _UI_EXTERN uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column);
 
-// uiTableHeaderOnClicked() sets a callback function to be called
-// when a table column header is clicked
+/// uiTableHeaderOnClicked() sets a callback function to be called
+/// when a table column header is clicked
 _UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
 	void (*f)(uiTable *table, int column, void *data),
 	void *data);
