@@ -4,6 +4,10 @@
 static uiSpinbox *spinbox;
 static uiSlider *slider;
 static uiProgressBar *pbar;
+static uiCheckbox *checkbox;
+static uiSpinbox *spinboxFrom;
+static uiSpinbox *spinboxTo;
+
 
 #define CHANGED(what) \
 	static void on ## what ## Changed(ui ## what *this, void *data) \
@@ -28,15 +32,46 @@ SETTOO(Spinbox, High, 80)
 SETTOO(Slider, Low, -80)
 SETTOO(Slider, High, 80)
 
+static uiLabel *cboxLbl;
 static uiCombobox *cbox;
 static uiEditableCombobox *editable;
 static uiRadioButtons *rb;
+
+static void updateCB()
+{
+	char str[128];
+
+	// snprintf() is not supported by visual studio 2013:
+	// http://blogs.msdn.com/b/vcblog/archive/2013/07/19/c99-library-support-in-visual-studio-2013.aspx
+	// we can't use _snprintf() in the test suite because that's msvc-only, so sprintf() it is.
+	sprintf(str, "%d", uiComboboxNumItems(cbox));
+	uiLabelSetText(cboxLbl, str);
+}
 
 static void appendCBRB(uiButton *b, void *data)
 {
 	uiComboboxAppend(cbox, "New Item");
 	uiEditableComboboxAppend(editable, "New Item");
 	uiRadioButtonsAppend(rb, "New Item");
+	updateCB();
+}
+
+static void insertCB(uiButton *b, void *data)
+{
+	uiComboboxInsertAt(cbox, 0, "Inserted item");
+	updateCB();
+}
+
+static void deleteCB(uiButton *b, void *data)
+{
+	uiComboboxDelete(cbox, 0);
+	updateCB();
+}
+
+static void clearCB(uiButton *b, void *data)
+{
+	uiComboboxClear(cbox);
+	updateCB();
 }
 
 static void onCBChanged(uiCombobox *c, void *data)
@@ -75,6 +110,37 @@ static void selectNone(uiButton *b, void *data)
 	uiRadioButtonsSetSelected(rb, -1);
 }
 
+static void sliderEnableToolTip(uiButton *b, void *data)
+{
+	uiSliderSetHasToolTip(uiSlider(data), 1);
+	uiCheckboxSetChecked(checkbox, uiSliderHasToolTip(uiSlider(data)));
+}
+
+static void sliderDisableToolTip(uiButton *b, void *data)
+{
+	uiSliderSetHasToolTip(uiSlider(data), 0);
+	uiCheckboxSetChecked(checkbox, uiSliderHasToolTip(uiSlider(data)));
+}
+
+static void setSliderRange(uiSpinbox *spinbox, void *data)
+{
+	uiSlider *s = data;
+
+	uiSliderSetRange(s, uiSpinboxValue(spinboxFrom), uiSpinboxValue(spinboxTo));
+}
+
+static void onRangeSliderChanged(uiSlider *s, void *data)
+{
+	char str[128];
+	uiLabel *lbl = data;
+
+	// snprintf() is not supported by visual studio 2013:
+	// http://blogs.msdn.com/b/vcblog/archive/2013/07/19/c99-library-support-in-visual-studio-2013.aspx
+	// we can't use _snprintf() in the test suite because that's msvc-only, so sprintf() it is.
+	sprintf(str, "%d", uiSliderValue(s));
+	uiLabelSetText(lbl, str);
+}
+
 uiBox *makePage4(void)
 {
 	uiBox *page4;
@@ -82,6 +148,7 @@ uiBox *makePage4(void)
 	uiSpinbox *xsb;
 	uiButton *b;
 	uiSlider *xsl;
+	uiLabel *lbl;
 
 	page4 = newVerticalBox();
 
@@ -92,6 +159,21 @@ uiBox *makePage4(void)
 	slider = uiNewSlider(0, 100);
 	uiSliderOnChanged(slider, onSliderChanged, NULL);
 	uiBoxAppend(page4, uiControl(slider), 0);
+
+	hbox = newHorizontalBox();
+	slider = uiNewSlider(0, 100);
+	uiBoxAppend(hbox, uiControl(slider), 1);
+	b = uiNewButton("Enable ToolTip");
+	uiButtonOnClicked(b, sliderEnableToolTip, slider);
+	uiBoxAppend(hbox, uiControl(b), 0);
+	b = uiNewButton("Disable ToolTip");
+	uiButtonOnClicked(b, sliderDisableToolTip, slider);
+	uiBoxAppend(hbox, uiControl(b), 0);
+	checkbox = uiNewCheckbox("Has ToolTip");
+	uiControlDisable(uiControl(checkbox));
+	uiCheckboxSetChecked(checkbox, uiSliderHasToolTip(slider));
+	uiBoxAppend(hbox, uiControl(checkbox), 0);
+	uiBoxAppend(page4, uiControl(hbox), 0);
 
 	pbar = uiNewProgressBar();
 	uiBoxAppend(page4, uiControl(pbar), 0);
@@ -122,12 +204,35 @@ uiBox *makePage4(void)
 
 	uiBoxAppend(page4, uiControl(uiNewHorizontalSeparator()), 0);
 
+	lbl = uiNewLabel("100");
+	uiBoxAppend(page4, uiControl(lbl), 0);
+	hbox = newHorizontalBox();
+	spinboxFrom = uiNewSpinbox(0, 1000);
+	uiSpinboxSetValue(spinboxFrom, 100);
+	uiBoxAppend(hbox, uiControl(spinboxFrom), 1);
+	xsl = uiNewSlider(100, 200);
+	uiSpinboxOnChanged(spinboxFrom, setSliderRange, xsl);
+	uiBoxAppend(hbox, uiControl(xsl), 1);
+	uiSliderOnChanged(xsl, onRangeSliderChanged, lbl);
+	spinboxTo = uiNewSpinbox(0, 1000);
+	uiSpinboxSetValue(spinboxTo, 200);
+	uiSpinboxOnChanged(spinboxTo, setSliderRange, xsl);
+	uiBoxAppend(hbox, uiControl(spinboxTo), 1);
+	uiBoxAppend(page4, uiControl(hbox), 0);
+
+	uiBoxAppend(page4, uiControl(uiNewHorizontalSeparator()), 0);
+
+	hbox = newHorizontalBox();
+	cboxLbl = uiNewLabel("0");
+	uiBoxAppend(hbox, uiControl(cboxLbl), 0);
 	cbox = uiNewCombobox();
 	uiComboboxAppend(cbox, "Item 1");
 	uiComboboxAppend(cbox, "Item 2");
 	uiComboboxAppend(cbox, "Item 3");
 	uiComboboxOnSelected(cbox, onCBChanged, "noneditable");
-	uiBoxAppend(page4, uiControl(cbox), 0);
+	updateCB();
+	uiBoxAppend(hbox, uiControl(cbox), 1);
+	uiBoxAppend(page4, uiControl(hbox), 0);
 
 	editable = uiNewEditableCombobox();
 	uiEditableComboboxAppend(editable, "Editable Item 1");
@@ -146,6 +251,15 @@ uiBox *makePage4(void)
 	hbox = newHorizontalBox();
 	b = uiNewButton("Append");
 	uiButtonOnClicked(b, appendCBRB, NULL);
+	uiBoxAppend(hbox, uiControl(b), 0);
+	b = uiNewButton("Insert");
+	uiButtonOnClicked(b, insertCB, NULL);
+	uiBoxAppend(hbox, uiControl(b), 0);
+	b = uiNewButton("Delete");
+	uiButtonOnClicked(b, deleteCB, NULL);
+	uiBoxAppend(hbox, uiControl(b), 0);
+	b = uiNewButton("Clear");
+	uiButtonOnClicked(b, clearCB, NULL);
 	uiBoxAppend(hbox, uiControl(b), 0);
 	b = uiNewButton("Second");
 	uiButtonOnClicked(b, selectSecond, NULL);

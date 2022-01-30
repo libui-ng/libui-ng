@@ -124,6 +124,11 @@ void uiFormDelete(uiForm *f, int index)
 	g_array_remove_index(f->children, index);
 }
 
+int uiFormNumChildren(uiForm *f)
+{
+	return (int) f->children->len;
+}
+
 int uiFormPadded(uiForm *f)
 {
 	return f->padded;

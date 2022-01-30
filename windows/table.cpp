@@ -24,28 +24,19 @@ void uiFreeTableModel(uiTableModel *m)
 	uiprivFree(m);
 }
 
-// TODO document that when this is called, the model must return the new row count when asked
 void uiTableModelRowInserted(uiTableModel *m, int newIndex)
 {
-	LVITEMW item;
-	int newCount;
-
-	newCount = uiprivTableModelNumRows(m);
-	ZeroMemory(&item, sizeof (LVITEMW));
+	LVITEMW item = {};
 	item.mask = 0;
 	item.iItem = newIndex;
 	item.iSubItem = 0;
-	for (auto t : *(m->tables)) {
-		// actually insert the rows
-		if (SendMessageW(t->hwnd, LVM_SETITEMCOUNT, (WPARAM) newCount, LVSICF_NOINVALIDATEALL) == 0)
-			logLastError(L"error calling LVM_SETITEMCOUNT in uiTableModelRowInserted()");
-		// and redraw every row from the new row down to simulate adding it
-		if (SendMessageW(t->hwnd, LVM_REDRAWITEMS, (WPARAM) newIndex, (LPARAM) (newCount - 1)) == FALSE)
-			logLastError(L"error calling LVM_REDRAWITEMS in uiTableModelRowInserted()");
 
-		// update selection state
-		if (SendMessageW(t->hwnd, LVM_INSERTITEM, 0, (LPARAM) (&item)) == (LRESULT) (-1))
-			logLastError(L"error calling LVM_INSERTITEM in uiTableModelRowInserted() to update selection state");
+	for (auto t : *(m->tables)) {
+		if (ListView_InsertItem(t->hwnd, &item) == -1)
+			logLastError(L"error calling ListView_InsertItem in uiTableModelRowInserted()");
+		// redraw every row from the new row down to simulate adding it
+		if (ListView_RedrawItems(t->hwnd, newIndex, ListView_GetItemCount(t->hwnd)-1) == -1)
+			logLastError(L"error calling ListView_RedrawItems in uiTableModelRowInserted()");
 	}
 }
 
@@ -57,25 +48,14 @@ void uiTableModelRowChanged(uiTableModel *m, int index)
 			logLastError(L"error calling LVM_UPDATE in uiTableModelRowChanged()");
 }
 
-// TODO document that when this is called, the model must return the OLD row count when asked
-// TODO for this and the above, see what GTK+ requires and adjust accordingly
 void uiTableModelRowDeleted(uiTableModel *m, int oldIndex)
 {
-	int newCount;
-
-	newCount = uiprivTableModelNumRows(m);
-	newCount--;
 	for (auto t : *(m->tables)) {
-		// update selection state
-		if (SendMessageW(t->hwnd, LVM_DELETEITEM, (WPARAM) oldIndex, 0) == (LRESULT) (-1))
-			logLastError(L"error calling LVM_DELETEITEM in uiTableModelRowDeleted() to update selection state");
-
-		// actually delete the rows
-		if (SendMessageW(t->hwnd, LVM_SETITEMCOUNT, (WPARAM) newCount, LVSICF_NOINVALIDATEALL) == 0)
-			logLastError(L"error calling LVM_SETITEMCOUNT in uiTableModelRowDeleted()");
-		// and redraw every row from the new nth row down to simulate removing the old nth row
-		if (SendMessageW(t->hwnd, LVM_REDRAWITEMS, (WPARAM) oldIndex, (LPARAM) (newCount - 1)) == FALSE)
-			logLastError(L"error calling LVM_REDRAWITEMS in uiTableModelRowDeleted()");
+		if (ListView_DeleteItem(t->hwnd, oldIndex) == -1)
+			logLastError(L"error calling ListView_DeleteItem() in uiTableModelRowDeleted()");
+		// redraw every row from the new nth row down to simulate removing the old nth row
+		if (ListView_RedrawItems(t->hwnd, oldIndex, ListView_GetItemCount(t->hwnd)-1) == -1)
+			logLastError(L"error calling ListView_RedrawItems() in uiTableModelRowDeleted()");
 	}
 }
 
@@ -230,6 +210,59 @@ int uiprivTableProgress(uiTable *t, int item, int subitem, int modelColumn, LONG
 	return progress;
 }
 
+void uiTableHeaderSetSortIndicator(uiTable *t, int column, uiSortIndicator indicator)
+{
+	HWND lvhdr;
+	int fmt;
+
+	if (indicator == uiSortIndicatorAscending)
+		fmt = HDF_SORTUP;
+	else if (indicator == uiSortIndicatorDescending)
+		fmt = HDF_SORTDOWN;
+	else
+		fmt = 0;
+
+	lvhdr = (HWND) SendMessageW(t->hwnd, LVM_GETHEADER, 0, 0);
+	if (lvhdr) {
+		HDITEM hdri = {};
+		hdri.mask = HDI_FORMAT;
+		if (SendMessageW(lvhdr, HDM_GETITEM, (WPARAM) column, (LPARAM) &hdri)) {
+			hdri.fmt &= ~(HDF_SORTUP | HDF_SORTDOWN);
+			hdri.fmt |= fmt;
+			SendMessageW(lvhdr, HDM_SETITEM, (WPARAM) column, (LPARAM) &hdri);
+		}
+	}
+}
+
+uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column)
+{
+	HWND lvhdr;
+
+	lvhdr = (HWND) SendMessageW(t->hwnd, LVM_GETHEADER, 0, 0);
+	if (lvhdr) {
+		HDITEM hdri = {};
+		hdri.mask = HDI_FORMAT;
+		if (SendMessageW(lvhdr, HDM_GETITEM, (WPARAM) column, (LPARAM) &hdri)) {
+			if (hdri.fmt & HDF_SORTUP)
+				return uiSortIndicatorAscending;
+			if (hdri.fmt & HDF_SORTDOWN)
+				return uiSortIndicatorDescending;
+		}
+	}
+	return uiSortIndicatorNone;
+}
+
+void uiTableHeaderOnClicked(uiTable *t, void (*f)(uiTable *table, int column, void *data), void *data)
+{
+	t->headerOnClicked = f;
+	t->headerOnClickedData = data;
+}
+
+static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
+{
+	// do nothing
+}
+
 // TODO properly integrate compound statements
 static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 {
@@ -310,9 +343,20 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 			}
 			return FALSE;
 		}
+	case LVN_COLUMNCLICK:
+		{
+			NMLISTVIEW *nm = (NMLISTVIEW *) nmhdr;
+
+			hr = uiprivTableFinishEditingText(t);
+			if (hr != S_OK) {
+				// TODO
+				return FALSE;
+			}
+			t->headerOnClicked(t, nm->iSubItem, t->headerOnClickedData);
+			return TRUE;
+		}
 	// the real list view accepts changes when scrolling or clicking column headers
 	case LVN_BEGINSCROLL:
-	case LVN_COLUMNCLICK:
 		hr = uiprivTableFinishEditingText(t);
 		if (hr != S_OK) {
 			// TODO
@@ -479,6 +523,26 @@ void uiTableAppendButtonColumn(uiTable *t, const char *name, int buttonModelColu
 	p->buttonClickableModelColumn = buttonClickableModelColumn;
 }
 
+int uiTableHeaderVisible(uiTable *t)
+{
+	HWND header =  (HWND) SendMessageW(t->hwnd, LVM_GETHEADER, 0, 0);
+	if (header) {
+		LONG style = GetWindowLong(header, GWL_STYLE);
+		return !(style & HDS_HIDDEN);
+	}
+	uiprivImplBug("window handle %p unknown error from send LVM_GETHEADER", t->hwnd);
+	return 0;
+}
+
+void uiTableHeaderSetVisible(uiTable *t, int visible)
+{
+	LONG style = GetWindowLong(t->hwnd, GWL_STYLE);
+	if (visible)
+		SetWindowLong(t->hwnd, GWL_STYLE, style & ~LVS_NOCOLUMNHEADER);
+	else
+		SetWindowLong(t->hwnd, GWL_STYLE, style | LVS_NOCOLUMNHEADER);
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
@@ -490,6 +554,7 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->columns = new std::vector<uiprivTableColumnParams *>;
 	t->model = p->Model;
 	t->backgroundColumn = p->RowBackgroundColorModelColumn;
+	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
 
 	// WS_CLIPCHILDREN is here to prevent drawing over the edit box used for editing text
 	t->hwnd = uiWindowsEnsureCreateControlHWND(WS_EX_CLIENTEDGE,

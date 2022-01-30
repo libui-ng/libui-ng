@@ -81,6 +81,30 @@ void uiComboboxAppend(uiCombobox *c, const char *text)
 	[c->pbac addObject:uiprivToNSString(text)];
 }
 
+void uiComboboxInsertAt(uiCombobox *c, int n, const char *text)
+{
+	[c->pbac insertObject:uiprivToNSString(text) atArrangedObjectIndex:n];
+}
+
+void uiComboboxDelete(uiCombobox *c, int n)
+{
+	[c->pbac removeObjectAtArrangedObjectIndex:n];
+}
+
+void uiComboboxClear(uiCombobox *c)
+{
+	[c->pbac removeObjectsAtArrangedObjectIndexes:[[c->pbac arrangedObjects]
+		indexesOfObjectsPassingTest:^BOOL(id obj, NSUInteger idx, BOOL *stop) {
+			// remove all items
+			return TRUE;
+	}]];
+}
+
+int uiComboboxNumItems(uiCombobox *c)
+{
+	return [[c->pbac arrangedObjects] count];
+}
+
 int uiComboboxSelected(uiCombobox *c)
 {
 	return [c->pb indexOfSelectedItem];

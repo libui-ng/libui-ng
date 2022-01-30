@@ -3,7 +3,13 @@
 Fork of [andlabs/libui](https://github.com/andlabs/libui). This README is being written.<br>
 [![Build Status, GitHub Actions](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml/badge.svg)](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml)
 
+## About
+
+Simple and portable (but not inflexible) GUI library in C that uses the native GUI technologies of each platform it supports.
+
 ## Status
+
+libui-ng is currently **mid-alpha** software.
 
 See [CHANGELOG.md](CHANGELOG.md)
 

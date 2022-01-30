@@ -38,6 +38,7 @@
 - (void)establishOurConstraints;
 - (void)append:(uiControl *)c stretchy:(int)stretchy;
 - (void)delete:(int)n;
+- (int)numChildren;
 - (int)isPadded;
 - (void)setPadded:(int)p;
 - (BOOL)hugsTrailing;
@@ -314,6 +315,11 @@ struct uiBox {
 			uiDarwinNotifyEdgeHuggingChanged(uiDarwinControl(self->b));
 }
 
+- (int)numChildren
+{
+	return (int) [self->children count];
+}
+
 - (int)isPadded
 {
 	return self->padded;
@@ -435,6 +441,11 @@ void uiBoxAppend(uiBox *b, uiControl *c, int stretchy)
 void uiBoxDelete(uiBox *b, int n)
 {
 	[b->view delete:n];
+}
+
+int uiBoxNumChildren(uiBox *b)
+{
+	return [b->view numChildren];
 }
 
 int uiBoxPadded(uiBox *b)

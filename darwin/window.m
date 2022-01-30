@@ -16,6 +16,7 @@ struct uiWindow {
 	BOOL suppressSizeChanged;
 	int fullscreen;
 	int borderless;
+	int resizeable;
 };
 
 @implementation uiprivNSWindow
@@ -357,6 +358,21 @@ void uiWindowSetMargined(uiWindow *w, int margined)
 	uiprivSingleChildConstraintsSetMargined(&(w->constraints), w->margined);
 }
 
+int uiWindowResizeable(uiWindow *w)
+{
+	return w->resizeable;
+}
+
+void uiWindowSetResizeable(uiWindow *w, int resizeable)
+{
+	w->resizeable = resizeable;
+	if(resizeable) {
+		[w->window setStyleMask:[w->window styleMask] | NSResizableWindowMask];
+	} else {
+		[w->window setStyleMask:[w->window styleMask] & ~NSResizableWindowMask];
+	}
+}
+
 static int defaultOnClosing(uiWindow *w, void *data)
 {
 	return 0;
@@ -375,6 +391,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	uiDarwinNewControl(uiWindow, w);
 
+	w->resizeable = TRUE;
 	w->window = [[uiprivNSWindow alloc] initWithContentRect:NSMakeRect(0, 0, (CGFloat) width, (CGFloat) height)
 		styleMask:defaultStyleMask
 		backing:NSBackingStoreBuffered
