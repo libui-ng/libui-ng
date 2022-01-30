@@ -296,5 +296,10 @@ int uiTableColumnWidth(uiTable *t, int column)
 void uiTableColumnSetWidth(uiTable *t, int column, int width)
 {
 	NSTableColumn *tc = [t->tv tableColumnWithIdentifier:[@(column) stringValue]];
-	[tc setWidth: width];
+
+	if (width == -1)
+		//TODO: resize not only to header but also to max content width
+		[tc sizeToFit];
+	else
+		[tc setWidth: width];
 }
