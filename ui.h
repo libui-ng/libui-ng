@@ -1106,28 +1106,28 @@ struct uiAreaDrawParams {
 	/// the drawing context to draw on. See uiDrawContext for how to draw.
 	uiDrawContext *Context;
 
-	/// provide the size of the uiArea for non-scrolling Areas.
-	/// For scrolling Areas both values are zero.
+	/// #AreaWidth and #AreaHeight provide the size of the uiArea for non-scrolling uiArea's.
+	/// For scrolling uiArea's both values are zero.
 	///
 	/// To reiterate the uiAreaHandler documentation, do NOT save
 	/// these values for later; they can change without generating
 	/// an event.
-	///{
+	///@{
 	double AreaWidth;
 	double AreaHeight;
-	///}
+	///@}
 
-	/// define the rectangle that needs to be redrawn.
+	/// #ClipX, #ClipY, #ClipWidth and #ClipHeight define the rectangle that needs to be redrawn.
 	///
 	/// The system will not draw anything outside this
 	/// rectangle, but you can make your drawing faster if you
 	/// also stay within the lines.
-	///{
+	///@{
 	double ClipX;
 	double ClipY;
 	double ClipWidth;
 	double ClipHeight;
-	///}
+	///@}
 };
 
 //////////////////////////////////////////////////////////////////
@@ -1962,16 +1962,16 @@ struct uiAreaMouseEvent {
 	double X;
 	double Y;
 
-	/// provide the size of the Area for non-scrolling Areas.
-	/// For scrolling Areas both values are zero.
+	/// #AreaWidth and #AreaHeight provide the size of the uiArea for non-scrolling uiArea's.
+	/// For scrolling uiArea's both values are zero.
 	///
-	/// To reiterate the AreaHandler documentation, do NOT save
+	/// To reiterate the uiAreaHandler documentation, do NOT save
 	/// these values for later; they can change without generating
 	/// an event.
-	///{
+	///@{
 	double AreaWidth;
 	double AreaHeight;
-	///}
+	///@}
 
 	int Down;
 	int Up;
