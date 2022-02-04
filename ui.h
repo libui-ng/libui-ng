@@ -933,6 +933,7 @@ typedef struct uiAreaDrawParams uiAreaDrawParams;
 typedef struct uiAreaMouseEvent uiAreaMouseEvent;
 typedef struct uiAreaKeyEvent uiAreaKeyEvent;
 
+/// @struct uiDrawContext
 typedef struct uiDrawContext uiDrawContext;
 
 //////////////////////////////////////////////////////////////////
@@ -1839,7 +1840,7 @@ _UI_EXTERN void uiLoadControlFont(uiFontDescriptor *f);
 _UI_EXTERN void uiFreeFontDescriptor(uiFontDescriptor *desc);
 
 //////////////////////////////////////////////////////////////////
-/// @struct uiAttributedString
+/// @struct uiDrawTextLayout
 /// a concrete representation of a uiAttributedString that can be displayed in a uiDrawContext.
 ///
 /// It includes information important for the drawing of a block of
