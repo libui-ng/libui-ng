@@ -585,3 +585,16 @@ uiTable *uiNewTable(uiTableParams *p)
 
 	return t;
 }
+
+int uiTableColumnWidth(uiTable *t, int column)
+{
+	return SendMessageW(t->hwnd, LVM_GETCOLUMNWIDTH, (WPARAM) column, 0);
+}
+
+void uiTableColumnSetWidth(uiTable *t, int column, int width)
+{
+	if (width == -1)
+		width = LVSCW_AUTOSIZE_USEHEADER;
+
+	SendMessageW(t->hwnd, LVM_SETCOLUMNWIDTH, (WPARAM) column, (LPARAM) width);
+}
