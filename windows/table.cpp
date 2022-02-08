@@ -285,6 +285,59 @@ static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
 	// do nothing
 }
 
+void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *t, void *data), void *data)
+{
+	t->onSelectionChanged = f;
+	t->onSelectionChangedData = data;
+}
+
+static void defaultOnSelectionChanged(uiTable *table, void *data)
+{
+	// do nothing
+}
+
+uiTableSelection* uiTableGetSelection(uiTable *t)
+{
+	unsigned i = 0;
+	int iPos = -1;
+	uiTableSelection *s = uiprivNew(uiTableSelection);
+
+	s->NumRows = ListView_GetSelectedCount(t->hwnd);
+	s->Rows = NULL;
+
+	if (s->NumRows > 0)
+		s->Rows = (int*) uiprivAlloc(s->NumRows * sizeof(*s->Rows), "uiTableSelection->Rows");
+
+	while ((iPos = ListView_GetNextItem(t->hwnd, iPos, LVNI_SELECTED)) != -1)
+		s->Rows[i++] = iPos;
+
+	return s;
+}
+
+void uiTableSetSelection(uiTable *t, uiTableSelection *sel)
+{
+	int i;
+
+	if ((t->selectionMode == uiTableSelectionModeNone && sel->NumRows > 0) ||
+	    (t->selectionMode == uiTableSelectionModeZeroOrOne && sel->NumRows > 1) ||
+	    (t->selectionMode == uiTableSelectionModeOne && sel->NumRows > 1)) {
+	    // TODO log error
+	    return;
+	}
+
+	/* clear selection */
+	ListView_SetItemState(t->hwnd, -1, 0, LVIS_SELECTED);
+
+	for (i = 0; i < sel->NumRows; ++i)
+		ListView_SetItemState(t->hwnd, sel->Rows[i], LVIS_SELECTED, LVIS_SELECTED);
+}
+
+void _uiTableSignalOnSelectionChanged(uiTable *t)
+{
+	if (!t->maskOnSelectionChanged)
+		t->onSelectionChanged(t, t->onSelectionChangedData);
+}
+
 // TODO properly integrate compound statements
 static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 {
@@ -354,15 +407,122 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 	case LVN_ITEMCHANGED:
 		{
 			NMLISTVIEW *nm = (NMLISTVIEW *) nmhdr;
+			UINT oldFocused, newFocused;
 			UINT oldSelected, newSelected;
 			HRESULT hr;
+			int nSelected;
+
+			oldSelected = nm->uOldState & LVIS_SELECTED;
+			newSelected = nm->uNewState & LVIS_SELECTED;
+			oldFocused = nm->uOldState & LVIS_FOCUSED;
+			newFocused = nm->uNewState & LVIS_FOCUSED;
+
+			switch (t->selectionMode) {
+			case uiTableSelectionModeNone:
+				if (newSelected || newFocused)
+					ListView_SetItemState(t->hwnd, nm->iItem, 0, LVIS_SELECTED|LVIS_FOCUSED);
+				break;
+			case uiTableSelectionModeOne:
+				// Ignore deselect all
+				if (nm->iItem == -1)
+					break;
+				// Prevent deselection via CTRL+SPACE (win32 bug)
+				if (oldSelected && !newSelected) {
+					t->maskOnSelectionChanged = TRUE;
+					ListView_SetItemState(t->hwnd, nm->iItem, LVIS_SELECTED, LVIS_SELECTED);
+					t->maskOnSelectionChanged = FALSE;
+				}
+				// Signal selection change on selection of a new item
+				if (nm->iItem != t->lastFocusedItem && !oldSelected && newSelected)
+					_uiTableSignalOnSelectionChanged(t);
+
+				t->lastFocusedItem = nm->iItem;
+				t->lastFocusedItemIsSelected = TRUE;
+				break;
+			case uiTableSelectionModeZeroOrOne:
+				// Set focused item to be selected
+				if (!oldFocused && newFocused) {
+					t->lastFocusedItem = nm->iItem;
+					t->lastFocusedItemIsSelected = FALSE;
+					ListView_SetItemState(t->hwnd, -1, 0, LVIS_SELECTED);
+					ListView_SetItemState(t->hwnd, nm->iItem, LVIS_SELECTED, LVIS_SELECTED);
+					break;
+				}
+				/* Ignore CTRL+SHIFT+SPACE on the focused item if selected
+				 * as it immediately does a reselect again */
+				if (nm->iItem == t->lastFocusedItem && t->lastFocusedItemIsSelected &&
+				    HIBYTE(GetKeyState(VK_CONTROL)) &&
+				    HIBYTE(GetKeyState(VK_SHIFT)) &&
+				    HIBYTE(GetKeyState(VK_SPACE)))
+					break;
+				if (nm->iItem == t->lastFocusedItem && t->lastFocusedItemIsSelected &&
+				    oldSelected && !newSelected) {
+					t->lastFocusedItemIsSelected = FALSE;
+					_uiTableSignalOnSelectionChanged(t);
+				}
+				if (nm->iItem == t->lastFocusedItem && !t->lastFocusedItemIsSelected &&
+				    !oldSelected && newSelected) {
+					t->lastFocusedItemIsSelected = TRUE;
+					_uiTableSignalOnSelectionChanged(t);
+				}
+				break;
+			case uiTableSelectionModeZeroOrMany:
+				nSelected = ListView_GetSelectedCount(t->hwnd);
+				// Ignore deselect all
+				if (nm->iItem == -1)
+					break;
+				/* CTRL+SHIFT+SPACE on the focused item */
+				if (nm->iItem == t->lastFocusedItem &&
+				    HIBYTE(GetKeyState(VK_CONTROL)) &&
+				    HIBYTE(GetKeyState(VK_SHIFT)) &&
+				    HIBYTE(GetKeyState(VK_SPACE))) {
+					/* Do not signal deselect as it immediately
+					 * does a reselect again */
+					if (t->lastFocusedItemIsSelected) {
+						/* Deselect the focused item if others are still
+						 * selected to trigger a signal later on */
+						if (oldSelected && !newSelected &&
+						    ListView_GetSelectedCount(t->hwnd) > 0)
+							t->lastFocusedItemIsSelected = FALSE;
+						break;
+					}
+					/* Do not signal select if multiple items are still
+					 * selected, as these will still get deselect later
+					 * on in the sequence */
+					if (!t->lastFocusedItemIsSelected &&
+					    newSelected && ListView_GetSelectedCount(t->hwnd) > 1)
+						break;
+				}
+				/* Do not signal select of a selected item unless
+				 * the selection count has changed (other items
+				 * have been deselected) */
+				if (nm->iItem == t->lastFocusedItem && t->lastFocusedItemIsSelected &&
+				    newSelected && nSelected == t->lastNumSelected)
+					break;
+
+				// Single item de/select
+				if ((!oldSelected && newSelected) ||
+				    (oldSelected && !newSelected) ||
+				    // SHIFT multi select
+				    (!oldFocused && newFocused && HIBYTE(GetKeyState(VK_SHIFT)) &&
+				     nm->iItem != ListView_GetSelectionMark(t->hwnd)))
+					_uiTableSignalOnSelectionChanged(t);
+
+				if (!oldFocused && newFocused)
+					t->lastFocusedItem = nm->iItem;
+				if (nm->iItem == t->lastFocusedItem)
+					t->lastFocusedItemIsSelected = ListView_GetItemState(t->hwnd, t->lastFocusedItem,
+											     LVIS_SELECTED) & LVIS_SELECTED;
+				t->lastNumSelected = nSelected;
+
+				break;
+			}
 
 			// TODO clean up these if cases
 			if (!t->inLButtonDown && t->edit == NULL)
 				return FALSE;
-			oldSelected = nm->uOldState & LVIS_SELECTED;
-			newSelected = nm->uNewState & LVIS_SELECTED;
-			if (t->inLButtonDown && oldSelected == 0 && newSelected != 0) {
+
+			if (t->inLButtonDown && !oldFocused && newFocused) {
 				t->inDoubleClickTimer = TRUE;
 				// TODO check error
 				SetTimer(t->hwnd, (UINT_PTR) (&(t->inDoubleClickTimer)),
@@ -371,7 +531,7 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 				return TRUE;
 			}
 			// the nm->iItem == -1 case is because that is used if "the change has been applied to all items in the list view"
-			if (t->edit != NULL && oldSelected != 0 && newSelected == 0 && (t->editedItem == nm->iItem || nm->iItem == -1)) {
+			if (t->edit != NULL && oldFocused && !newFocused && (t->editedItem == nm->iItem || nm->iItem == -1)) {
 				// TODO see if the real list view accepts or rejects changes here; Windows Explorer accepts
 				hr = uiprivTableFinishEditingText(t);
 				if (hr != S_OK) {
@@ -382,6 +542,33 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 				return TRUE;
 			}
 			return FALSE;
+		}
+	case LVN_ODSTATECHANGED:
+		{
+			NMLVODSTATECHANGE *nm = (NMLVODSTATECHANGE *) nmhdr;
+			int nSelected;
+
+			switch (t->selectionMode) {
+				case uiTableSelectionModeZeroOrOne:
+					// Windows somehow decides to ignore the first request
+					ListView_SetItemState(t->hwnd, -1, 0, LVIS_SELECTED);
+					ListView_SetItemState(t->hwnd, -1, 0, LVIS_SELECTED);
+					break;
+				case uiTableSelectionModeZeroOrMany:
+					nSelected = ListView_GetSelectedCount(t->hwnd);
+					/* Signal selection change on SHIFT+CLICK or SHIFT+SPACE
+					 * when doing so on an item that has been focused via
+					 * CTRL+UP or CTRL+DOWN */
+					if (nSelected != t->lastNumSelected &&
+					    ((nm->iFrom == t->lastFocusedItem && nm->iTo == ListView_GetSelectionMark(t->hwnd)) ||
+					    (nm->iTo == t->lastFocusedItem && nm->iFrom == ListView_GetSelectionMark(t->hwnd)))) {
+						t->lastFocusedItemIsSelected = TRUE;
+						_uiTableSignalOnSelectionChanged(t);
+					}
+					t->lastNumSelected = nSelected;
+					break;
+			}
+			return TRUE;
 		}
 	case LVN_COLUMNCLICK:
 		{
@@ -583,6 +770,59 @@ void uiTableHeaderSetVisible(uiTable *t, int visible)
 		SetWindowLong(t->hwnd, GWL_STYLE, style | LVS_NOCOLUMNHEADER);
 }
 
+uiTableSelectionMode uiTableGetSelectionMode(uiTable *t)
+{
+	return t->selectionMode;
+}
+
+void uiTableSetSelectionMode(uiTable *t, uiTableSelectionMode mode)
+{
+	LONG style = GetWindowLong(t->hwnd, GWL_STYLE);
+
+	t->selectionMode = mode;
+
+	switch (t->selectionMode) {
+	case uiTableSelectionModeOne:
+	case uiTableSelectionModeZeroOrOne:
+		if (ListView_GetSelectedCount(t->hwnd) == 1) {
+			// Ensure cached variables and focus are set up correctly
+			t->lastFocusedItem = ListView_GetNextItem(t->hwnd, -1, LVNI_SELECTED);
+			t->lastFocusedItemIsSelected = TRUE;
+			t->lastNumSelected = 1;
+			t->maskOnSelectionChanged = TRUE;
+			ListView_SetItemState(t->hwnd, t->lastFocusedItem, LVIS_FOCUSED, LVIS_FOCUSED);
+			t->maskOnSelectionChanged = FALSE;
+			break;
+		}
+		// Fall through
+	case uiTableSelectionModeNone:
+		// Reset the table to it's initial state
+		ListView_SetItemState(t->hwnd, -1, 0, LVIS_SELECTED|LVIS_FOCUSED);
+		// Ensure we do not match deselect all (-1)
+		t->lastFocusedItem = -2;
+		t->lastFocusedItemIsSelected = FALSE;
+		t->lastNumSelected = 0;
+		break;
+	case uiTableSelectionModeZeroOrMany:
+		t->lastNumSelected = ListView_GetSelectedCount(t->hwnd);
+		break;
+	default:
+		uiprivUserBug("Invalid table selection mode %d", mode);
+		return;
+	}
+
+	switch (t->selectionMode) {
+	case uiTableSelectionModeNone:
+	case uiTableSelectionModeOne:
+		SetWindowLong(t->hwnd, GWL_STYLE, style | LVS_SINGLESEL);
+		break;
+	case uiTableSelectionModeZeroOrOne:
+	case uiTableSelectionModeZeroOrMany:
+		SetWindowLong(t->hwnd, GWL_STYLE, style & ~LVS_SINGLESEL);
+		break;
+	}
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
@@ -595,11 +835,12 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->model = p->Model;
 	t->backgroundColumn = p->RowBackgroundColorModelColumn;
 	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
+	uiTableOnSelectionChanged(t, defaultOnSelectionChanged, NULL);
 
 	// WS_CLIPCHILDREN is here to prevent drawing over the edit box used for editing text
 	t->hwnd = uiWindowsEnsureCreateControlHWND(WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, L"",
-		LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL | WS_CLIPCHILDREN | WS_TABSTOP | WS_HSCROLL | WS_VSCROLL,
+		LVS_REPORT | LVS_OWNERDATA | WS_CLIPCHILDREN | WS_TABSTOP | WS_HSCROLL | WS_VSCROLL,
 		hInstance, NULL,
 		TRUE);
 	t->model->tables->push_back(t);
@@ -625,6 +866,7 @@ uiTable *uiNewTable(uiTableParams *p)
 
 	uiTableOnRowClicked(t, defaultOnRowClicked, NULL);
 	uiTableOnRowDoubleClicked(t, defaultOnRowDoubleClicked, NULL);
+	uiTableSetSelectionMode(t, uiTableSelectionModeZeroOrOne);
 
 	return t;
 }

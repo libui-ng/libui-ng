@@ -107,6 +107,17 @@ void headerVisibleToggled(uiCheckbox *c, void *data)
 	uiCheckboxSetChecked(c, uiTableHeaderVisible(t));
 }
 
+void selectionModeOnSelected(uiCombobox *c, void *data)
+{
+	uiTable *t = data;
+	int i = uiComboboxSelected(c);
+
+	if (i < 0) return;
+	uiTableSetSelectionMode(t, i);
+
+	uiComboboxSetSelected(c, uiTableGetSelectionMode(t));
+}
+
 uiSpinbox *columnID;
 uiSpinbox *columnWidth;
 static void changedColumnID(uiSpinbox *s, void *data)
@@ -159,15 +170,58 @@ static void headerOnClicked(uiTable *t, int col, void *data)
 	prev = col;
 }
 
+uiLabel *lblNumSelectedRows;
+uiLabel *lblSumSelectedRows;
+int countSelectionChanged;
+uiLabel *lblCountSelectionChanged;
+static void onSelectionChanged(uiTable *t, void *data)
+{
+	int i;
+	int sum = 0;
+	char str[128];
+	uiTableSelection *s = uiTableGetSelection(t);
+
+	sprintf(str, "# Selection Changed Count: %d", ++countSelectionChanged);
+	uiLabelSetText(lblCountSelectionChanged, str);
+
+	sprintf(str, "# Selected Rows: %d", s->NumRows);
+	uiLabelSetText(lblNumSelectedRows, str);
+
+	for (i = 0; i < s->NumRows; ++i)
+		sum += s->Rows[i];
+
+	sprintf(str, "Sum Selected Rows: %d", sum);
+	uiLabelSetText(lblSumSelectedRows, str);
+
+	uiFreeTableSelection(s);
+}
+
+static void selectChecked(uiButton *b, void *data)
+{
+	unsigned i;
+	int rows[sizeof(checkStates)/sizeof(*checkStates)];
+	int numChecked = 0;
+	uiTable *t = data;
+
+	for (i = 0; i < sizeof(checkStates)/sizeof(*checkStates); ++i)
+		if (checkStates[i])
+			rows[numChecked++] = i;
+
+	uiTableSelection sel = {.NumRows = numChecked, .Rows = rows};
+	uiTableSetSelection(t, &sel);
+}
+
 uiBox *makePage16(void)
 {
 	uiBox *page16;
 	uiBox *controls;
 	uiBox *stats;
 	uiCheckbox *headerVisible;
+	uiCombobox *selectionMode;
 	uiTable *t;
 	uiTableParams p;
 	uiTableTextColumnOptionalParams tp;
+	uiButton *buttonSelectChecked;
 
 	img[0] = uiNewImage(16, 16);
 	appendImageNamed(img[0], "andlabs_16x16test_24june2016.png");
@@ -218,11 +272,23 @@ uiBox *makePage16(void)
 		8);
 
 	uiTableHeaderOnClicked(t, headerOnClicked, NULL);
+	uiTableOnSelectionChanged(t, onSelectionChanged, NULL);
 
 	headerVisible = uiNewCheckbox("Header Visible");
 	uiCheckboxSetChecked(headerVisible, uiTableHeaderVisible(t));
 	uiCheckboxOnToggled(headerVisible, headerVisibleToggled, t);
 	uiBoxAppend(controls, uiControl(headerVisible), 0);
+
+	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
+
+	selectionMode = uiNewCombobox();
+	uiComboboxAppend(selectionMode, "None");
+	uiComboboxAppend(selectionMode, "ZeroOrOne");
+	uiComboboxAppend(selectionMode, "One");
+	uiComboboxAppend(selectionMode, "ZeroOrMany");
+	uiComboboxOnSelected(selectionMode, selectionModeOnSelected, t);
+	uiComboboxSetSelected(selectionMode, uiTableGetSelectionMode(t));
+	uiBoxAppend(controls, uiControl(selectionMode), 0);
 
 	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
 
@@ -232,9 +298,14 @@ uiBox *makePage16(void)
 	uiBoxAppend(controls, uiControl(uiNewLabel("Width")), 0);
 	columnWidth = uiNewSpinbox(-1, INT_MAX);
 	uiBoxAppend(controls, uiControl(columnWidth), 0);
-
 	uiSpinboxOnChanged(columnID, changedColumnID, t);
 	uiSpinboxOnChanged(columnWidth, changedColumnWidth, t);
+
+	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
+
+	buttonSelectChecked = uiNewButton("Select Checked");
+	uiButtonOnClicked(buttonSelectChecked, selectChecked, t);
+	uiBoxAppend(controls, uiControl(buttonSelectChecked), 0);
 
 	stats = newHorizontalBox();
 	uiBoxSetPadded(stats, 1);
@@ -248,6 +319,15 @@ uiBox *makePage16(void)
 
 	uiTableOnRowClicked(t, onRowClicked, NULL);
 	uiTableOnRowDoubleClicked(t, onRowDoubleClicked, NULL);
+
+	lblNumSelectedRows = uiNewLabel("");
+	uiBoxAppend(stats, uiControl(lblNumSelectedRows), 0);
+
+	lblSumSelectedRows = uiNewLabel("");
+	uiBoxAppend(stats, uiControl(lblSumSelectedRows), 0);
+
+	lblCountSelectionChanged = uiNewLabel("");
+	uiBoxAppend(stats, uiControl(lblCountSelectionChanged), 0);
 
 	return page16;
 }
