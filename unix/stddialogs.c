@@ -28,7 +28,7 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 		gtk_widget_destroy(fcd);
 		return NULL;
 	}
-	filename = uiUnixStrdupText(gtk_file_chooser_get_filename(fc));
+	filename = gtk_file_chooser_get_filename(fc);
 	gtk_widget_destroy(fcd);
 	return filename;
 }
