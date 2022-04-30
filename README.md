@@ -108,7 +108,7 @@ Perl6 | [perl6-libui](https://github.com/Garland-g/perl6-libui)
 PHP | [ui](https://github.com/krakjoe/ui)
 Python | [pylibui](https://github.com/joaoventura/pylibui)
 Ruby | [libui-ruby](https://github.com/jamescook/libui-ruby), [LibUI](https://github.com/kojix2/libui), [Glimmer DSL for LibUI](https://github.com/AndyObtiva/glimmer-dsl-libui)
-Rust | [libui-ng-sys](https://github.com/norepimorphism/libui-ng-sys), [libui-rs](https://github.com/rust-native-ui/libui-rs)
+Rust | [libui-ng-sys](https://github.com/norepimorphism/libui-ng-sys), [boing](https://github.com/norepimorphism/boing), [libui-rs](https://github.com/rust-native-ui/libui-rs)
 Scala | [scalaui](https://github.com/lolgab/scalaui)
 Swift | [libui-swift](https://github.com/sclukey/libui-swift)
 
