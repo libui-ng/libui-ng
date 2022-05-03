@@ -52,12 +52,13 @@ jobs:
       matrix:
         # windows-latest, windows-2022
         os: [windows-latest]
+        compiler: [msvc]
         arch: [x86, x64]
         libtype: [static] # FIXME [static, shared]
         # debug, debugoptimized, release
         buildtype: [debug]
     runs-on: ${{ matrix.os }}
-    name: Win-${{ matrix.arch }}-${{ matrix.libtype }}
+    name: Win-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.libtype }}
     steps:
       # Setup build env
       - uses: actions/checkout@v2
@@ -86,7 +87,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Win-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
+          name: Win-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
           # lib + header + examples + test + build-log
           path: |
             !builddir/meson-out/*.p/
@@ -102,13 +103,19 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
-        arch: [x64]
+        compiler: [mingw-gcc, mingw-clang]
+        arch: [x86, x64]
         # only support static
         libtype: [static]
         # debug, debugoptimized, release
         buildtype: [release]
+        include:
+          - { arch: x86, compiler: mingw-gcc,   msys: mingw32, msys_arch: i686 }
+          - { arch: x64, compiler: mingw-gcc,   msys: mingw64, msys_arch: x86_64 }
+          - { arch: x86, compiler: mingw-clang, msys: clang32, msys_arch: clang-i686 }
+          - { arch: x64, compiler: mingw-clang, msys: clang64, msys_arch: clang-x86_64 }
     runs-on: ${{ matrix.os }}
-    name: Mingw-${{ matrix.arch }}-${{ matrix.libtype }}
+    name: Win-${{ matrix.arch }}-${{ matrix.compiler }}-${{ matrix.libtype }}
     defaults:
       run:
         shell: msys2 {0}
@@ -116,13 +123,11 @@ jobs:
       # Setup build env
       - uses: msys2/setup-msys2@v2
         with:
+          msystem: ${{ matrix.msys }}
           update: true
           install: >-
-            base-devel
-            git
-          pacboy: >-
-            toolchain:x
-            meson:x
+            mingw-w64-${{ matrix.msys_arch }}-cc
+            mingw-w64-${{ matrix.msys_arch }}-meson
       - uses: actions/checkout@v2
       - name: Meson Setup Build
         run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=static
@@ -131,7 +136,7 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: Mingw-${{ matrix.arch }}-static-${{ matrix.buildtype }}
+          name: Win-${{ matrix.arch }}-${{ matrix.compiler }}-static-${{ matrix.buildtype }}
           # lib + header + examples + test + build-log
           path: |
             builddir/meson-out/libui.a
