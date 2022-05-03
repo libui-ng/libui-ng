@@ -102,11 +102,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-latest]
-        arch: [x64]
         # only support static
         libtype: [static]
         # debug, debugoptimized, release
         buildtype: [release]
+        include:
+          - { sys: mingw64, arch: x64, env: x86_64 }
+          - { sys: mingw32, arch: x86, env: i686 }
+          - { sys: clang64, arch: clang-x64, env: clang-x86_64 }
+          - { sys: clang32, arch: clang-x86, env: clang-i686 }
     runs-on: ${{ matrix.os }}
     name: Mingw-${{ matrix.arch }}-${{ matrix.libtype }}
     defaults:
@@ -116,13 +120,11 @@ jobs:
       # Setup build env
       - uses: msys2/setup-msys2@v2
         with:
+          msystem: ${{ matrix.sys }}
           update: true
           install: >-
-            base-devel
-            git
-          pacboy: >-
-            toolchain:x
-            meson:x
+            mingw-w64-${{ matrix.env }}-cc
+            mingw-w64-${{ matrix.env }}-meson
       - uses: actions/checkout@v2
       - name: Meson Setup Build
         run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=static
