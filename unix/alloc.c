@@ -24,7 +24,7 @@ static void uninitComplain(gpointer ptr, gpointer data)
 	char *str2;
 
 	if (*str == NULL)
-		*str = g_strdup_printf("");
+		*str = g_strdup("");
 	str2 = g_strdup_printf("%s%p %s\n", *str, ptr, *TYPE(ptr));
 	g_free(*str);
 	*str = str2;
