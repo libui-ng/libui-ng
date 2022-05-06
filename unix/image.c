@@ -31,10 +31,11 @@ void uiFreeImage(uiImage *i)
 	uiprivFree(i);
 }
 
-void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride)
+void uiImageAppend(uiImage *i, const void *pixels, int pixelWidth, int pixelHeight, int byteStride)
 {
 	cairo_surface_t *cs;
-	uint8_t *data, *pix;
+	const uint8_t *pix;
+	uint8_t *data;
 	int realStride;
 	int x, y;
 
@@ -45,7 +46,7 @@ void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, in
 		/* TODO */;
 	cairo_surface_flush(cs);
 
-	pix = (uint8_t *) pixels;
+	pix = pixels;
 	data = (uint8_t *) cairo_image_surface_get_data(cs);
 	realStride = cairo_image_surface_get_stride(cs);
 	for (y = 0; y < pixelHeight; y++) {

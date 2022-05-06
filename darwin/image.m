@@ -22,11 +22,12 @@ void uiFreeImage(uiImage *i)
 	uiprivFree(i);
 }
 
-void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride)
+void uiImageAppend(uiImage *i, const void *pixels, int pixelWidth, int pixelHeight, int byteStride)
 {
 	NSBitmapImageRep *repCalibrated, *repsRGB;
 	int x, y;
-	uint8_t *pix, *data;
+	const uint8_t *pix;
+	uint8_t* data;
 	NSInteger realStride;
 
 	repCalibrated = [[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL
@@ -45,7 +46,7 @@ void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, in
 	// TODO split this into a utility routine?
 	// TODO find proper documentation
 	// TODO test this on a big-endian system somehow; I have a feeling the above comment is wrong about the diagnosis since the order we are specifying is now 0xAABBGGRR
-	pix = (uint8_t *) pixels;
+	pix = pixels;
 	data = (uint8_t *) [repCalibrated bitmapData];
 	realStride = [repCalibrated bytesPerRow];
 	for (y = 0; y < pixelHeight; y++) {
