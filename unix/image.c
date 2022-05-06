@@ -47,7 +47,7 @@ void uiImageAppend(uiImage *i, const void *pixels, int pixelWidth, int pixelHeig
 	cairo_surface_flush(cs);
 
 	pix = pixels;
-	data = (uint8_t *) cairo_image_surface_get_data(cs);
+	data = cairo_image_surface_get_data(cs);
 	realStride = cairo_image_surface_get_stride(cs);
 	for (y = 0; y < pixelHeight; y++) {
 		for (x = 0; x < pixelWidth * 4; x += 4) {
