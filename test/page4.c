@@ -141,6 +141,10 @@ static void onRangeSliderChanged(uiSlider *s, void *data)
 	uiLabelSetText(lbl, str);
 }
 
+static void onSliderReleased(uiSlider *s, void *data){
+	printf("on Slider released \n");
+}
+
 uiBox *makePage4(void)
 {
 	uiBox *page4;
@@ -158,6 +162,7 @@ uiBox *makePage4(void)
 
 	slider = uiNewSlider(0, 100);
 	uiSliderOnChanged(slider, onSliderChanged, NULL);
+	uiSliderOnReleased(slider, onSliderReleased, NULL);
 	uiBoxAppend(page4, uiControl(slider), 0);
 
 	hbox = newHorizontalBox();
