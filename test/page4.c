@@ -4,6 +4,7 @@
 static uiSpinbox *spinbox;
 static uiSlider *slider;
 static uiProgressBar *pbar;
+static uiProgressBar *pbar2;
 static uiCheckbox *checkbox;
 static uiSpinbox *spinboxFrom;
 static uiSpinbox *spinboxTo;
@@ -142,7 +143,11 @@ static void onRangeSliderChanged(uiSlider *s, void *data)
 }
 
 static void onSliderReleased(uiSlider *s, void *data){
-	printf("on Slider released \n");
+	int value;
+
+	printf("on Slider released\n");
+	value = uiSliderValue(s);
+	uiProgressBarSetValue(pbar2, value);
 }
 
 uiBox *makePage4(void)
@@ -182,6 +187,9 @@ uiBox *makePage4(void)
 
 	pbar = uiNewProgressBar();
 	uiBoxAppend(page4, uiControl(pbar), 0);
+
+	pbar2 = uiNewProgressBar();
+	uiBoxAppend(page4, uiControl(pbar2), 0);
 
 	uiBoxAppend(page4, uiControl(uiNewHorizontalSeparator()), 0);
 
