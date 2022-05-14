@@ -15,7 +15,7 @@ struct uiSlider {
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
 	void (*onReleased)(uiSlider *, void *);
-  void *onReleasedData;
+  	void *onReleasedData;
 	gulong onChangedSignal;
 	gchar tooltip[MAX_STRLEN_FOR_NBITS_IN_DECIMAL(sizeof(int) * CHAR_BIT) + 1];
 };
