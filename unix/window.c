@@ -55,15 +55,15 @@ static void onSizeAllocate(GtkWidget *widget, GdkRectangle *allocation, gpointer
 static gboolean onGetFocus(GtkWidget *win, GdkEvent *e, gpointer data)
 {
 	uiWindow *w = uiWindow(data);
-	if (w->onGetFocus)
-		w->onGetFocus(w, w->onGetFocusData);
+	w->onGetFocus(w, w->onGetFocusData);
+	return FALSE;
 }
 
 static gboolean onLoseFocus(GtkWidget *win, GdkEvent *e, gpointer data)
 {
 	uiWindow *w = uiWindow(data);
-	if (w->onLoseFocus)
-		w->onLoseFocus(w, w->onLoseFocusData);
+	w->onLoseFocus(w, w->onLoseFocusData);
+	return FALSE;
 }
 
 static int defaultOnClosing(uiWindow *w, void *data)
@@ -72,6 +72,16 @@ static int defaultOnClosing(uiWindow *w, void *data)
 }
 
 static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnGetFocus(uiWindow *w, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnLoseFocus(uiWindow *w, void *data)
 {
 	// do nothing
 }
@@ -318,8 +328,8 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
-	uiWindowOnGetFocus(w, NULL, NULL);
-	uiWindowOnLoseFocus(w, NULL, NULL);
+	uiWindowOnGetFocus(w, defaultOnGetFocus, NULL);
+	uiWindowOnLoseFocus(w, defaultOnLoseFocus, NULL);
 
 	// normally it's SetParent() that does this, but we can't call SetParent() on a uiWindow
 	// TODO we really need to clean this up, especially since see uiWindowDestroy() above
