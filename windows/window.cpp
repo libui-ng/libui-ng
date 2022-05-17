@@ -119,17 +119,11 @@ static LRESULT CALLBACK windowWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 		return lResult;
 
 	case WM_SETFOCUS:
-		if (w->onGetFocus) {
-			w->onGetFocus(w, w->onGetFocusData);
-			return 0;
-		}
-		break;
+		w->onGetFocus(w, w->onGetFocusData);
+		return 0;
 	case WM_KILLFOCUS:
-		if (w->onLoseFocus) {
-			w->onLoseFocus(w, w->onLoseFocusData);
-			return 0;
-		}
-		break;
+		w->onLoseFocus(w, w->onLoseFocusData);
+		return 0;
 
 	case WM_PRINTCLIENT:
 		// we do no special painting; just erase the background
@@ -170,6 +164,16 @@ static int defaultOnClosing(uiWindow *w, void *data)
 }
 
 static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnGetFocus(uiWindow *w, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnLoseFocus(uiWindow *w, void *data)
 {
 	// do nothing
 }
@@ -542,8 +546,8 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
-	uiWindowOnGetFocus(w, NULL, NULL);
-	uiWindowOnLoseFocus(w, NULL, NULL);
+	uiWindowOnGetFocus(w, defaultOnGetFocus, NULL);
+	uiWindowOnLoseFocus(w, defaultOnLoseFocus, NULL);
 
 	windows[w] = true;
 	return w;
