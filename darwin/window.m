@@ -14,9 +14,9 @@ struct uiWindow {
 	void (*onContentSizeChanged)(uiWindow *, void *);
 	void *onContentSizeChangedData;
 	void (*onGetFocus)(uiWindow*, void *);
-	void (*onGetFocusData);
+	void *onGetFocusData;
 	void (*onLoseFocus)(uiWindow*, void *);
-	void (*onLoseFocusData);
+	void *onLoseFocusData;
 	BOOL suppressSizeChanged;
 	int fullscreen;
 	int borderless;
