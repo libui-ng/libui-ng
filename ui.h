@@ -243,25 +243,186 @@ _UI_EXTERN int uiControlEnabledToUser(uiControl *c);
 // TODO Move this to private API? According to old/new.md this should be used by toplevel controls.
 _UI_EXTERN void uiUserBugCannotSetParentOnToplevel(const char *type);
 
+
+/**
+ * A control that represents a top-level window.
+ *
+ * A window contains exactly one child control that occupied the entire window.
+ *
+ * @warning A uiWindow can NOT be a child of another uiControl.
+ *
+ * @struct uiWindow
+ * @extends uiControl
+ */
 typedef struct uiWindow uiWindow;
 #define uiWindow(this) ((uiWindow *) (this))
+
+/**
+ * Returns the window title.
+ *
+ * @param w uiWindow instance.
+ * @returns The window title text.
+ * @returns A `NUL` terminated UTF-8 string.
+ * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @memberof uiWindow
+ */
 _UI_EXTERN char *uiWindowTitle(uiWindow *w);
+
+/**
+ * Sets the window title.
+ *
+ * @param w uiWindow instance.
+ * @param title Window title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
+
+/**
+ * Gets the window content size.
+ *
+ * @param w uiWindow instance.
+ * @param[out] width Window content width.
+ * @param[out] height Window content height.
+ * @note The content size does NOT include window decorations like menus or title bars.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowContentSize(uiWindow *w, int *width, int *height);
+
+/**
+ * Sets the window content size.
+ *
+ * @param w uiWindow instance.
+ * @param width Window content width to set.
+ * @param height Window content height to set.
+ * @note The content size does NOT include window decorations like menus or title bars.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowSetContentSize(uiWindow *w, int width, int height);
+
+/**
+ * Returns whether or not the window is full screen.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if full screen, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiWindow
+ */
 _UI_EXTERN int uiWindowFullscreen(uiWindow *w);
+
+/**
+ * Sets whether or not the window is full screen.
+ *
+ * @param w uiWindow instance.
+ * @param fullscreen `TRUE` to make window full screen, `FALSE` otherwise.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
+
+/**
+ * Register a callback for when the window content size is changed.
+ *
+ * @param w uiWindow instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+
+/**
+ * Registers a callback for when the window is to be closed.
+ *
+ * @param w uiWindow instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * If @p f returns `TRUE`, the window is destroyed with the Destroy method.\n
+ * If @p f returns `FALSE`, or if OnClosing is never called, the window is not
+ * destroyed and is kept visible.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
+
+/**
+ * Returns whether or not the window is borderless.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window is borderless, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiWindow
+ */
 _UI_EXTERN int uiWindowBorderless(uiWindow *w);
+
+/**
+ * Sets whether or not the window is borderless.
+ *
+ * @param w uiWindow instance.
+ * @param borderless `TRUE` to make window borderless, `FALSE` otherwise.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowSetBorderless(uiWindow *w, int borderless);
+
+/**
+ * Sets the window's child.
+ *
+ * @param w uiWindow instance.
+ * @param child Control to be made child.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowSetChild(uiWindow *w, uiControl *child);
+
+/**
+ * Returns whether or not the window has a margin.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window has a margin, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiWindow
+ */
 _UI_EXTERN int uiWindowMargined(uiWindow *w);
+
+/**
+ * Sets whether or not the window has a margin.
+ *
+ * The margin size is determined by the OS defaults.
+ *
+ * @param w uiWindow instance.
+ * @param margined `TRUE` to set a window margin, `FALSE` otherwise.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowSetMargined(uiWindow *w, int margined);
+
+/**
+ * Returns whether or not the window is user resizeable.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window is resizable, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiWindow
+ */
 _UI_EXTERN int uiWindowResizeable(uiWindow *w);
+
+/**
+ * Sets whether or not the window is user resizeable.
+ *
+ * @param w uiWindow instance.
+ * @param resizeable `TRUE` to make window resizable, `FALSE` otherwise.
+ * @memberof uiWindow
+ */
 _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
+
+/**
+ * Creates a new uiWindow.
+ *
+ * @param title Window title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param width Window width.
+ * @param height Window height.
+ * @param hasMenubar Whether or not the window should display a menu bar.
+ * @returns A new uiWindow instance.
+ * @memberof uiWindow
+ */
 _UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar);
 
-_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
-_UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
 _UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
 _UI_EXTERN int uiWindowFocused(uiWindow *w);
 
