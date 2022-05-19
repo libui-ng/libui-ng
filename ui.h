@@ -726,10 +726,43 @@ _UI_EXTERN uiEntry *uiNewPasswordEntry(void);
  */
 _UI_EXTERN uiEntry *uiNewSearchEntry(void);
 
+
+/**
+ * A control that displays a non interactive line of text.
+ *
+ * @struct uiLabel
+ * @extends uiControl
+ */
 typedef struct uiLabel uiLabel;
 #define uiLabel(this) ((uiLabel *) (this))
+
+/**
+ * Returns the label text.
+ *
+ * @param l uiLabel instance.
+ * @returns The text of the label.
+ * @returns A `NUL` terminated UTF-8 string.
+ * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @memberof uiLabel
+ */
 _UI_EXTERN char *uiLabelText(uiLabel *l);
+
+/**
+ * Sets the label text.
+ *
+ * @param l uiLabel instance.
+ * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiLabel
+ */
 _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
+
+/**
+ * Creates a new label.
+ *
+ * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @returns A new uiLabel instance.
+ * @memberof uiLabel
+ */
 _UI_EXTERN uiLabel *uiNewLabel(const char *text);
 
 typedef struct uiTab uiTab;
