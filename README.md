@@ -74,7 +74,7 @@ When running `meson`, the `--prefix` option will set the installation prefix. [T
 
 #### Arch Linux
 
-Can be built from AUR: https://aur.archlinux.org/packages/libui-git/
+Can be built from AUR: https://aur.archlinux.org/packages/libui-ng-git/
 
 ## Documentation
 
