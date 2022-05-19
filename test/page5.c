@@ -68,12 +68,12 @@ static void msgBoxError(uiButton *b, void *data)
 
 void onGetFocus(uiWindow *w, void *data)
 {
-	uiCheckboxSetChecked(uiCheckbox(data), 1);
+	uiLabelSetText(uiLabel(data), "Window is focused");
 }
 
 void onLoseFocus(uiWindow *w, void *data)
 {
-	uiCheckboxSetChecked(uiCheckbox(data), 0);
+	uiLabelSetText(uiLabel(data), "Window is not focused");
 }
 
 
@@ -84,7 +84,7 @@ uiBox *makePage5(uiWindow *pw)
 	uiBox *hbox;
 	uiButton *button;
 	uiLabel *label;
-	uiCheckbox *check;
+	uiLabel *focusLabel;
 
 	parent = pw;
 
@@ -122,11 +122,11 @@ uiBox *makePage5(uiWindow *pw)
 	uiBoxAppend(hbox, uiControl(description), 0);
 	uiBoxAppend(page5, uiControl(hbox), 0);
 
-	check = uiNewCheckbox("Window Focused");
-	uiBoxAppend(page5, uiControl(check), 0);
+	focusLabel = uiNewLabel("");
+	uiBoxAppend(page5, uiControl(focusLabel), 0);
 
-	uiWindowOnGetFocus(parent, onGetFocus, check);
-	uiWindowOnLoseFocus(parent, onLoseFocus, check);
+	uiWindowOnGetFocus(parent, onGetFocus, focusLabel);
+	uiWindowOnLoseFocus(parent, onLoseFocus, focusLabel);
 
 	return page5;
 }
