@@ -848,13 +848,78 @@ _UI_EXTERN void uiTabSetMargined(uiTab *t, int index, int margined);
  */
 _UI_EXTERN uiTab *uiNewTab(void);
 
+
+/**
+ * A control container that adds a label to the contained child control.
+ *
+ * This control is a great way of grouping related controls in combination with
+ * uiBox.
+ *
+ * A visual box will or will not be drawn around the child control dependent
+ * on the underlying OS implementation.
+ *
+ * @struct uiGroup
+ * @extends uiControl
+ */
 typedef struct uiGroup uiGroup;
 #define uiGroup(this) ((uiGroup *) (this))
+
+/**
+ * Returns the group title.
+ *
+ * @param g uiGroup instance.
+ * @returns The group title text.
+ * @returns A `NUL` terminated UTF-8 string.
+ * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @memberof uiGroup
+ */
 _UI_EXTERN char *uiGroupTitle(uiGroup *g);
+
+/**
+ * Sets the group title.
+ *
+ * @param g uiGroup instance.
+ * @param title Group title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiGroup
+ */
 _UI_EXTERN void uiGroupSetTitle(uiGroup *g, const char *title);
+
+/**
+ * Sets the group's child.
+ *
+ * @param g uiGroup instance.
+ * @param c uiControl child instance, or `NULL`.
+ * @memberof uiGroup
+ */
 _UI_EXTERN void uiGroupSetChild(uiGroup *g, uiControl *c);
+
+/**
+ * Returns whether or not the group has a margin.
+ *
+ * @param g uiGroup instance.
+ * @returns `TRUE` if the group has a margin, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiGroup
+ */
 _UI_EXTERN int uiGroupMargined(uiGroup *g);
+
+/**
+ * Sets whether or not the group has a margin.
+ *
+ * The margin size is determined by the OS defaults.
+ *
+ * @param g uiGroup instance.
+ * @param margined `TRUE` to set a margin, `FALSE` otherwise.
+ * @memberof uiGroup
+ */
 _UI_EXTERN void uiGroupSetMargined(uiGroup *g, int margined);
+
+/**
+ * Creates a new group.
+ *
+ * @param title Group title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @returns A new uiGroup instance.
+ * @memberof uiGroup
+ */
 _UI_EXTERN uiGroup *uiNewGroup(const char *title);
 
 // spinbox/slider rules:
