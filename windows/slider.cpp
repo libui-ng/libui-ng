@@ -20,7 +20,7 @@ static BOOL onWM_HSCROLL(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 	} else {
 		(*(s->onChanged))(s, s->onChangedData);
 	}
-	
+
 	*lResult = 0;
 	return TRUE;
 }
