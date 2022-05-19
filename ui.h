@@ -636,15 +636,94 @@ _UI_EXTERN void uiCheckboxSetChecked(uiCheckbox *c, int checked);
  */
 _UI_EXTERN uiCheckbox *uiNewCheckbox(const char *text);
 
+
+/**
+ * A control with a single line text entry field.
+ *
+ * @struct uiEntry
+ * @extends uiControl
+ */
 typedef struct uiEntry uiEntry;
 #define uiEntry(this) ((uiEntry *) (this))
+
+/**
+ * Returns the entry's text.
+ *
+ * @param e uiEntry instance.
+ * @returns The text of the entry.
+ * @returns A `NUL` terminated UTF-8 string.
+ * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @memberof uiEntry
+ */
 _UI_EXTERN char *uiEntryText(uiEntry *e);
+
+/**
+ * Sets the entry's text.
+ *
+ * @param e uiEntry instance.
+ * @param text Entry text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiEntry
+ */
 _UI_EXTERN void uiEntrySetText(uiEntry *e, const char *text);
+
+/**
+ * Register a callback for when the user changes the entry's text.
+ *
+ * @param e uiEntry instance.
+ * @param f Callback function
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note The callback is not triggered when calling uiEntrySetText().
+ * @memberof uiEntry
+ */
 _UI_EXTERN void uiEntryOnChanged(uiEntry *e, void (*f)(uiEntry *e, void *data), void *data);
+
+/**
+ * Returns whether or not the entry's text can be changed.
+ *
+ * @param e uiEntry instance.
+ * @returns `TRUE` if read only, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiEntry
+ */
 _UI_EXTERN int uiEntryReadOnly(uiEntry *e);
+
+/**
+ * Sets whether or not the entry's text is read only.
+ *
+ * @param e uiEntry instance.
+ * @param readonly `TRUE` to make read only, `FALSE` otherwise.
+ * @memberof uiEntry
+ */
 _UI_EXTERN void uiEntrySetReadOnly(uiEntry *e, int readonly);
+
+/**
+ * Creates a new entry.
+ *
+ * @returns A new uiEntry instance.
+ * @memberof uiEntry
+ */
 _UI_EXTERN uiEntry *uiNewEntry(void);
+
+/**
+ * Creates a new entry suitable for sensitive inputs like passwords.
+ *
+ * The entered text is NOT readable by the user but masked as *******.
+ *
+ * @returns A new uiEntry instance.
+ * @memberof uiEntry
+ */
 _UI_EXTERN uiEntry *uiNewPasswordEntry(void);
+
+/**
+ * Creates a new entry suitable for search.
+ *
+ * Some systems will deliberately delay the uiEntryOnChanged() callback for
+ * a more natural feel.
+ *
+ * @returns A new uiEntry instance.
+ * @memberof uiEntry
+ */
 _UI_EXTERN uiEntry *uiNewSearchEntry(void);
 
 typedef struct uiLabel uiLabel;
