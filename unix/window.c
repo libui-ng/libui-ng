@@ -237,7 +237,10 @@ int uiWindowResizeable(uiWindow *w)
 
 void uiWindowSetResizeable(uiWindow *w, int resizeable)
 {
+	int x, y;
 	w->resizeable = resizeable;
+	uiWindowContentSize(w, &x, &y);
+	gtk_window_set_default_size(w->window, x, y);
 	gtk_window_set_resizable(w->window, resizeable);
 }
 
