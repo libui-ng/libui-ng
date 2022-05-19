@@ -478,14 +478,92 @@ _UI_EXTERN void uiButtonOnClicked(uiButton *b, void (*f)(uiButton *b, void *data
  */
 _UI_EXTERN uiButton *uiNewButton(const char *text);
 
+
+/**
+ * A boxlike container that holds a group of controls.
+ *
+ * The contained controls are arranged to be displayed either horizontally or
+ * vertically next to each other.
+ *
+ * @struct uiBox
+ * @extends uiControl
+ */
 typedef struct uiBox uiBox;
 #define uiBox(this) ((uiBox *) (this))
+
+/**
+ * Appends a control to the box.
+ *
+ * Stretchy items expand to use the remaining space within the box.
+ * In the case of multiple stretchy items the space is shared equally.
+ *
+ * @param b uiBox instance.
+ * @param child Control instance to append.
+ * @param stretchy `TRUE` to stretch control, `FALSE` otherwise.
+ * @memberof uiBox
+ */
 _UI_EXTERN void uiBoxAppend(uiBox *b, uiControl *child, int stretchy);
+
+/**
+ * Returns the number of controls contained within the box.
+ *
+ * @param b uiBox instance.
+ * @returns Number of children.
+ * @memberof uiBox
+ */
 _UI_EXTERN int uiBoxNumChildren(uiBox *b);
+
+/**
+ * Removes the control at @p index from the box.
+ *
+ * @param b uiBox instance.
+ * @param index Index of control to be removed.
+ * @note The control neither destroyed nor freed.
+ * @memberof uiBox
+ */
 _UI_EXTERN void uiBoxDelete(uiBox *b, int index);
+
+/**
+ * Returns whether or not controls within the box are padded.
+ *
+ * Padding is defined as space between individual controls.
+ *
+ * @param b uiBox instance.
+ * @returns `TRUE` if controls are padded, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiBox
+ */
 _UI_EXTERN int uiBoxPadded(uiBox *b);
+
+/**
+ * Sets whether or not controls within the box are padded.
+ *
+ * Padding is defined as space between individual controls.
+ * The padding size is determined by the OS defaults.
+ *
+ * @param b uiBox instance.
+ * @param padded  `TRUE` to make controls padded, `FALSE` otherwise.
+ * @memberof uiBox
+ */
 _UI_EXTERN void uiBoxSetPadded(uiBox *b, int padded);
+
+/**
+ * Creates a new horizontal box.
+ *
+ * Controls within the box are placed next to each other horizontally.
+ *
+ * @returns A new uiBox instance.
+ * @memberof uiBox
+ */
 _UI_EXTERN uiBox *uiNewHorizontalBox(void);
+
+/**
+ * Creates a new vertical box.
+ *
+ * Controls within the box are placed next to each other vertically.
+ *
+ * @returns A new uiBox instance.
+ * @memberof uiBox
+ */
 _UI_EXTERN uiBox *uiNewVerticalBox(void);
 
 typedef struct uiCheckbox uiCheckbox;
