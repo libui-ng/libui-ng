@@ -765,14 +765,87 @@ _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
  */
 _UI_EXTERN uiLabel *uiNewLabel(const char *text);
 
+
+/**
+ * A multi page control interface that displays one page at a time.
+ *
+ * Each page/tab has an associated label that can be selected to switch
+ * between pages/tabs.
+ *
+ * @struct uiTab
+ * @extends uiControl
+ */
 typedef struct uiTab uiTab;
 #define uiTab(this) ((uiTab *) (this))
+
+/**
+ * Appends a control in form of a page/tab with label.
+ *
+ * @param t uiTab instance.
+ * @param name Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param c Control to append.
+ * @memberof uiTab
+ */
 _UI_EXTERN void uiTabAppend(uiTab *t, const char *name, uiControl *c);
-_UI_EXTERN void uiTabInsertAt(uiTab *t, const char *name, int before, uiControl *c);
+
+/**
+ * Inserts a control in form of a page/tab with label at @p index.
+ *
+ * @param t uiTab instance.
+ * @param name Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param index Index at which to insert the control.
+ * @param c Control to insert.
+ * @memberof uiTab
+ */
+_UI_EXTERN void uiTabInsertAt(uiTab *t, const char *name, int index, uiControl *c);
+
+/**
+ * Removes the control at @p index.
+ *
+ * @param t uiTab instance.
+ * @param index Index of the control to be removed.
+ * @note The control is neither destroyed nor freed.
+ * @memberof uiTab
+ */
 _UI_EXTERN void uiTabDelete(uiTab *t, int index);
+
+/**
+ * Returns the number of pages contained.
+ *
+ * @param t uiTab instance.
+ * @returns Number of pages.
+ * @memberof uiTab
+ */
 _UI_EXTERN int uiTabNumPages(uiTab *t);
-_UI_EXTERN int uiTabMargined(uiTab *t, int page);
-_UI_EXTERN void uiTabSetMargined(uiTab *t, int page, int margined);
+
+/**
+ * Returns whether or not the page/tab at @p index has a margin.
+ *
+ * @param t uiTab instance.
+ * @param index Index to check if it has a margin.
+ * @returns `TRUE` if the tab has a margin, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiTab
+ */
+_UI_EXTERN int uiTabMargined(uiTab *t, int index);
+
+/**
+ * Sets whether or not the page/tab at @p index has a margin.
+ *
+ * The margin size is determined by the OS defaults.
+ *
+ * @param t uiTab instance.
+ * @param index Index of the tab/page to un/set margin for.
+ * @param margined `TRUE` to set a margin for tab at @p index, `FALSE` otherwise.
+ * @memberof uiTab
+ */
+_UI_EXTERN void uiTabSetMargined(uiTab *t, int index, int margined);
+
+/**
+ * Creates a new tab container.
+ *
+ * @return A new uiTab instance.
+ * @memberof uiTab
+ */
 _UI_EXTERN uiTab *uiNewTab(void);
 
 typedef struct uiGroup uiGroup;
