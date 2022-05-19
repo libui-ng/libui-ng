@@ -1097,10 +1097,47 @@ _UI_EXTERN void uiSliderSetRange(uiSlider *s, int min, int max);
  */
 _UI_EXTERN uiSlider *uiNewSlider(int min, int max);
 
+
+/**
+ * A control that visualizes the progress of a task via the fill level of a horizontal bar.
+ *
+ * Indeterminate values are supported via an animated bar.
+ *
+ * @struct uiProgressBar
+ * @extends uiControl
+ */
 typedef struct uiProgressBar uiProgressBar;
 #define uiProgressBar(this) ((uiProgressBar *) (this))
+
+/**
+ * Returns the progress bar value.
+ *
+ * @param p uiProgressBar instance.
+ * @memberof uiProgressBar
+ */
 _UI_EXTERN int uiProgressBarValue(uiProgressBar *p);
+
+/**
+ * Sets the progress bar value.
+ *
+ * Valid values are `[0, 100]` for displaying a solid bar imitating a percent
+ * value.
+ *
+ * Use a value of `-1` to render an animated bar to convey an indeterminate
+ * value.
+ *
+ * @param p uiProgressBar instance.
+ * @param n Value to set. Integer in the range of `[-1, 100]`.
+ * @memberof uiProgressBar
+ */
 _UI_EXTERN void uiProgressBarSetValue(uiProgressBar *p, int n);
+
+/**
+ * Creates a new progress bar.
+ *
+ * @returns A new uiProgressBar instance.
+ * @memberof uiProgressBar
+ */
 _UI_EXTERN uiProgressBar *uiNewProgressBar(void);
 
 typedef struct uiSeparator uiSeparator;
