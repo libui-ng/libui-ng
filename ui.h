@@ -566,13 +566,74 @@ _UI_EXTERN uiBox *uiNewHorizontalBox(void);
  */
 _UI_EXTERN uiBox *uiNewVerticalBox(void);
 
+
+/**
+ * A control with a user checkable box accompanied by a text label.
+ *
+ * @struct uiCheckbox
+ * @extends uiControl
+ */
 typedef struct uiCheckbox uiCheckbox;
 #define uiCheckbox(this) ((uiCheckbox *) (this))
+
+/**
+ * Returns the checkbox label text.
+ *
+ * @param c uiCheckbox instance.
+ * @returns The text of the label.
+ * @returns A `NUL` terminated UTF-8 string.
+ * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
+
+/**
+ * Sets the checkbox label text.
+ *
+ * @param c uiCheckbox instance.
+ * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN void uiCheckboxSetText(uiCheckbox *c, const char *text);
+
+/**
+ * Register a callback for when the checkbox is toggled by the user.
+ *
+ * @param c uiCheckbox instance.
+ * @param f Callback function
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note The callback is not triggered when calling uiCheckboxSetChecked().
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c, void (*f)(uiCheckbox *c, void *data), void *data);
+
+/**
+ * Returns whether or the checkbox is checked.
+ *
+ * @param c uiCheckbox instance.
+ * @returns `TRUE` if checked, `FALSE` otherwise.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN int uiCheckboxChecked(uiCheckbox *c);
+
+/**
+ * Sets whether or not the checkbox is checked.
+ *
+ * @param c uiCheckbox instance.
+ * @param checked `TRUE` to check box, `FALSE` otherwise.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN void uiCheckboxSetChecked(uiCheckbox *c, int checked);
+
+/**
+ * Creates a new checkbox.
+ *
+ * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @returns A new uiCheckbox instance.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN uiCheckbox *uiNewCheckbox(const char *text);
 
 typedef struct uiEntry uiEntry;
