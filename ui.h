@@ -1262,13 +1262,77 @@ _UI_EXTERN void uiComboboxOnSelected(uiCombobox *c, void (*f)(uiCombobox *c, voi
  */
 _UI_EXTERN uiCombobox *uiNewCombobox(void);
 
+
+/**
+ * A control to select one item from a predefined list of items or enter ones own.
+ *
+ * Predefined items can be selected from a drop down menu.
+ *
+ * A customary item can be entered by the user via an editable text field.
+ *
+ * @see uiCombobox
+ * @struct uiEditableCombobox
+ * @extends uiControl
+ */
 typedef struct uiEditableCombobox uiEditableCombobox;
 #define uiEditableCombobox(this) ((uiEditableCombobox *) (this))
+
+/**
+ * Appends an item to the editable combo box.
+ *
+ * @param c uiEditableCombobox instance.
+ * @param text Item text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiEditableCombobox
+ */
 _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text);
+
+/**
+ * Returns the text of the editable combo box.
+ *
+ * This text is either the text of one of the predefined list items or the
+ * text manually entered by the user.
+ *
+ * @param c uiEditableCombobox instance.
+ * @returns The editable combo box text.
+ * @returns A `NUL` terminated UTF-8 string.
+ * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @memberof uiEditableCombobox
+ * returns the text in the entry of the uiEditableCombobox,
+ */
 _UI_EXTERN char *uiEditableComboboxText(uiEditableCombobox *c);
+
+/**
+ * Sets the editable combo box text.
+ *
+ * @param c uiEditableCombobox instance.
+ * @param test @param text Text field text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiEditableCombobox
+ */
 _UI_EXTERN void uiEditableComboboxSetText(uiEditableCombobox *c, const char *text);
-// TODO what do we call a function that sets the currently selected item and fills the text field with it? editable comboboxes have no consistent concept of selected item
+
+// TODO what do we call a function that sets the currently selected item and fills the text field with it?
+// editable comboboxes have no consistent concept of selected item
+
+/**
+ * Registers a callback for when an editable combo box item is selected or user text changed.
+ *
+ * @param c uiEditableCombobox instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note The callback is not triggered when calling uiEditableComboboxSetText().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiEditableCombobox
+ */
 _UI_EXTERN void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiEditableCombobox *c, void *data), void *data);
+
+/**
+ * Creates a new editable combo box.
+ *
+ * @memberof uiEditableCombobox
+ * @returns A new uiEditableCombobox instance.
+ */
 _UI_EXTERN uiEditableCombobox *uiNewEditableCombobox(void);
 
 typedef struct uiRadioButtons uiRadioButtons;
