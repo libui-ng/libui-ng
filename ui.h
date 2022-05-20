@@ -1166,16 +1166,100 @@ _UI_EXTERN uiSeparator *uiNewHorizontalSeparator(void);
  */
 _UI_EXTERN uiSeparator *uiNewVerticalSeparator(void);
 
+
+/**
+ * A control to select one item from a predefined list of items via a drop down menu.
+ *
+ * @see uiEditableCombobox.
+ * @struct uiCombobox
+ * @extends uiControl
+ */
 typedef struct uiCombobox uiCombobox;
 #define uiCombobox(this) ((uiCombobox *) (this))
+
+/**
+ * Appends an item to the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @param text Item text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
-_UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int n, const char *text);
-_UI_EXTERN void uiComboboxDelete(uiCombobox *c, int n);
+
+/**
+ * Inserts an item at @p index to the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @param index Index at which to insert the item.
+ * @param text Item text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiCombobox
+ */
+_UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int index, const char *text);
+
+/**
+ * Deletes an item at @p index from the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @param index Index of the item to be deleted.
+ * @memberof uiCombobox
+ */
+_UI_EXTERN void uiComboboxDelete(uiCombobox *c, int index);
+
+/**
+ * Deletes all items from the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN void uiComboboxClear(uiCombobox *c);
+
+/**
+ * Returns the number of items contained within the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @returns Number of items.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN int uiComboboxNumItems(uiCombobox *c);
+
+/**
+ * Returns the index of the item selected.
+ *
+ * @param c uiCombobox instance.
+ * @returns Index of the item selected, `-1` on empty selection.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN int uiComboboxSelected(uiCombobox *c);
-_UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int n);
+
+/**
+ * Sets the item selected.
+ *
+ * @param c uiCombobox instance.
+ * @param index Index of the item to be selected, `-1` to clear selection.
+ * @memberof uiCombobox
+ */
+_UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int index);
+
+/**
+ * Registers a callback for when a combo box item is selected.
+ *
+ * @param c uiCombobox instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note The callback is not triggered when calling uiComboboxSetSelected().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN void uiComboboxOnSelected(uiCombobox *c, void (*f)(uiCombobox *c, void *data), void *data);
+
+/**
+ * Creates a new combo box.
+ *
+ * @returns A new uiCombobox instance.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN uiCombobox *uiNewCombobox(void);
 
 typedef struct uiEditableCombobox uiEditableCombobox;
