@@ -1335,12 +1335,63 @@ _UI_EXTERN void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiE
  */
 _UI_EXTERN uiEditableCombobox *uiNewEditableCombobox(void);
 
+
+/**
+ * A multiple choice control of check buttons from which only one can be selected at a time.
+ *
+ * @struct uiRadioButtons
+ * @extends uiControl
+ */
 typedef struct uiRadioButtons uiRadioButtons;
 #define uiRadioButtons(this) ((uiRadioButtons *) (this))
+
+/**
+ * Appends a radio button.
+ *
+ * @param r uiRadioButtons instance.
+ * @param text Radio button text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @memberof uiRadioButtons
+ */
 _UI_EXTERN void uiRadioButtonsAppend(uiRadioButtons *r, const char *text);
+
+/**
+ * Returns the index of the item selected.
+ *
+ * @param r uiRadioButtons instance.
+ * @returns Index of the item selected, `-1` on empty selection.
+ * @memberof uiRadioButtons
+ */
 _UI_EXTERN int uiRadioButtonsSelected(uiRadioButtons *r);
-_UI_EXTERN void uiRadioButtonsSetSelected(uiRadioButtons *r, int n);
+
+/**
+ * Sets the item selected.
+ *
+ * @param r uiRadioButtons instance.
+ * @param index Index of the item to be selected, `-1` to clear selection.
+ * @memberof uiRadioButtons
+ */
+_UI_EXTERN void uiRadioButtonsSetSelected(uiRadioButtons *r, int index);
+
+/**
+ * Registers a callback for when radio button is selected.
+ *
+ * @param r uiRadioButtons instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note The callback is not triggered when calling uiRadioButtonsSetSelected().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiRadioButtons
+ */
 _UI_EXTERN void uiRadioButtonsOnSelected(uiRadioButtons *r, void (*f)(uiRadioButtons *, void *), void *data);
+
+/**
+ * Creates a new radio buttons instance.
+ *
+ * @returns A new uiRadioButtons instance.
+ * @memberof uiRadioButtons
+ */
 _UI_EXTERN uiRadioButtons *uiNewRadioButtons(void);
 
 struct tm;
