@@ -26,6 +26,8 @@ struct uiSlider {
 	NSSlider *slider;
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
+	void (*onReleased)(uiSlider *, void *);
+	void *onReleasedData;
 	BOOL hasToolTip;
 };
 
@@ -58,9 +60,14 @@ static void _uiSliderUpdateToolTip(uiSlider *s);
 - (IBAction)onChanged:(id)sender
 {
 	uiSlider *s;
-
 	s = (uiSlider *) uiprivMapGet(self->sliders, sender);
-	(*(s->onChanged))(s, s->onChangedData);
+
+	NSEvent *currentEvent = [[sender window] currentEvent];
+	if([currentEvent type] == NSLeftMouseUp) {
+		(*(s->onReleased))(s, s->onReleasedData);
+	} else {
+		(*(s->onChanged))(s, s->onChangedData);
+	}
 
 	if (s->hasToolTip)
 		_uiSliderUpdateToolTip(s);
@@ -135,6 +142,17 @@ static void defaultOnChanged(uiSlider *s, void *data)
 	// do nothing
 }
 
+void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
+{
+	s->onReleased = f;
+	s->onReleasedData = data;
+}
+
+static void defaultOnReleased(uiSlider *s, void *data)
+{
+	// do nothing
+}
+
 void uiSliderSetRange(uiSlider *s, int min, int max)
 {
 	int temp;
@@ -182,6 +200,7 @@ uiSlider *uiNewSlider(int min, int max)
 	}
 	[sliderDelegate registerSlider:s];
 	uiSliderOnChanged(s, defaultOnChanged, NULL);
+	uiSliderOnReleased(s, defaultOnReleased, NULL);
 
 	uiSliderSetHasToolTip(s, 1);
 

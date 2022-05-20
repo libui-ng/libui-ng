@@ -6,6 +6,8 @@ struct uiSlider {
 	HWND hwnd;
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
+	void (*onReleased)(uiSlider *, void *);
+	void *onReleasedData;
 	HWND hwndToolTip;
 };
 
@@ -13,7 +15,12 @@ static BOOL onWM_HSCROLL(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 {
 	uiSlider *s = uiSlider(c);
 
-	(*(s->onChanged))(s, s->onChangedData);
+	if (code == TB_ENDTRACK) {
+		(*(s->onReleased))(s, s->onReleasedData);
+	} else {
+		(*(s->onChanged))(s, s->onChangedData);
+	}
+
 	*lResult = 0;
 	return TRUE;
 }
@@ -68,6 +75,11 @@ static void defaultOnChanged(uiSlider *s, void *data)
 	// do nothing
 }
 
+static void defaultOnReleased(uiSlider *s, void *data)
+{
+	// do nothing
+}
+
 int uiSliderValue(uiSlider *s)
 {
 	return SendMessageW(s->hwnd, TBM_GETPOS, 0, 0);
@@ -83,6 +95,12 @@ void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
 {
 	s->onChanged = f;
 	s->onChangedData = data;
+}
+
+void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
+{
+	s->onReleased = f;
+	s->onReleasedData = data;
 }
 
 void uiSliderSetRange(uiSlider *s, int min, int max)
@@ -120,6 +138,7 @@ uiSlider *uiNewSlider(int min, int max)
 
 	uiWindowsRegisterWM_HSCROLLHandler(s->hwnd, onWM_HSCROLL, uiControl(s));
 	uiSliderOnChanged(s, defaultOnChanged, NULL);
+	uiSliderOnReleased(s, defaultOnReleased, NULL);
 
 	SendMessageW(s->hwnd, TBM_SETRANGEMIN, (WPARAM) TRUE, (LPARAM) min);
 	SendMessageW(s->hwnd, TBM_SETRANGEMAX, (WPARAM) TRUE, (LPARAM) max);

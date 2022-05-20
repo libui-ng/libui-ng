@@ -4,6 +4,7 @@
 static uiSpinbox *spinbox;
 static uiSlider *slider;
 static uiProgressBar *pbar;
+static uiProgressBar *pbar2;
 static uiCheckbox *checkbox;
 static uiSpinbox *spinboxFrom;
 static uiSpinbox *spinboxTo;
@@ -141,6 +142,14 @@ static void onRangeSliderChanged(uiSlider *s, void *data)
 	uiLabelSetText(lbl, str);
 }
 
+static void onSliderReleased(uiSlider *s, void *data){
+	int value;
+
+	printf("on Slider released\n");
+	value = uiSliderValue(s);
+	uiProgressBarSetValue(pbar2, value);
+}
+
 uiBox *makePage4(void)
 {
 	uiBox *page4;
@@ -158,6 +167,7 @@ uiBox *makePage4(void)
 
 	slider = uiNewSlider(0, 100);
 	uiSliderOnChanged(slider, onSliderChanged, NULL);
+	uiSliderOnReleased(slider, onSliderReleased, NULL);
 	uiBoxAppend(page4, uiControl(slider), 0);
 
 	hbox = newHorizontalBox();
@@ -177,6 +187,9 @@ uiBox *makePage4(void)
 
 	pbar = uiNewProgressBar();
 	uiBoxAppend(page4, uiControl(pbar), 0);
+
+	pbar2 = uiNewProgressBar();
+	uiBoxAppend(page4, uiControl(pbar2), 0);
 
 	uiBoxAppend(page4, uiControl(uiNewHorizontalSeparator()), 0);
 

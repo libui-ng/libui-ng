@@ -14,6 +14,8 @@ struct uiSlider {
 	GtkScale *scale;
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
+	void (*onReleased)(uiSlider *, void *);
+	void *onReleasedData;
 	gulong onChangedSignal;
 	gchar tooltip[MAX_STRLEN_FOR_NBITS_IN_DECIMAL(sizeof(int) * CHAR_BIT) + 1];
 };
@@ -37,6 +39,19 @@ static void onChanged(GtkRange *range, gpointer data)
 }
 
 static void defaultOnChanged(uiSlider *s, void *data)
+{
+	// do nothing
+}
+
+static gboolean onReleased(GtkWidget *w, GdkEventButton *event, gpointer data)
+{
+	uiSlider *s = uiSlider(data);
+
+	(*(s->onReleased))(s, s->onReleasedData);
+	return FALSE;
+}
+
+static void defaultOnReleased(uiSlider *s, void *data)
 {
 	// do nothing
 }
@@ -71,6 +86,12 @@ void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
 {
 	s->onChanged = f;
 	s->onChangedData = data;
+}
+
+void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
+{
+	s->onReleased = f;
+	s->onReleasedData = data;
 }
 
 void uiSliderSetRange(uiSlider *s, int min, int max)
@@ -114,7 +135,9 @@ uiSlider *uiNewSlider(int min, int max)
 	gtk_scale_set_digits(s->scale, 0);
 
 	s->onChangedSignal = g_signal_connect(s->scale, "value-changed", G_CALLBACK(onChanged), s);
+	g_signal_connect(s->scale, "button-release-event", G_CALLBACK(onReleased), s);
 	uiSliderOnChanged(s, defaultOnChanged, NULL);
+	uiSliderOnReleased(s, defaultOnReleased, NULL);
 
 	return s;
 }
