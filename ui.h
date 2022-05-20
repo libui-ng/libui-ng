@@ -1395,17 +1395,80 @@ _UI_EXTERN void uiRadioButtonsOnSelected(uiRadioButtons *r, void (*f)(uiRadioBut
 _UI_EXTERN uiRadioButtons *uiNewRadioButtons(void);
 
 struct tm;
+/**
+ * A control to enter a date and/or time.
+ *
+ * All functions operate on `struct tm` as defined in `<time.h>`.
+ *
+ * All functions assume local time and do NOT perform any time zone conversions.
+ *
+ * @warning The `struct tm` members `tm_wday` and `tm_yday` are undefined.
+ * @warning The `struct tm` member `tm_isdst` is ignored on windows and should be set to `-1`.
+ *
+ * @todo for Time: define what values are returned when a part is missing
+ *
+ * @struct uiDateTimePicker
+ * @extends uiControl
+ */
 typedef struct uiDateTimePicker uiDateTimePicker;
 #define uiDateTimePicker(this) ((uiDateTimePicker *) (this))
-// TODO document that tm_wday and tm_yday are undefined, and tm_isdst should be -1
-// TODO document that for both sides
-// TODO document time zone conversions or lack thereof
-// TODO for Time: define what values are returned when a part is missing
+
+/**
+ * Returns date and time stored in the data time picker.
+ *
+ * @param d uiDateTimePicker instance.
+ * @param[out] time Date and/or time as local time.
+ * @warning The `struct tm` members `tm_wday` and `tm_yday` are undefined.
+ * @memberof uiDateTimePicker
+ */
 _UI_EXTERN void uiDateTimePickerTime(uiDateTimePicker *d, struct tm *time);
+
+/**
+ * Sets date and time of the data time picker.
+ *
+ *
+ * @param d uiDateTimePicker instance.
+ * @param time Date and/or time as local time.
+ * @warning The `struct tm` member `tm_isdst` is ignored on windows and should be set to `-1`.
+ * @memberof uiDateTimePicker
+ */
 _UI_EXTERN void uiDateTimePickerSetTime(uiDateTimePicker *d, const struct tm *time);
+
+/**
+ * Registers a callback for when the date time picker value is changed by the user.
+ *
+ * @param d uiDateTimePicker instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling  uiDateTimePickerSetTime().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiDateTimePicker
+ */
 _UI_EXTERN void uiDateTimePickerOnChanged(uiDateTimePicker *d, void (*f)(uiDateTimePicker *, void *), void *data);
+
+/**
+ * Creates a new date picker.
+ *
+ * @returns A new uiDateTimePicker instance.
+ * @memberof uiDateTimePicker
+ */
 _UI_EXTERN uiDateTimePicker *uiNewDateTimePicker(void);
+
+/**
+ * Creates a new time picker.
+ *
+ * @returns A new uiDateTimePicker instance.
+ * @memberof uiDateTimePicker
+ */
 _UI_EXTERN uiDateTimePicker *uiNewDatePicker(void);
+
+/**
+ * Creates a new date and time picker.
+ *
+ * @returns A new uiDateTimePicker instance.
+ * @static @memberof uiDateTimePicker
+ */
 _UI_EXTERN uiDateTimePicker *uiNewTimePicker(void);
 
 // TODO provide a facility for entering tab stops?
