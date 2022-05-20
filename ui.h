@@ -7,6 +7,13 @@
 // - const-correct everything
 // - normalize documentation between typedefs and structs
 
+/**
+ * @defgroup container Container widgets
+ * @defgroup dataEntry Data entry widgets
+ * @defgroup static Static widgets
+ * @defgroup button Buttons
+ */
+
 #ifndef __LIBUI_UI_H__
 #define __LIBUI_UI_H__
 
@@ -253,6 +260,7 @@ _UI_EXTERN void uiUserBugCannotSetParentOnToplevel(const char *type);
  *
  * @struct uiWindow
  * @extends uiControl
+ * @ingroup container
  */
 typedef struct uiWindow uiWindow;
 #define uiWindow(this) ((uiWindow *) (this))
@@ -432,6 +440,7 @@ _UI_EXTERN int uiWindowFocused(uiWindow *w);
  *
  * @struct uiButton
  * @extends uiControl
+ * @ingroup button
  */
 typedef struct uiButton uiButton;
 #define uiButton(this) ((uiButton *) (this))
@@ -487,6 +496,7 @@ _UI_EXTERN uiButton *uiNewButton(const char *text);
  *
  * @struct uiBox
  * @extends uiControl
+ * @ingroup container
  */
 typedef struct uiBox uiBox;
 #define uiBox(this) ((uiBox *) (this))
@@ -572,6 +582,7 @@ _UI_EXTERN uiBox *uiNewVerticalBox(void);
  *
  * @struct uiCheckbox
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiCheckbox uiCheckbox;
 #define uiCheckbox(this) ((uiCheckbox *) (this))
@@ -642,6 +653,7 @@ _UI_EXTERN uiCheckbox *uiNewCheckbox(const char *text);
  *
  * @struct uiEntry
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiEntry uiEntry;
 #define uiEntry(this) ((uiEntry *) (this))
@@ -732,6 +744,7 @@ _UI_EXTERN uiEntry *uiNewSearchEntry(void);
  *
  * @struct uiLabel
  * @extends uiControl
+ * @ingroup static
  */
 typedef struct uiLabel uiLabel;
 #define uiLabel(this) ((uiLabel *) (this))
@@ -774,6 +787,7 @@ _UI_EXTERN uiLabel *uiNewLabel(const char *text);
  *
  * @struct uiTab
  * @extends uiControl
+ * @ingroup container
  */
 typedef struct uiTab uiTab;
 #define uiTab(this) ((uiTab *) (this))
@@ -860,6 +874,7 @@ _UI_EXTERN uiTab *uiNewTab(void);
  *
  * @struct uiGroup
  * @extends uiControl
+ * @ingroup container
  */
 typedef struct uiGroup uiGroup;
 #define uiGroup(this) ((uiGroup *) (this))
@@ -936,6 +951,7 @@ _UI_EXTERN uiGroup *uiNewGroup(const char *title);
  *
  * @struct uiSpinbox
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiSpinbox uiSpinbox;
 #define uiSpinbox(this) ((uiSpinbox *) (this))
@@ -1002,6 +1018,7 @@ _UI_EXTERN uiSpinbox *uiNewSpinbox(int min, int max);
  *
  * @struct uiSlider
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiSlider uiSlider;
 #define uiSlider(this) ((uiSlider *) (this))
@@ -1146,6 +1163,7 @@ _UI_EXTERN uiProgressBar *uiNewProgressBar(void);
  *
  * @struct uiSeparator
  * @extends uiControl
+ * @ingroup static
  */
 typedef struct uiSeparator uiSeparator;
 #define uiSeparator(this) ((uiSeparator *) (this))
@@ -1173,6 +1191,7 @@ _UI_EXTERN uiSeparator *uiNewVerticalSeparator(void);
  * @see uiEditableCombobox.
  * @struct uiCombobox
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiCombobox uiCombobox;
 #define uiCombobox(this) ((uiCombobox *) (this))
@@ -1273,6 +1292,7 @@ _UI_EXTERN uiCombobox *uiNewCombobox(void);
  * @see uiCombobox
  * @struct uiEditableCombobox
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiEditableCombobox uiEditableCombobox;
 #define uiEditableCombobox(this) ((uiEditableCombobox *) (this))
@@ -1341,6 +1361,7 @@ _UI_EXTERN uiEditableCombobox *uiNewEditableCombobox(void);
  *
  * @struct uiRadioButtons
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiRadioButtons uiRadioButtons;
 #define uiRadioButtons(this) ((uiRadioButtons *) (this))
@@ -1409,6 +1430,7 @@ struct tm;
  *
  * @struct uiDateTimePicker
  * @extends uiControl
+ * @ingroup dataEntry
  */
 typedef struct uiDateTimePicker uiDateTimePicker;
 #define uiDateTimePicker(this) ((uiDateTimePicker *) (this))
