@@ -1140,9 +1140,30 @@ _UI_EXTERN void uiProgressBarSetValue(uiProgressBar *p, int n);
  */
 _UI_EXTERN uiProgressBar *uiNewProgressBar(void);
 
+
+/**
+ * A control to visually separate controls, horizontally or vertically.
+ *
+ * @struct uiSeparator
+ * @extends uiControl
+ */
 typedef struct uiSeparator uiSeparator;
 #define uiSeparator(this) ((uiSeparator *) (this))
+
+/**
+ * Creates a new horizontal separator.
+ *
+ * @returns A new uiSeparator instance.
+ * @memberof uiSeparator
+ */
 _UI_EXTERN uiSeparator *uiNewHorizontalSeparator(void);
+
+/**
+ * Creates a new vertical separator.
+ *
+ * @returns A new uiSeparator instance.
+ * @memberof uiSeparator
+ */
 _UI_EXTERN uiSeparator *uiNewVerticalSeparator(void);
 
 typedef struct uiCombobox uiCombobox;
