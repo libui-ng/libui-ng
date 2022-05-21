@@ -17,15 +17,14 @@ struct uiWindow {
 	int fullscreen;
 	WINDOWPLACEMENT fsPrevPlacement;
 	int borderless;
+	int focused;
 
 	int (*onClosing)(uiWindow *, void *);
 	void *onClosingData;
 	void (*onContentSizeChanged)(uiWindow *, void *);
 	void *onContentSizeChangedData;
-	void (*onGetFocus)(uiWindow *, void *);
-	void *onGetFocusData;
-	void (*onLoseFocus)(uiWindow *, void *);
-	void *onLoseFocusData;
+	void (*onFocusChanged)(uiWindow *, void *);
+	void *onFocusChangedData;
 };
 
 // from https://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
@@ -117,14 +116,13 @@ static LRESULT CALLBACK windowWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 		mmi->ptMinTrackSize.x = width;
 		mmi->ptMinTrackSize.y = height;
 		return lResult;
-
-	case WM_SETFOCUS:
-		w->onGetFocus(w, w->onGetFocusData);
+	case WM_ACTIVATE:
+		if (LOWORD(wParam) == WA_INACTIVE)
+			w->focused = 0;
+		else
+			w->focused = 1;
+		w->onFocusChanged(w, w->onFocusChangedData);
 		return 0;
-	case WM_KILLFOCUS:
-		w->onLoseFocus(w, w->onLoseFocusData);
-		return 0;
-
 	case WM_PRINTCLIENT:
 		// we do no special painting; just erase the background
 		// don't worry about the return value; we let DefWindowProcW() handle this message
@@ -168,12 +166,7 @@ static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
 	// do nothing
 }
 
-static void defaultOnGetFocus(uiWindow *w, void *data)
-{
-	// do nothing
-}
-
-static void defaultOnLoseFocus(uiWindow *w, void *data)
+static void defaultOnFocusChanged(uiWindow *w, void *data)
 {
 	// do nothing
 }
@@ -409,16 +402,15 @@ void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
 	w->onClosingData = data;
 }
 
-void uiWindowOnGetFocus(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
 {
-	w->onGetFocus = f;
-	w->onGetFocusData = data;
+	w->onFocusChanged = f;
+	w->onFocusChangedData = data;
 }
 
-void uiWindowOnLoseFocus(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+int uiWindowFocused(uiWindow *w)
 {
-	w->onLoseFocus = f;
-	w->onLoseFocusData = data;
+	return w->focused;
 }
 
 int uiWindowBorderless(uiWindow *w)
@@ -546,8 +538,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
-	uiWindowOnGetFocus(w, defaultOnGetFocus, NULL);
-	uiWindowOnLoseFocus(w, defaultOnLoseFocus, NULL);
+	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
 
 	windows[w] = true;
 	return w;
