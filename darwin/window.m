@@ -13,14 +13,13 @@ struct uiWindow {
 	uiprivSingleChildConstraints constraints;
 	void (*onContentSizeChanged)(uiWindow *, void *);
 	void *onContentSizeChangedData;
-	void (*onGetFocus)(uiWindow*, void *);
-	void *onGetFocusData;
-	void (*onLoseFocus)(uiWindow*, void *);
-	void *onLoseFocusData;
+	void (*onFocusChanged)(uiWindow*, void *);
+	void *onFocusChangedData;
 	BOOL suppressSizeChanged;
 	int fullscreen;
 	int borderless;
 	int resizeable;
+	int focused;
 };
 
 @implementation uiprivNSWindow
@@ -110,7 +109,8 @@ struct uiWindow {
 	uiWindow *w;
 
 	w = [self lookupWindow:((NSWindow *) [note object])];
-	(*(w->onGetFocus))(w, w->onGetFocusData);
+	w->focused = 1;
+	(*(w->onFocusChanged))(w, w->onFocusChangedData);
 }
 
 - (void)windowDidResignKey:(NSNotification *)note
@@ -118,7 +118,8 @@ struct uiWindow {
 	uiWindow *w;
 
 	w = [self lookupWindow:((NSWindow *) [note object])];
-	(*(w->onLoseFocus))(w, w->onLoseFocusData);
+	w->focused = 0;
+	(*(w->onFocusChanged))(w, w->onFocusChangedData);
 }
 
 - (void)registerWindow:(uiWindow *)w
@@ -321,16 +322,15 @@ void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), vo
 	w->onContentSizeChangedData = data;
 }
 
-void uiWindowOnGetFocus(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
 {
-	w->onGetFocus = f;
-	w->onGetFocusData = data;
+	w->onFocusChanged = f;
+	w->onFocusChangedData = data;
 }
 
-void uiWindowOnLoseFocus(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+int uiWindowFocused(uiWindow *w)
 {
-	w->onLoseFocus = f;
-	w->onLoseFocusData = data;
+	return w->focused;
 }
 
 void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
@@ -417,12 +417,7 @@ static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
 	// do nothing
 }
 
-static void defaultOnGetFocus(uiWindow *w, void *data)
-{
-	// do nothing
-}
-
-static void defaultOnLoseFocus(uiWindow *w, void *data)
+static void defaultOnFocusChanged(uiWindow *w, void *data)
 {
 	// do nothing
 }
@@ -452,8 +447,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	}
 	[windowDelegate registerWindow:w];
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
-	uiWindowOnGetFocus(w, defaultOnGetFocus, NULL);
-	uiWindowOnLoseFocus(w, defaultOnLoseFocus, NULL);
+	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
 	return w;
