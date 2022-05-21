@@ -20,16 +20,14 @@ struct uiWindow {
 	uiControl *child;
 	int margined;
 	int resizeable;
+	int focused;
 
 	int (*onClosing)(uiWindow *, void *);
 	void *onClosingData;
 	void (*onContentSizeChanged)(uiWindow *, void *);
 	void *onContentSizeChangedData;
-	void (*onGetFocus)(uiWindow *, void *);
-	void *onGetFocusData;
-	void (*onLoseFocus)(uiWindow *, void *);
-	void *onLoseFocusData;
-
+	void (*onFocusChanged)(uiWindow *, void *);
+	void *onFocusChangedData;
 	gboolean fullscreen;
 };
 
@@ -55,14 +53,16 @@ static void onSizeAllocate(GtkWidget *widget, GdkRectangle *allocation, gpointer
 static gboolean onGetFocus(GtkWidget *win, GdkEvent *e, gpointer data)
 {
 	uiWindow *w = uiWindow(data);
-	w->onGetFocus(w, w->onGetFocusData);
+	w->focused = 1;
+	w->onFocusChanged(w, w->onFocusChangedData);
 	return FALSE;
 }
 
 static gboolean onLoseFocus(GtkWidget *win, GdkEvent *e, gpointer data)
 {
 	uiWindow *w = uiWindow(data);
-	w->onLoseFocus(w, w->onLoseFocusData);
+	w->focused = 0;
+	w->onFocusChanged(w, w->onFocusChangedData);
 	return FALSE;
 }
 
@@ -76,12 +76,7 @@ static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
 	// do nothing
 }
 
-static void defaultOnGetFocus(uiWindow *w, void *data)
-{
-	// do nothing
-}
-
-static void defaultOnLoseFocus(uiWindow *w, void *data)
+static void defaultOnFocusChanged(uiWindow *w, void *data)
 {
 	// do nothing
 }
@@ -224,16 +219,15 @@ void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
 	w->onClosingData = data;
 }
 
-void uiWindowOnGetFocus(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+int uiWindowFocused(uiWindow *w)
 {
-	w->onGetFocus = f;
-	w->onGetFocusData = data;
+	return w->focused;
 }
 
-void uiWindowOnLoseFocus(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
 {
-	w->onLoseFocus = f;
-	w->onLoseFocusData = data;
+	w->onFocusChanged = f;
+	w->onFocusChangedData = data;
 }
 
 int uiWindowBorderless(uiWindow *w)
@@ -328,8 +322,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
-	uiWindowOnGetFocus(w, defaultOnGetFocus, NULL);
-	uiWindowOnLoseFocus(w, defaultOnLoseFocus, NULL);
+	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
 
 	// normally it's SetParent() that does this, but we can't call SetParent() on a uiWindow
 	// TODO we really need to clean this up, especially since see uiWindowDestroy() above

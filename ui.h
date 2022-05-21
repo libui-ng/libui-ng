@@ -134,8 +134,8 @@ _UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int h
 
 _UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
 _UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
-_UI_EXTERN void uiWindowOnGetFocus(uiWindow *w, void (*f)(uiWindow *w, void *data), void *data);
-_UI_EXTERN void uiWindowOnLoseFocus(uiWindow *w, void (*f)(uiWindow *w, void *data), void *data);
+_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+_UI_EXTERN int uiWindowFocused(uiWindow *w);
 
 typedef struct uiButton uiButton;
 #define uiButton(this) ((uiButton *) (this))
