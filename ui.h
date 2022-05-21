@@ -269,9 +269,9 @@ typedef struct uiWindow uiWindow;
  * Returns the window title.
  *
  * @param w uiWindow instance.
- * @returns The window title text.
- * @returns A `NUL` terminated UTF-8 string.
- * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @returns The window title text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiWindow
  */
 _UI_EXTERN char *uiWindowTitle(uiWindow *w);
@@ -449,9 +449,9 @@ typedef struct uiButton uiButton;
  * Returns the button label text.
  *
  * @param b uiButton instance.
- * @returns The text of the label.
- * @returns A `NUL` terminated UTF-8 string.
- * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @returns The text of the label.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiButton
  */
 _UI_EXTERN char *uiButtonText(uiButton *b);
@@ -591,9 +591,9 @@ typedef struct uiCheckbox uiCheckbox;
  * Returns the checkbox label text.
  *
  * @param c uiCheckbox instance.
- * @returns The text of the label.
- * @returns A `NUL` terminated UTF-8 string.
- * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @returns The text of the label.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiCheckbox
  */
 _UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
@@ -662,9 +662,9 @@ typedef struct uiEntry uiEntry;
  * Returns the entry's text.
  *
  * @param e uiEntry instance.
- * @returns The text of the entry.
- * @returns A `NUL` terminated UTF-8 string.
- * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @returns The text of the entry.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiEntry
  */
 _UI_EXTERN char *uiEntryText(uiEntry *e);
@@ -753,9 +753,9 @@ typedef struct uiLabel uiLabel;
  * Returns the label text.
  *
  * @param l uiLabel instance.
- * @returns The text of the label.
- * @returns A `NUL` terminated UTF-8 string.
- * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @returns The text of the label.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiLabel
  */
 _UI_EXTERN char *uiLabelText(uiLabel *l);
@@ -883,9 +883,9 @@ typedef struct uiGroup uiGroup;
  * Returns the group title.
  *
  * @param g uiGroup instance.
- * @returns The group title text.
- * @returns A `NUL` terminated UTF-8 string.
- * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @returns The group title text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiGroup
  */
 _UI_EXTERN char *uiGroupTitle(uiGroup *g);
@@ -1313,9 +1313,9 @@ _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text
  * text manually entered by the user.
  *
  * @param c uiEditableCombobox instance.
- * @returns The editable combo box text.
- * @returns A `NUL` terminated UTF-8 string.
- * @returns The data is owned by the caller and needs to be `uiFreeText()`'d.
+ * @returns The editable combo box text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiEditableCombobox
  * returns the text in the entry of the uiEditableCombobox,
  */
