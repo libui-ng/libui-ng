@@ -280,7 +280,9 @@ _UI_EXTERN char *uiWindowTitle(uiWindow *w);
  * Sets the window title.
  *
  * @param w uiWindow instance.
- * @param title Window title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param title Window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
@@ -422,7 +424,9 @@ _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
 /**
  * Creates a new uiWindow.
  *
- * @param title Window title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param title Window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
  * @param width Window width.
  * @param height Window height.
  * @param hasMenubar Whether or not the window should display a menu bar.
@@ -460,7 +464,9 @@ _UI_EXTERN char *uiButtonText(uiButton *b);
  * Sets the button label text.
  *
  * @param b uiButton instance.
- * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiButton
  */
 _UI_EXTERN void uiButtonSetText(uiButton *b, const char *text);
@@ -481,7 +487,9 @@ _UI_EXTERN void uiButtonOnClicked(uiButton *b, void (*f)(uiButton *b, void *data
 /**
  * Creates a new button.
  *
- * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @returns A new uiButton instance.
  * @memberof uiButton
  */
@@ -602,7 +610,9 @@ _UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
  * Sets the checkbox label text.
  *
  * @param c uiCheckbox instance.
- * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiCheckbox
  */
 _UI_EXTERN void uiCheckboxSetText(uiCheckbox *c, const char *text);
@@ -641,7 +651,9 @@ _UI_EXTERN void uiCheckboxSetChecked(uiCheckbox *c, int checked);
 /**
  * Creates a new checkbox.
  *
- * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @returns A new uiCheckbox instance.
  * @memberof uiCheckbox
  */
@@ -673,7 +685,9 @@ _UI_EXTERN char *uiEntryText(uiEntry *e);
  * Sets the entry's text.
  *
  * @param e uiEntry instance.
- * @param text Entry text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Entry text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiEntry
  */
 _UI_EXTERN void uiEntrySetText(uiEntry *e, const char *text);
@@ -764,7 +778,9 @@ _UI_EXTERN char *uiLabelText(uiLabel *l);
  * Sets the label text.
  *
  * @param l uiLabel instance.
- * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiLabel
  */
 _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
@@ -772,7 +788,9 @@ _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
 /**
  * Creates a new label.
  *
- * @param text Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @returns A new uiLabel instance.
  * @memberof uiLabel
  */
@@ -796,7 +814,9 @@ typedef struct uiTab uiTab;
  * Appends a control in form of a page/tab with label.
  *
  * @param t uiTab instance.
- * @param name Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param name Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @param c Control to append.
  * @memberof uiTab
  */
@@ -806,7 +826,9 @@ _UI_EXTERN void uiTabAppend(uiTab *t, const char *name, uiControl *c);
  * Inserts a control in form of a page/tab with label at @p index.
  *
  * @param t uiTab instance.
- * @param name Label text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param name Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @param index Index at which to insert the control.
  * @param c Control to insert.
  * @memberof uiTab
@@ -894,7 +916,9 @@ _UI_EXTERN char *uiGroupTitle(uiGroup *g);
  * Sets the group title.
  *
  * @param g uiGroup instance.
- * @param title Group title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param title Group title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
  * @memberof uiGroup
  */
 _UI_EXTERN void uiGroupSetTitle(uiGroup *g, const char *title);
@@ -931,7 +955,9 @@ _UI_EXTERN void uiGroupSetMargined(uiGroup *g, int margined);
 /**
  * Creates a new group.
  *
- * @param title Group title text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param title Group title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
  * @returns A new uiGroup instance.
  * @memberof uiGroup
  */
@@ -1200,7 +1226,9 @@ typedef struct uiCombobox uiCombobox;
  * Appends an item to the combo box.
  *
  * @param c uiCombobox instance.
- * @param text Item text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Item text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiCombobox
  */
 _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
@@ -1210,7 +1238,9 @@ _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
  *
  * @param c uiCombobox instance.
  * @param index Index at which to insert the item.
- * @param text Item text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Item text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiCombobox
  */
 _UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int index, const char *text);
@@ -1301,7 +1331,9 @@ typedef struct uiEditableCombobox uiEditableCombobox;
  * Appends an item to the editable combo box.
  *
  * @param c uiEditableCombobox instance.
- * @param text Item text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Item text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiEditableCombobox
  */
 _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text);
@@ -1325,7 +1357,9 @@ _UI_EXTERN char *uiEditableComboboxText(uiEditableCombobox *c);
  * Sets the editable combo box text.
  *
  * @param c uiEditableCombobox instance.
- * @param test @param text Text field text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Text field text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiEditableCombobox
  */
 _UI_EXTERN void uiEditableComboboxSetText(uiEditableCombobox *c, const char *text);
@@ -1370,7 +1404,9 @@ typedef struct uiRadioButtons uiRadioButtons;
  * Appends a radio button.
  *
  * @param r uiRadioButtons instance.
- * @param text Radio button text. Make sure this is a valid, `NUL` terminated UTF-8 string. The data is owned by the caller.
+ * @param text Radio button text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
  * @memberof uiRadioButtons
  */
 _UI_EXTERN void uiRadioButtonsAppend(uiRadioButtons *r, const char *text);
