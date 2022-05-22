@@ -1075,7 +1075,7 @@ _UI_EXTERN void uiSliderSetValue(uiSlider *s, int value);
  * Returns whether or not the slider has a tool tip.
  *
  * @param s uiSlider instance.
- * @returns `TRUE` if a tool tip is present, `FALSE` otherwise.
+ * @returns `TRUE` if a tool tip is present, `FALSE` otherwise. [Default `TRUE`]
  * @memberof uiSlider
  */
 _UI_EXTERN int uiSliderHasToolTip(uiSlider *s);
