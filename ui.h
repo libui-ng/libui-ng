@@ -335,6 +335,9 @@ _UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
  * @param data User data to be passed to the callback.
  * @todo document callback
  *
+ * @todo Research if this gets called on uiWindowSetContentSize().
+ *       The signal on unix does not seem to get masked. Fix this on all
+ *       platforms and document the masking here.
  * @note Only one callback can be registered at a time.
  * @memberof uiWindow
  */
