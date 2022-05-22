@@ -407,7 +407,7 @@ _UI_EXTERN void uiWindowSetMargined(uiWindow *w, int margined);
  * Returns whether or not the window is user resizeable.
  *
  * @param w uiWindow instance.
- * @returns `TRUE` if window is resizable, `FALSE` otherwise. [Default: `TODO`]
+ * @returns `TRUE` if window is resizable, `FALSE` otherwise. [Default: `TRUE`]
  * @memberof uiWindow
  */
 _UI_EXTERN int uiWindowResizeable(uiWindow *w);
