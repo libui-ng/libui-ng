@@ -69,6 +69,9 @@ if libui_OS == 'darwin'
 	libui_macosx_version_min = '-mmacosx-version-min=10.8'
 	libui_project_compile_args += [libui_macosx_version_min]
 	libui_project_link_args += [libui_macosx_version_min]
+
+	libui_project_compile_args += ['-arch', 'arm64', '-arch', 'x86_64']
+	libui_project_link_args += ['-arch', 'arm64', '-arch', 'x86_64']
 endif
 
 if libui_MSVC
