@@ -328,13 +328,14 @@ _UI_EXTERN int uiWindowFullscreen(uiWindow *w);
 _UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
 
 /**
- * Register a callback for when the window content size is changed.
+ * Registers a callback for when the window content size is changed.
  *
  * @param w uiWindow instance.
  * @param f Callback function.
  * @param data User data to be passed to the callback.
  * @todo document callback
  *
+ * @note Only one callback can be registered at a time.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
@@ -472,7 +473,7 @@ _UI_EXTERN char *uiButtonText(uiButton *b);
 _UI_EXTERN void uiButtonSetText(uiButton *b, const char *text);
 
 /**
- * Register a callback for when the button is clicked.
+ * Registers a callback for when the button is clicked.
  *
  * @param b uiButton instance.
  * @param f Callback function.
@@ -618,7 +619,7 @@ _UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
 _UI_EXTERN void uiCheckboxSetText(uiCheckbox *c, const char *text);
 
 /**
- * Register a callback for when the checkbox is toggled by the user.
+ * Registers a callback for when the checkbox is toggled by the user.
  *
  * @param c uiCheckbox instance.
  * @param f Callback function
@@ -693,7 +694,7 @@ _UI_EXTERN char *uiEntryText(uiEntry *e);
 _UI_EXTERN void uiEntrySetText(uiEntry *e, const char *text);
 
 /**
- * Register a callback for when the user changes the entry's text.
+ * Registers a callback for when the user changes the entry's text.
  *
  * @param e uiEntry instance.
  * @param f Callback function
@@ -1575,7 +1576,7 @@ _UI_EXTERN void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text);
 _UI_EXTERN void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text);
 
 /**
- * Register a callback for when the user changes the multi line entry's text.
+ * Registers a callback for when the user changes the multi line entry's text.
  *
  * @param e uiMultilineEntry instance.
  * @param f Callback function
@@ -1584,6 +1585,7 @@ _UI_EXTERN void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text);
  *
  * @note The callback is not triggered when calling uiMultilineEntrySetText()
  *       or uiMultilineEntryAppend().
+ * @note Only one callback can be registered at a time.
  * @memberof uiMultilineEntry
  */
 _UI_EXTERN void uiMultilineEntryOnChanged(uiMultilineEntry *e, void (*f)(uiMultilineEntry *e, void *data), void *data);
