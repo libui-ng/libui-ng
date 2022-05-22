@@ -1529,16 +1529,99 @@ _UI_EXTERN uiDateTimePicker *uiNewDatePicker(void);
  */
 _UI_EXTERN uiDateTimePicker *uiNewTimePicker(void);
 
-// TODO provide a facility for entering tab stops?
+
+/**
+ * A control with a multi line text entry field.
+ *
+ * @todo provide a facility for entering tab stops?
+ * @struct uiMultilineEntry
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiMultilineEntry uiMultilineEntry;
 #define uiMultilineEntry(this) ((uiMultilineEntry *) (this))
+
+/**
+ * Returns the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @returns The containing text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN char *uiMultilineEntryText(uiMultilineEntry *e);
+
+/**
+ * Sets the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param text Single/multi line text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text);
+
+/**
+ * Appends text to the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param text Text to append.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text);
+
+/**
+ * Register a callback for when the user changes the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param f Callback function
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note The callback is not triggered when calling uiMultilineEntrySetText()
+ *       or uiMultilineEntryAppend().
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN void uiMultilineEntryOnChanged(uiMultilineEntry *e, void (*f)(uiMultilineEntry *e, void *data), void *data);
+
+/**
+ * Returns whether or not the multi line entry's text can be changed.
+ *
+ * @param e uiMultilineEntry instance.
+ * @returns `TRUE` if read only, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN int uiMultilineEntryReadOnly(uiMultilineEntry *e);
+
+/**
+ * Sets whether or not the multi line entry's text is read only.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param readonly `TRUE` to make read only, `FALSE` otherwise.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN void uiMultilineEntrySetReadOnly(uiMultilineEntry *e, int readonly);
+
+/**
+ * Creates a new multi line entry that visually wraps text when lines overflow.
+ *
+ * @returns A new uiMultilineEntry instance.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN uiMultilineEntry *uiNewMultilineEntry(void);
+
+/**
+ * Creates a new multi line entry that scrolls horizontally when lines overflow.
+ *
+ * @remark Windows does not allow for this style to be changed after creation,
+ *         hence the two constructors.
+ * @returns A new uiMultilineEntry instance.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN uiMultilineEntry *uiNewNonWrappingMultilineEntry(void);
 
 typedef struct uiMenuItem uiMenuItem;
