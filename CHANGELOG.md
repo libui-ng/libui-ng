@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- uiWindowOnFocusChanged() API
+- uiWindowFocused() API
 - Build for ARM and x86 on macOS by default
 - Arch Linux AUR package for ARM and x86 ([libui-ng-git](https://aur.archlinux.org/packages/libui-ng-git))
 - uiSliderOnReleased() API
