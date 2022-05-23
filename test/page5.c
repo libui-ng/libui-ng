@@ -66,12 +66,24 @@ static void msgBoxError(uiButton *b, void *data)
 	uiFreeText(t);
 }
 
+void onFocusChanged(uiWindow *w, void *data)
+{
+	if (uiWindowFocused(w)) {
+		uiLabelSetText(uiLabel(data), "Window is focused");
+	} else {
+		uiLabelSetText(uiLabel(data), "Window is not focused");
+	}
+}
+
+
+
 uiBox *makePage5(uiWindow *pw)
 {
 	uiBox *page5;
 	uiBox *hbox;
 	uiButton *button;
 	uiLabel *label;
+	uiLabel *focusLabel;
 
 	parent = pw;
 
@@ -108,6 +120,11 @@ uiBox *makePage5(uiWindow *pw)
 	uiBoxAppend(hbox, uiControl(button), 0);
 	uiBoxAppend(hbox, uiControl(description), 0);
 	uiBoxAppend(page5, uiControl(hbox), 0);
+
+	focusLabel = uiNewLabel("");
+	uiBoxAppend(page5, uiControl(focusLabel), 0);
+
+	uiWindowOnFocusChanged(parent, onFocusChanged, focusLabel);
 
 	return page5;
 }

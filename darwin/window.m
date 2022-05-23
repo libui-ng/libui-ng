@@ -13,10 +13,13 @@ struct uiWindow {
 	uiprivSingleChildConstraints constraints;
 	void (*onContentSizeChanged)(uiWindow *, void *);
 	void *onContentSizeChangedData;
+	void (*onFocusChanged)(uiWindow*, void *);
+	void *onFocusChangedData;
 	BOOL suppressSizeChanged;
 	int fullscreen;
 	int borderless;
 	int resizeable;
+	int focused;
 };
 
 @implementation uiprivNSWindow
@@ -40,6 +43,8 @@ struct uiWindow {
 - (void)windowDidResize:(NSNotification *)note;
 - (void)windowDidEnterFullScreen:(NSNotification *)note;
 - (void)windowDidExitFullScreen:(NSNotification *)note;
+- (void)windowDidBecomeKey:(NSNotification *)note;
+- (void)windowDidResignKey:(NSNotification *)note;
 - (void)registerWindow:(uiWindow *)w;
 - (void)unregisterWindow:(uiWindow *)w;
 - (uiWindow *)lookupWindow:(NSWindow *)w;
@@ -97,6 +102,24 @@ struct uiWindow {
 	w = [self lookupWindow:((NSWindow *) [note object])];
 	if (!w->suppressSizeChanged)
 		w->fullscreen = 0;
+}
+
+- (void)windowDidBecomeKey:(NSNotification *)note
+{
+	uiWindow *w;
+
+	w = [self lookupWindow:((NSWindow *) [note object])];
+	w->focused = 1;
+	(*(w->onFocusChanged))(w, w->onFocusChangedData);
+}
+
+- (void)windowDidResignKey:(NSNotification *)note
+{
+	uiWindow *w;
+
+	w = [self lookupWindow:((NSWindow *) [note object])];
+	w->focused = 0;
+	(*(w->onFocusChanged))(w, w->onFocusChangedData);
 }
 
 - (void)registerWindow:(uiWindow *)w
@@ -299,6 +322,17 @@ void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), vo
 	w->onContentSizeChangedData = data;
 }
 
+void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+{
+	w->onFocusChanged = f;
+	w->onFocusChangedData = data;
+}
+
+int uiWindowFocused(uiWindow *w)
+{
+	return w->focused;
+}
+
 void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
 {
 	w->onClosing = f;
@@ -383,6 +417,11 @@ static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
 	// do nothing
 }
 
+static void defaultOnFocusChanged(uiWindow *w, void *data)
+{
+	// do nothing
+}
+
 uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 {
 	uiWindow *w;
@@ -408,6 +447,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	}
 	[windowDelegate registerWindow:w];
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
+	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
 	return w;
