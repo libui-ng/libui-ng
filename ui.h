@@ -361,6 +361,28 @@ _UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, 
 _UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
 
 /**
+ * Registers a callback for when the window focus changes.
+ *
+ * @param w uiWindow instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+
+/**
+ * Returns whether or not the window is focused.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window is focused, `FALSE` otherwise.
+ * @memberof uiWindow
+ */
+_UI_EXTERN int uiWindowFocused(uiWindow *w);
+
+/**
  * Returns whether or not the window is borderless.
  *
  * @param w uiWindow instance.
@@ -438,9 +460,6 @@ _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
  * @memberof uiWindow
  */
 _UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar);
-
-_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
-_UI_EXTERN int uiWindowFocused(uiWindow *w);
 
 
 /**
