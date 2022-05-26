@@ -12,6 +12,7 @@
  * @defgroup dataEntry Data entry widgets
  * @defgroup static Static widgets
  * @defgroup button Buttons
+ * @defgroup dialogWindow Dialog windows
  */
 
 #ifndef __LIBUI_UI_H__
