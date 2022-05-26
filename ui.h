@@ -1667,10 +1667,79 @@ _UI_EXTERN uiMenuItem *uiMenuAppendAboutItem(uiMenu *m);
 _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
 _UI_EXTERN uiMenu *uiNewMenu(const char *name);
 
+/**
+ * File chooser dialog window to select a single file.
+ *
+ * @param parent Parent window.
+ * @returns File path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
 _UI_EXTERN char *uiOpenFile(uiWindow *parent);
+
+/**
+ * Folder chooser dialog window to select a single folder.
+ *
+ * @param parent Parent window.
+ * @returns Folder path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
 _UI_EXTERN char *uiOpenFolder(uiWindow *parent);
+
+/**
+ * Save file dialog window.
+ *
+ * The user is asked to confirm overwriting existing files, should the chosen
+ * file path already exist on the system.
+ *
+ * @param parent Parent window.
+ * @returns File path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
 _UI_EXTERN char *uiSaveFile(uiWindow *parent);
+
+/**
+ * Message box dialog window.
+ *
+ * A message box displayed in a new window indicating a common message.
+ *
+ * @param parent Parent window.
+ * @param title Dialog window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @param description Dialog message text.\n
+ *                    A valid, `NUL` terminated UTF-8 string.\n
+ *                    Data is owned by the caller.
+ * @ingroup dialogWindow
+ */
 _UI_EXTERN void uiMsgBox(uiWindow *parent, const char *title, const char *description);
+
+/**
+ * Error message box dialog window.
+ *
+ * A message box displayed in a new window indicating an error. On some systems
+ * this may invoke an accompanying sound.
+ *
+ * @param parent Parent window.
+ * @param title Dialog window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @param description Dialog message text.\n
+ *                    A valid, `NUL` terminated UTF-8 string.\n
+ *                    Data is owned by the caller.
+ * @ingroup dialogWindow
+ */
 _UI_EXTERN void uiMsgBoxError(uiWindow *parent, const char *title, const char *description);
 
 typedef struct uiArea uiArea;
