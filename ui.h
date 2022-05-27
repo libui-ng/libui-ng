@@ -2555,27 +2555,122 @@ _UI_EXTERN int uiFormPadded(uiForm *f);
 _UI_EXTERN void uiFormSetPadded(uiForm *f, int padded);
 _UI_EXTERN uiForm *uiNewForm(void);
 
+
+/**
+ * Alignment specifiers to define placement within the reserved area.
+ *
+ * Used in uiGrid.
+ * @enum uiAlign
+ */
 _UI_ENUM(uiAlign) {
-	uiAlignFill,
-	uiAlignStart,
-	uiAlignCenter,
-	uiAlignEnd,
+	uiAlignFill,	//!< Fill area.
+	uiAlignStart,	//!< Place at start.
+	uiAlignCenter,	//!< Place in center.
+	uiAlignEnd,	//!< Place at end.
 };
 
+/**
+ * Placement specifier to define placement in relation to another control.
+ *
+ * Used in uiGrid.
+ * @enum uiAt
+ */
 _UI_ENUM(uiAt) {
-	uiAtLeading,
-	uiAtTop,
-	uiAtTrailing,
-	uiAtBottom,
+	uiAtLeading,	//!< Place before control.
+	uiAtTop,	//!< Place above control.
+	uiAtTrailing,	//!< Place behind control.
+	uiAtBottom,	//!< Place below control.
 };
 
+/**
+ * A control container to arrange containing controls in a grid.
+ *
+ * Contained controls are arranged on an imaginary grid of rows and columns.
+ * Controls can be placed anywhere on this grid, spanning multiple rows and/or
+ * columns.
+ *
+ * Additionally placed controls can be programmed to expand horizontally and/or
+ * vertically, sharing the remaining space among other expanded controls.
+ *
+ * Alignment options are available via @ref uiAlign attributes to determine the
+ * controls placement within the reserved area, should the area be bigger than
+ * the control itself.
+ *
+ * Controls can also be placed in relation to other controls using @ref uiAt
+ * attributes.
+ *
+ * @struct uiGrid
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiGrid uiGrid;
 #define uiGrid(this) ((uiGrid *) (this))
+
+/**
+ * Appends a control to the grid.
+ *
+ * @param g uiGrid instance.
+ * @param c The control to insert.
+ * @param left Placement as number of columns from the left. Integer in range of `[INT_MIN, INT_MAX]`.
+ * @param top Placement as number of rows from the top. Integer in range of `[INT_MIN, INT_MAX]`.
+ * @param xspan Number of columns to span. Integer in range of `[0, INT_MAX]`.
+ * @param yspan Number of rows to span. Integer in range of `[0, INT_MAX]`.
+ * @param hexpand `TRUE` to expand reserved area horizontally, `FALSE` otherwise.
+ * @param halign Horizontal alignment of the control within the reserved space.
+ * @param vexpand `TRUE` to expand reserved area vertically, `FALSE` otherwise.
+ * @param valign Vertical alignment of the control within the reserved space.
+ * @memberof uiGrid
+ */
 _UI_EXTERN void uiGridAppend(uiGrid *g, uiControl *c, int left, int top, int xspan, int yspan, int hexpand, uiAlign halign, int vexpand, uiAlign valign);
+
+/**
+ * Inserts a control positioned in relation to another control within the grid.
+ *
+ * @param g uiGrid instance.
+ * @param c The control to insert.
+ * @param existing The existing control to position relatively to.
+ * @param at Placement specifier in relation to @p existing control.
+ * @param xspan Number of columns to span. Integer in range of `[0, INT_MAX]`.
+ * @param yspan Number of rows to span. Integer in range of `[0, INT_MAX]`.
+ * @param hexpand `TRUE` to expand reserved area horizontally, `FALSE` otherwise.
+ * @param halign Horizontal alignment of the control within the reserved space.
+ * @param vexpand `TRUE` to expand reserved area vertically, `FALSE` otherwise.
+ * @param valign Vertical alignment of the control within the reserved space.
+ * @memberof uiGrid
+ */
 _UI_EXTERN void uiGridInsertAt(uiGrid *g, uiControl *c, uiControl *existing, uiAt at, int xspan, int yspan, int hexpand, uiAlign halign, int vexpand, uiAlign valign);
+
+/**
+ * Returns whether or not controls within the grid are padded.
+ *
+ * Padding is defined as space between individual controls.
+ *
+ * @param g uiGrid instance.
+ * @returns `TRUE` if controls are padded, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiGrid
+ */
 _UI_EXTERN int uiGridPadded(uiGrid *g);
+
+/**
+ * Sets whether or not controls within the grid are padded.
+ *
+ * Padding is defined as space between individual controls.
+ * The padding size is determined by the OS defaults.
+ *
+ * @param g uiGrid instance.
+ * @param padded  `TRUE` to make controls padded, `FALSE` otherwise.
+ * @memberof uiGrid
+ */
 _UI_EXTERN void uiGridSetPadded(uiGrid *g, int padded);
+
+/**
+ * Creates a new grid.
+ *
+ * @returns A new uiGrid instance.
+ * @memberof uiGrid
+ */
 _UI_EXTERN uiGrid *uiNewGrid(void);
+
 
 /**
  * A container for an image to be displayed on screen.
