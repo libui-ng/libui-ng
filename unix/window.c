@@ -237,10 +237,17 @@ int uiWindowResizeable(uiWindow *w)
 
 void uiWindowSetResizeable(uiWindow *w, int resizeable)
 {
-	int x, y;
+	// workaround for https://gitlab.gnome.org/GNOME/gtk/-/issues/4945
+	// calling gtk_window_set_resizable(w->window, 0) will cause the window to resize to default size
+	// (default is smallest size here because we're using gtk_window_resize() when creating the window)
+	// to prevent this we call gtk_window_set_default_size() on the current window size so that it doesn't resize
+	if (resizeable == 0) {
+		gint width, height;
+		gtk_window_get_size(w->window, &width, &height);
+		gtk_window_set_default_size(w->window, width, height);
+	}
+
 	w->resizeable = resizeable;
-	uiWindowContentSize(w, &x, &y);
-	gtk_window_set_default_size(w->window, x, y);
 	gtk_window_set_resizable(w->window, resizeable);
 }
 
