@@ -2599,13 +2599,88 @@ _UI_EXTERN void uiColorButtonOnChanged(uiColorButton *b, void (*f)(uiColorButton
  */
 _UI_EXTERN uiColorButton *uiNewColorButton(void);
 
+
+/**
+ * A container control to organize contained controls as labeled fields.
+ *
+ * As the name suggests this container is perfect to create ascetically pleasing
+ * input forms.
+ *
+ * Each control is preceded by it's corresponding label.
+ *
+ * Labels and containers are organized into two panes, making both labels
+ * and containers align with each other.
+ *
+ * @struct uiForm
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiForm uiForm;
 #define uiForm(this) ((uiForm *) (this))
+
+/**
+ * Appends a control with a label to the form.
+ *
+ * Stretchy items expand to use the remaining space within the container.
+ * In the case of multiple stretchy items the space is shared equally.
+ *
+ * @param f uiForm instance.
+ * @param label Label text.\n
+ *              A `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @param c Control to append.
+ * @param stretchy `TRUE` to stretch control, `FALSE` otherwise.
+ * @memberof uiForm
+ */
 _UI_EXTERN void uiFormAppend(uiForm *f, const char *label, uiControl *c, int stretchy);
+
+/**
+ * Returns the number of controls contained within the form.
+ *
+ * @param f uiForm instance.
+ * @memberof uiForm
+ */
 _UI_EXTERN int uiFormNumChildren(uiForm *f);
+
+/**
+ * Removes the control at @p index from the form.
+ *
+ * @param f uiForm instance.
+ * @param index Index of the control to be removed.
+ * @note The control is neither destroyed nor freed.
+ * @memberof uiForm
+ */
 _UI_EXTERN void uiFormDelete(uiForm *f, int index);
+
+/**
+ * Returns whether or not controls within the form are padded.
+ *
+ * Padding is defined as space between individual controls.
+ *
+ * @param f uiForm instance.
+ * @returns `TRUE` if controls are padded, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiForm
+ */
 _UI_EXTERN int uiFormPadded(uiForm *f);
+
+/**
+ * Sets whether or not controls within the box are padded.
+ *
+ * Padding is defined as space between individual controls.
+ * The padding size is determined by the OS defaults.
+ *
+ * @param f uiForm instance.
+ * @param padded  `TRUE` to make controls padded, `FALSE` otherwise.
+ * @memberof uiForm
+ */
 _UI_EXTERN void uiFormSetPadded(uiForm *f, int padded);
+
+/**
+ * Creates a new form.
+ *
+ * @returns A new uiForm instance.
+ * @memberof uiForm
+ */
 _UI_EXTERN uiForm *uiNewForm(void);
 
 
