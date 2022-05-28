@@ -2539,11 +2539,64 @@ struct uiAreaKeyEvent {
 	int Up;
 };
 
+
+/**
+ * A control with a color indicator that opens a color chooser when clicked.
+ *
+ * The control visually represents a button with a color field representing
+ * the selected color.
+ *
+ * Clicking on the button opens up a color chooser in form of a color palette.
+ *
+ * @struct uiColorButton
+ * @extends uiControl
+ * @ingroup dataEntry button
+ */
 typedef struct uiColorButton uiColorButton;
 #define uiColorButton(this) ((uiColorButton *) (this))
+
+/**
+ * Returns the color button color.
+ *
+ * @param b uiColorButton instance.
+ * @param[out] r Red. Double in range of [0, 1.0].
+ * @param[out] g Green. Double in range of [0, 1.0].
+ * @param[out] bl Blue. Double in range of [0, 1.0].
+ * @param[out] a Alpha. Double in range of [0, 1.0].
+ * @memberof uiColorButton
+ */
 _UI_EXTERN void uiColorButtonColor(uiColorButton *b, double *r, double *g, double *bl, double *a);
+
+/**
+ * Sets the color button color.
+ *
+ * @param b uiColorButton instance.
+ * @param r Red. Double in range of [0, 1.0].
+ * @param g Green. Double in range of [0, 1.0].
+ * @param bl Blue. Double in range of [0, 1.0].
+ * @param a Alpha. Double in range of [0, 1.0].
+ * @memberof uiColorButton
+ */
 _UI_EXTERN void uiColorButtonSetColor(uiColorButton *b, double r, double g, double bl, double a);
+
+/** Registers a callback for when the color is changed.
+ *
+ * @param b uiColorButton instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note The callback is not triggered when calling uiColorButtonSetColor().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiColorButton
+ */
 _UI_EXTERN void uiColorButtonOnChanged(uiColorButton *b, void (*f)(uiColorButton *, void *), void *data);
+
+/**
+ * Creates a new color button.
+ *
+ * @returns A new uiColorButton instance.
+ */
 _UI_EXTERN uiColorButton *uiNewColorButton(void);
 
 typedef struct uiForm uiForm;
