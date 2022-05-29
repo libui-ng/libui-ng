@@ -2442,22 +2442,66 @@ _UI_EXTERN void uiDrawTextLayoutExtents(uiDrawTextLayout *tl, double *width, dou
 
 // TODO number of lines visible for clipping rect, range visible for clipping rect?
 
-// uiFontButton is a button that allows users to choose a font when they click on it.
+
+/**
+ * A button-like control that opens a font chooser when clicked.
+ *
+ * @ŧodo SetFont, mechanics
+ * @todo Have a function that sets an entire font descriptor to a range in a uiAttributedString at once, for SetFont?
+ *
+ * @struct uiFontButton
+ * @extends uiControl
+ * @ingroup button dataEntry
+ */
 typedef struct uiFontButton uiFontButton;
 #define uiFontButton(this) ((uiFontButton *) (this))
-// uiFontButtonFont() returns the font currently selected in the uiFontButton in desc.
-// uiFontButtonFont() allocates resources in desc; when you are done with the font, call uiFreeFontButtonFont() to release them.
-// uiFontButtonFont() does not allocate desc itself; you must do so.
-// TODO have a function that sets an entire font descriptor to a range in a uiAttributedString at once, for SetFont?
+
+/**
+ * Returns the selected font.
+ *
+ * @param b uiFontButton instance.
+ * @param[out] desc Font descriptor. [Default: OS-dependent].
+ * @note Make sure to call `uiFreeFontButtonFont()` to free all allocated
+ *       resources within @p desc.
+ * @memberof uiFontButton
+ */
 _UI_EXTERN void uiFontButtonFont(uiFontButton *b, uiFontDescriptor *desc);
-// TOOD SetFont, mechanics
-// uiFontButtonOnChanged() sets the function that is called when the font in the uiFontButton is changed.
+
+/**
+ *  Registers a callback for when the font is changed.
+ *
+ * @param b uiFontButton instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiFontButton
+ */
 _UI_EXTERN void uiFontButtonOnChanged(uiFontButton *b, void (*f)(uiFontButton *, void *), void *data);
-// uiNewFontButton() creates a new uiFontButton. The default font selected into the uiFontButton is OS-defined.
+
+/**
+ * Creates a new font button.
+ *
+ * The default font is determined by the OS defaults.
+ *
+ * @returns A new uiFontButton instance.
+ * @memberof uiFontButton
+ */
 _UI_EXTERN uiFontButton *uiNewFontButton(void);
-// uiFreeFontButtonFont() frees resources allocated in desc by uiFontButtonFont().
-// After calling uiFreeFontButtonFont(), the contents of desc should be assumed to be undefined (though since you allocate desc itself, you can safely reuse desc for other font descriptors).
-// Calling uiFreeFontButtonFont() on a uiFontDescriptor not returned by uiFontButtonFont() results in undefined behavior.
+
+/**
+ * Frees a uiFontDescriptor previously filled by uiFontButtonFont().
+ *
+ * After calling this function the contents of @p desc should be assumed undefined,
+ * however you can safely reuse @p desc.
+ *
+ * Calling this function on a uiFontDescriptor not previously filled by
+ * uiFontButtonFont() results in undefined behavior.
+ *
+ * @param desc Font descriptor to free.
+ * @memberof uiFontButton
+ */
 _UI_EXTERN void uiFreeFontButtonFont(uiFontDescriptor *desc);
 
 _UI_ENUM(uiModifiers) {
