@@ -13,6 +13,7 @@
  * @defgroup static Static widgets
  * @defgroup button Buttons
  * @defgroup dialogWindow Dialog windows
+ * @defgroup menu Menus
  */
 
 #ifndef __LIBUI_UI_H__
@@ -1649,23 +1650,171 @@ _UI_EXTERN uiMultilineEntry *uiNewMultilineEntry(void);
  */
 _UI_EXTERN uiMultilineEntry *uiNewNonWrappingMultilineEntry(void);
 
+
+/**
+ * A menu item used in conjunction with uiMenu.
+ *
+ * @struct uiMenuItem
+ * @ingroup static menu
+ */
 typedef struct uiMenuItem uiMenuItem;
 #define uiMenuItem(this) ((uiMenuItem *) (this))
+
+/**
+ * Enables the menu item.
+ *
+ * @param m uiMenuItem instance.
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN void uiMenuItemEnable(uiMenuItem *m);
+
+/**
+ * Disables the menu item.
+ *
+ * Menu item is grayed out and user interaction is not possible.
+ *
+ * @param m uiMenuItem instance.
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN void uiMenuItemDisable(uiMenuItem *m);
+
+/**
+ * Registers a callback for when the menu item is clicked.
+ *
+ * @param m uiMenuItem instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN void uiMenuItemOnClicked(uiMenuItem *m, void (*f)(uiMenuItem *sender, uiWindow *window, void *data), void *data);
+
+/**
+ * Returns whether or not the menu item's checkbox is checked.
+ *
+ * To be used only with items created via uiMenuAppendCheckItem().
+ *
+ * @param m uiMenuItem instance.
+ * @returns `TRUE` if checked, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN int uiMenuItemChecked(uiMenuItem *m);
+
+/**
+ * Sets whether or not the menu item's checkbox is checked.
+ *
+ * To be used only with items created via uiMenuAppendCheckItem().
+ *
+ * @param m uiMenuItem instance.
+ * @param checked `TRUE` to check menu item checkbox, `FALSE` otherwise.
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN void uiMenuItemSetChecked(uiMenuItem *m, int checked);
 
+/**
+ * An application level menu bar.
+ *
+ * The various operating systems impose different requirements on the
+ * creation and placement of menu bar items, hence the abstraction of the
+ * items `Quit`, `Preferences` and `About`.
+ *
+ * An exemplary, cross platform menu bar:
+ *
+ * - File
+ *   * New
+ *   * Open
+ *   * Save
+ *   * Quit, _use uiMenuAppendQuitItem()_
+ * - Edit
+ *   * Undo
+ *   * Redo
+ *   * Preferences, _use uiMenuAppendPreferencesItem()_
+ * - Help
+ *   * About, _use uiMenuAppendAboutItem()_
+ *
+ * @struct uiMenu
+ * @ingroup static menu
+ */
 typedef struct uiMenu uiMenu;
 #define uiMenu(this) ((uiMenu *) (this))
+
+/**
+ * Appends a generic menu item.
+ *
+ * @param m uiMenu instance.
+ * @param name Menu item text.\n
+ *             A `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiMenuItem instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendItem(uiMenu *m, const char *name);
+
+/**
+ * Appends a generic menu item with a checkbox.
+ *
+ * @param m uiMenu instance.
+ * @param name Menu item text.\n
+ *             A `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiMenuItem instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendCheckItem(uiMenu *m, const char *name);
+
+/**
+ * Appends a new `Quit` menu item.
+ *
+ * @param m uiMenu instance.
+ * @returns A new uiMenuItem instance.
+ * @warning Only one such menu item may exist per application.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendQuitItem(uiMenu *m);
+
+/**
+ * Appends a new `Preferences` menu item.
+ *
+ * @param m uiMenu instance.
+ * @returns A new uiMenuItem instance.
+ * @warning Only one such menu item may exist per application.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendPreferencesItem(uiMenu *m);
+
+/**
+ * Appends a new `About` menu item.
+ *
+ * @param m uiMenu instance.
+ * @warning Only one such menu item may exist per application.
+ * @returns A new uiMenuItem instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendAboutItem(uiMenu *m);
+
+/**
+ * Appends a new separator.
+ *
+ * @param m uiMenu instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
+
+/**
+ * Creates a new menu.
+ *
+ * Typical values are `File`, `Edit`, `Help`.
+ *
+ * @param name Menu label.\n
+ *             A `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiMenu instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenu *uiNewMenu(const char *name);
+
 
 /**
  * File chooser dialog window to select a single file.
