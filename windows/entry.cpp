@@ -64,10 +64,12 @@ char *uiEntryText(uiEntry *e)
 void uiEntrySetText(uiEntry *e, const char *text)
 {
 	int l;
+	if (!text)
+		text = "";
 	// doing this raises an EN_CHANGED
 	e->inhibitChanged = TRUE;
 	uiWindowsSetWindowText(e->hwnd, text);
-        l = (int)strlen(text);
+	l = (int)strlen(text);
         SendMessage(e->hwnd, EM_SETSEL, l, l);
 	e->inhibitChanged = FALSE;
 	// don't queue the control for resize; entry sizes are independent of their contents
