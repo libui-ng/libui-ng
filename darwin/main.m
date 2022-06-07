@@ -16,6 +16,8 @@ static BOOL stepsIsRunning;
 {
 	if (uiprivSendAreaEvents(e) != 0)
 		return;
+	if (uiprivSendKeyboardEditEvents(self, e))
+		return;
 	[super sendEvent:e];
 }
 
