@@ -75,6 +75,7 @@ extern void uiprivDisableAutocorrect(NSTextView *);
 // entry.m
 extern void uiprivFinishNewTextField(NSTextField *, BOOL);
 extern NSTextField *uiprivNewEditableTextField(void);
+extern int uiprivSendEntryEvents(uiprivApplicationClass *, NSEvent *);
 
 // window.m
 @interface uiprivNSWindow : NSWindow

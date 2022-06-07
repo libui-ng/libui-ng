@@ -16,6 +16,8 @@ static BOOL stepsIsRunning;
 {
 	if (uiprivSendAreaEvents(e) != 0)
 		return;
+	if (uiprivSendEntryEvents(self, e) != 0)
+		return;
 	[super sendEvent:e];
 }
 

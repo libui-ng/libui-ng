@@ -138,6 +138,38 @@ static void uiEntryDestroy(uiControl *c)
 	uiFreeControl(uiControl(e));
 }
 
+// See https://stackoverflow.com/questions/970707/cocoa-keyboard-shortcuts-in-dialog-without-an-edit-menu
+// CC-BY-SA-4.0
+int uiprivSendEntryEvents(uiprivApplicationClass *app, NSEvent *e)
+{
+	if ([e type] == NSKeyDown) {
+		if (([e modifierFlags] & NSDeviceIndependentModifierFlagsMask) == NSCommandKeyMask) {
+			if ([[e charactersIgnoringModifiers] isEqualToString:@"x"]) {
+				if ([app sendAction:@selector(cut:) to:nil from:app])
+					return TRUE;
+			} else if ([[e charactersIgnoringModifiers] isEqualToString:@"c"]) {
+				if ([app sendAction:@selector(copy:) to:nil from:app])
+					return TRUE;
+			} else if ([[e charactersIgnoringModifiers] isEqualToString:@"v"]) {
+				if ([app sendAction:@selector(paste:) to:nil from:app])
+					return TRUE;
+			} else if ([[e charactersIgnoringModifiers] isEqualToString:@"z"]) {
+				if ([app sendAction:@selector(undo:) to:nil from:app])
+					return TRUE;
+			} else if ([[e charactersIgnoringModifiers] isEqualToString:@"a"]) {
+				if ([app sendAction:@selector(selectAll:) to:nil from:app])
+					return TRUE;
+			}
+		} else if (([e modifierFlags] & NSDeviceIndependentModifierFlagsMask) == (NSCommandKeyMask | NSShiftKeyMask)) {
+			if ([[e charactersIgnoringModifiers] isEqualToString:@"Z"]) {
+				if ([app sendAction:@selector(redo:) to:nil from:app])
+					return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
 char *uiEntryText(uiEntry *e)
 {
 	return uiDarwinNSStringToText([e->textfield stringValue]);
