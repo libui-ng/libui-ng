@@ -10,16 +10,10 @@
  */
 BOOL uiprivSendKeyboardEditEvents(uiprivApplicationClass *app, NSEvent *e)
 {
-	NSString *action;
+	char key;
+	SEL action;
+	NSString *chars;
 	NSEventModifierFlags flags;
-	NSDictionary *keyAction = @{
-		@"x": @"cut:",
-		@"c": @"copy:",
-		@"v": @"paste:",
-		@"a": @"selectAll:",
-		@"z": @"undo:",
-		@"Z": @"redo:"
-	};
 
 	if ([e type] != NSKeyDown)
 		return FALSE;
@@ -28,9 +22,20 @@ BOOL uiprivSendKeyboardEditEvents(uiprivApplicationClass *app, NSEvent *e)
 	if (flags != NSCommandKeyMask && flags != (NSCommandKeyMask | NSShiftKeyMask))
 		return FALSE;
 
-	action = keyAction[[e charactersIgnoringModifiers]];
-	if (action == nil)
+	chars = [e charactersIgnoringModifiers];
+	if ([chars length] != 1)
 		return FALSE;
 
-	return [app sendAction:NSSelectorFromString(action) to:nil from:app];
+	key = [chars UTF8String][0];
+	switch (key) {
+		case 'x': action = @selector(cut:);       break;
+		case 'c': action = @selector(copy:);      break;
+		case 'v': action = @selector(paste:);     break;
+		case 'a': action = @selector(selectAll:); break;
+		case 'z': action = @selector(undo:);      break;
+		case 'Z': action = @selector(redo:);      break;
+		default: return FALSE;
+	}
+
+	return [app sendAction:action to:nil from:app];
 }
