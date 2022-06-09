@@ -223,7 +223,6 @@ static void cellRendererButton_render(GtkCellRenderer *r, cairo_t *cr, GtkWidget
 {
 	cellRendererButton *c = cellRendererButton(r);
 	gint xpad, ypad;
-	GdkRectangle alignedArea;
 	gint xoff, yoff;
 	GtkStyleContext *context;
 	PangoLayout *layout;

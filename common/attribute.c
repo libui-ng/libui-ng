@@ -62,7 +62,8 @@ static void destroy(uiAttribute *a)
 void uiprivAttributeRelease(uiAttribute *a)
 {
 	if (a->ownedByUser)
-		/* TODO implementation bug: we can't release an attribute we don't own */;
+		uiprivImplBug("Can't release attribute we don't own %p", a);
+
 	a->refcount--;
 	if (a->refcount == 0)
 		destroy(a);
@@ -71,7 +72,8 @@ void uiprivAttributeRelease(uiAttribute *a)
 void uiFreeAttribute(uiAttribute *a)
 {
 	if (!a->ownedByUser)
-		/* TODO user bug: you can't free an attribute you don't own */;
+		uiprivImplBug("Can't release attribute we don't own %p", a);
+
 	destroy(a);
 }
 

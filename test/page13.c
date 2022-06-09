@@ -52,9 +52,14 @@ static void openTestWindow(uiBox *(*mkf)(void))
 	uiControlShow(uiControl(w));
 }
 
-static void buttonClicked(uiButton *b, void *data)
+static void hButtonClicked(uiButton *b, void *data)
 {
-	openTestWindow((uiBox *(*)(void)) data);
+	openTestWindow(uiNewHorizontalBox);
+}
+
+static void vButtonClicked(uiButton *b, void *data)
+{
+	openTestWindow(uiNewVerticalBox);
 }
 
 static void entryChanged(uiEntry *e, void *data)
@@ -119,11 +124,11 @@ uiBox *makePage13(void)
 	uiBoxAppend(page13, uiControl(rb), 0);
 
 	b = uiNewButton("Horizontal");
-	uiButtonOnClicked(b, buttonClicked, uiNewHorizontalBox);
+	uiButtonOnClicked(b, hButtonClicked, NULL);
 	uiBoxAppend(page13, uiControl(b), 0);
 
 	b = uiNewButton("Vertical");
-	uiButtonOnClicked(b, buttonClicked, uiNewVerticalBox);
+	uiButtonOnClicked(b, vButtonClicked, NULL);
 	uiBoxAppend(page13, uiControl(b), 0);
 
 	f = newForm();
