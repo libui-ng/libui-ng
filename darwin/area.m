@@ -131,7 +131,7 @@ struct uiArea {
 	uiArea *a = self->libui_a;
 	uiAreaMouseEvent me;
 	NSPoint point;
-	int buttonNumber;
+	unsigned int buttonNumber;
 	NSUInteger pmb;
 	unsigned int i, max;
 
