@@ -17,7 +17,7 @@ uiprivGraphemes *uiprivNewGraphemes(void *s, size_t len)
 	CFStringRef cfstr;
 	size_t ppos, gpos;
 	CFRange range;
-	size_t i;
+	CFIndex i;
 
 	g = uiprivNew(uiprivGraphemes);
 
