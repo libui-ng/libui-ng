@@ -244,7 +244,7 @@ struct uiGrid {
 	NSView ***gv;
 	BOOL **gspan;
 	int x, y;
-	int i;
+	NSUInteger i;
 	NSLayoutConstraint *c;
 	int firstx, firsty;
 	BOOL *hexpand, *vexpand;
