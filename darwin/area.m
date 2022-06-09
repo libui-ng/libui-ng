@@ -158,25 +158,41 @@ struct uiArea {
 	me.Down = 0;
 	me.Up = 0;
 	me.Count = 0;
+
+if (@available(macOS 10.12, *)) {
 	switch ([e type]) {
-	case NSLeftMouseDown:
-	case NSRightMouseDown:
-	case NSOtherMouseDown:
+	case NSEventTypeLeftMouseDown:
+	case NSEventTypeRightMouseDown:
+	case NSEventTypeOtherMouseDown:
 		me.Down = buttonNumber;
 		me.Count = [e clickCount];
 		break;
-	case NSLeftMouseUp:
-	case NSRightMouseUp:
-	case NSOtherMouseUp:
+	case NSEventTypeLeftMouseUp:
+	case NSEventTypeRightMouseUp:
+	case NSEventTypeOtherMouseUp:
 		me.Up = buttonNumber;
 		break;
-	case NSLeftMouseDragged:
-	case NSRightMouseDragged:
-	case NSOtherMouseDragged:
+	case NSEventTypeLeftMouseDragged:
+	case NSEventTypeRightMouseDragged:
+	case NSEventTypeOtherMouseDragged:
 		// we include the button that triggered the dragged event in the Held fields
 		buttonNumber = 0;
 		break;
 	}
+} else {
+	NSEventType type = [e type];
+	if (type == NSLeftMouseDown || type == NSRightMouseDown || type == NSOtherMouseDown) {
+		me.Down = buttonNumber;
+		me.Count = [e clickCount];
+	}
+	else if (type == NSLeftMouseUp || type == NSRightMouseUp || type == NSOtherMouseUp) {
+		me.Up = buttonNumber;
+	}
+	else if (type == NSLeftMouseDragged || type == NSRightMouseDragged || type == NSOtherMouseDragged) {
+		// we include the button that triggered the dragged event in the Held fields
+		buttonNumber = 0;
+	}
+}
 
 	me.Modifiers = [self parseModifiers:e];
 
@@ -375,14 +391,20 @@ int uiprivSendAreaEvents(NSEvent *e)
 	if (![focused isKindOfClass:[areaView class]])
 		return 0;
 	view = (areaView *) focused;
+if (@available(macOS 10.12, *)) {
 	switch (type) {
-	case NSKeyDown:
-		return [view doKeyDown:e];
-	case NSKeyUp:
-		return [view doKeyUp:e];
-	case NSFlagsChanged:
-		return [view doFlagsChanged:e];
+		case NSEventTypeKeyDown:      return [view doKeyDown:e];
+		case NSEventTypeKeyUp:        return [view doKeyUp:e];
+		case NSEventTypeFlagsChanged: return [view doFlagsChanged:e];
 	}
+} else {
+	if (type == NSKeyDown)
+		return [view doKeyDown:e];
+	if (type == NSKeyUp)
+		return [view doKeyUp:e];
+	if (type == NSFlagsChanged)
+		return [view doFlagsChanged:e];
+}
 	return 0;
 }
 
