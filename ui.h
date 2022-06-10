@@ -2653,11 +2653,18 @@ _UI_EXTERN uiFontButton *uiNewFontButton(void);
  */
 _UI_EXTERN void uiFreeFontButtonFont(uiFontDescriptor *desc);
 
+/**
+ * Keyboard modifier keys.
+ *
+ * Usable as bitmasks.
+ *
+ * @enum uiModifiers
+ */
 _UI_ENUM(uiModifiers) {
-	uiModifierCtrl = 1 << 0,
-	uiModifierAlt = 1 << 1,
-	uiModifierShift = 1 << 2,
-	uiModifierSuper = 1 << 3,
+	uiModifierCtrl  = 1 << 0, //!< Control key.
+	uiModifierAlt   = 1 << 1, //!< Alternate/Option key.
+	uiModifierShift = 1 << 2, //!< Shift key.
+	uiModifierSuper = 1 << 3, //!< Super/Command/Windows key.
 };
 
 // TODO document drag captures
