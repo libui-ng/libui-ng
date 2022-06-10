@@ -251,6 +251,7 @@ static void appendMenuItem(GtkMenuShell *submenu, uiMenuItem *item, uiWindow *w)
 	struct menuItemWindow *ww;
 
 	menuitem = g_object_new(item->gtype, NULL);
+	signal = 0;
 	if (item->name != NULL)
 		gtk_menu_item_set_label(GTK_MENU_ITEM(menuitem), item->name);
 	if (item->type != typeSeparator) {

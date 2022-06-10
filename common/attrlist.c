@@ -502,7 +502,6 @@ void uiprivAttrListRemoveAttribute(uiprivAttrList *alist, uiAttributeType type, 
 {
 	struct attr *a;
 	struct attr *tails = NULL;		// see uiprivAttrListInsertCharactersUnattributed() above
-	struct attr *tailsAt = NULL;
 
 	a = alist->first;
 	while (a != NULL) {
@@ -510,9 +509,7 @@ void uiprivAttrListRemoveAttribute(uiprivAttrList *alist, uiAttributeType type, 
 		struct attr *tail;
 
 		// this defines where to re-attach the tails
-		// (all the tails will have their start at end, so we can just insert them all before tailsAt)
 		if (a->start >= end) {
-			tailsAt = a;
 			// and at this point we're done, so
 			break;
 		}
@@ -549,7 +546,6 @@ void uiprivAttrListRemoveAttributes(uiprivAttrList *alist, size_t start, size_t 
 {
 	struct attr *a;
 	struct attr *tails = NULL;		// see uiprivAttrListInsertCharactersUnattributed() above
-	struct attr *tailsAt = NULL;
 
 	a = alist->first;
 	while (a != NULL) {
@@ -557,9 +553,7 @@ void uiprivAttrListRemoveAttributes(uiprivAttrList *alist, size_t start, size_t 
 		struct attr *tail;
 
 		// this defines where to re-attach the tails
-		// (all the tails will have their start at end, so we can just insert them all before tailsAt)
 		if (a->start >= end) {
-			tailsAt = a;
 			// and at this point we're done, so
 			break;
 		}
