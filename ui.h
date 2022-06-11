@@ -2108,6 +2108,7 @@ _UI_EXTERN void uiDrawRestore(uiDrawContext *c);
 // uiAttributes are immutable and the uiAttributedString takes
 // ownership of the uiAttribute object once assigned, copying its
 // contents as necessary.
+// TODO define whether all this, for both uiTableValue and uiAttribute, is undefined behavior or a caught error
 typedef struct uiAttribute uiAttribute;
 
 // @role uiAttribute destructor
@@ -3061,32 +3062,75 @@ _UI_EXTERN void uiFreeImage(uiImage *i);
  */
 _UI_EXTERN void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride);
 
-// uiTableValue stores a value to be passed along uiTable and
-// uiTableModel.
-//
-// You do not create uiTableValues directly; instead, you create a
-// uiTableValue of a given type using the specialized constructor
-// functions.
-//
-// uiTableValues are immutable and the uiTableModel and uiTable
-// take ownership of the uiTableValue object once returned, copying
-// its contents as necessary.
+/**
+ * @defgroup table Tables
+ *
+ * Types and methods for organizing and displaying tabular data.
+ *
+ * Tables follow the concept of separation of concerns, similar to common
+ * patterns like model-view-controller or model-view-adapter.
+ *
+ * They consist of three main components:
+ *
+ * - uiTableModel acts as a delegate for the underlying data store. Its purpose
+ *   is to provide the data for views and inform about any updates.
+ * - uiTable represents the view. Its purpose is to display the data provided
+ *   by the model as well as provide an interface to the user to modify data.
+ * - uiTableModelHandler takes on the role of controller and model. It provides
+ *   the actual data while also handling data edits.
+ *
+ * To get started:
+ *
+ * 1. Implement all of the methods defined in uiTableModelHandler.
+ *    This involves defining columns, their data types as well as getters and
+ *    setters for each table cell.
+ * 2. Wrap the uiTableModelHandler from step 1 in a uiTableModel object.
+ * 3. Create a new uiTable using the model created in step 2.
+ *    Start adding columns to your table. Each table column is backed by
+ *    one or more model columns.
+ *
+ * You can create multiple differing views (uiTable) using the same
+ * uiTableModel.
+ */
+
+/**
+ * Container to store values used in container related methods.
+ *
+ * uiTableValue objects are immutable.
+ *
+ * uiTable and uiTableModel methods take ownership of the uiTableValue objects
+ * when passed as parameter. Exception: uiNewTableValueImage().
+ *
+ * uiTable and uiTableModel methods retain ownership when returning uiTableValue
+ * objects. Exception: uiTableValueImage().
+ *
+ * @struct uiTableValue
+ * @ingroup table
+ */
 typedef struct uiTableValue uiTableValue;
 
-// @role uiTableValue destructor
-// uiFreeTableValue() frees a uiTableValue. You generally do not
-// need to call this yourself, as uiTable and uiTableModel do this
-// for you. In fact, it is an error to call this function on a uiTableValue
-// that has been given to a uiTable or uiTableModel. You can call this,
-// however, if you created a uiTableValue that you aren't going to
-// use later, or if you called a uiTableModelHandler method directly
-// and thus never transferred ownership of the uiTableValue.
+/**
+ * Frees the uiTableValue.
+ *
+ * @param v Table value to free.
+ *
+ * @warning This function is to be used only on uiTableValue objects that
+ *          have NOT been passed to uiTable or uiTableModel - as these
+ *          take ownership of the object.\n
+ *          Use this for freeing erroneously created values or when directly
+ *          calling uiTableModelHandler without transferring ownership to
+ *          uiTable or uiTableModel.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN void uiFreeTableValue(uiTableValue *v);
 
-// uiTableValueType holds the possible uiTableValue types that may
-// be returned by uiTableValueGetType(). Refer to the documentation
-// for each type's constructor function for details on each type.
-// TODO actually validate these
+/**
+ * uiTableValue types.
+ *
+ * @todo Define whether calling any of the getters on the wrong type is
+ *       undefined behavior or caught error.
+ * @enum uiTableValueType
+ */
 _UI_ENUM(uiTableValueType) {
 	uiTableValueTypeString,
 	uiTableValueTypeImage,
@@ -3094,222 +3138,414 @@ _UI_ENUM(uiTableValueType) {
 	uiTableValueTypeColor,
 };
 
-// uiTableValueGetType() returns the type of v.
-// TODO I don't like this name
+/**
+ * Gets the uiTableValue type.
+ *
+ * @param v Table value.
+ * @returns Table value type.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN uiTableValueType uiTableValueGetType(const uiTableValue *v);
 
-// uiNewTableValueString() returns a new uiTableValue that contains
-// str. str is copied; you do not need to keep it alive after
-// uiNewTableValueString() returns.
+/**
+ * Creates a new table value to store a text string.
+ *
+ * @param str String value.\n
+ *            A valid, `NUL` terminated UTF-8 string.\n
+ *            Data is owned by the caller.
+ * @returns A new uiTableValue instance.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueString(const char *str);
 
-// uiTableValueString() returns the string stored in v. The returned
-// string is owned by v. It is an error to call this on a uiTableValue
-// that does not hold a string.
+/**
+ * Returns the string value held internally.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeString.
+ *
+ * @param v Table value.
+ * @returns String value.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data remains owned by @p v, do **NOT** call `uiFreeText()`.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN const char *uiTableValueString(const uiTableValue *v);
 
-// uiNewTableValueImage() returns a new uiTableValue that contains
-// the given uiImage.
-// 
-// Unlike other similar constructors, uiNewTableValueImage() does
-// NOT copy the image. This is because images are comparatively
-// larger than the other objects in question. Therefore, you MUST
-// keep the image alive as long as the returned uiTableValue is alive.
-// As a general rule, if libui calls a uiTableModelHandler method, the
-// uiImage is safe to free once any of your code is once again
-// executed.
+/**
+ * Creates a new table value to store an image.
+ *
+ * @param img Image.\n
+ *            Data is NOT copied and needs to kept alive.
+ * @returns A new uiTableValue instance.
+ * @warning Unlike other uiTableValue constructors, uiNewTableValueImage() does
+ *          NOT copy the image to save time and space. Make sure the image
+ *          data stays valid while in use by the library.
+ *          As a general rule: if the constructor is called via the
+ *          uiTableModelHandler, the image is safe to free once execution
+ *          returns to ANY of your code.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueImage(uiImage *img);
 
-// uiTableValueImage() returns the uiImage stored in v. As these
-// images are not owned by v, you should not assume anything
-// about the lifetime of the image (unless you created the image,
-// and thus control its lifetime). It is an error to call this on a
-// uiTableValue that does not hold an image.
+/**
+ * Returns a reference to the image contained.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeImage.
+ *
+ * @param v Table value.
+ * @returns Image.\n
+ *          Data is owned by the caller of uiNewTableValueImage().
+ * @warning The image returned is not owned by the object @p v,
+ *          hence no lifetime guarantees can be made.
+ */
 _UI_EXTERN uiImage *uiTableValueImage(const uiTableValue *v);
 
-// uiNewTableValueInt() returns a uiTableValue that stores the given
-// int. This can be used both for boolean values (nonzero is true, as
-// in C) or progresses (in which case the valid range is -1..100
-// inclusive).
+/**
+ * Creates a new table value to store an integer.
+ *
+ * This value type can be used in conjunction with properties like
+ * column editable [`TRUE`, `FALSE`] or controls like progress bars and
+ * checkboxes. For these, consult uiProgressBar and uiCheckbox for the allowed
+ * integer ranges.
+ *
+ * @param i Integer value.
+ * @returns A new uiTableValue instance.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueInt(int i);
 
-// uiTableValueInt() returns the int stored in v. It is an error to call
-// this on a uiTableValue that does not store an int.
+/**
+ * Returns the integer value held internally.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeInt.
+ *
+ * @param v Table value.
+ * @returns Integer value.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN int uiTableValueInt(const uiTableValue *v);
 
-// uiNewTableValueColor() returns a uiTableValue that stores the
-// given color.
+/**
+ * Creates a new table value to store a color in.
+ *
+ * @param r Red. Double in range of [0, 1.0].
+ * @param g Green. Double in range of [0, 1.0].
+ * @param b Blue. Double in range of [0, 1.0].
+ * @param a Alpha. Double in range of [0, 1.0].
+ * @returns A new uiTableValue instance.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueColor(double r, double g, double b, double a);
 
-// uiTableValueColor() returns the color stored in v. It is an error to
-// call this on a uiTableValue that does not store a color.
-// TODO define whether all this, for both uiTableValue and uiAttribute, is undefined behavior or a caught error
+/**
+ * Returns the color value held internally.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeColor.
+ *
+ * @param v Table value.
+ * @param[out] r Red. Double in range of [0, 1.0].
+ * @param[out] g Green. Double in range of [0, 1.0].
+ * @param[out] b Blue. Double in range of [0, 1.0].
+ * @param[out] a Alpha. Double in range of [0, 1.0].
+ * @memberof uiTableValue
+ */
 _UI_EXTERN void uiTableValueColor(const uiTableValue *v, double *r, double *g, double *b, double *a);
 
+
+/**
+ * Sort indicators.
+ *
+ * Generic sort indicators to display sorting direction.
+ *
+ * @enum uiSortIndicator
+ * @ingroup table
+ */
 _UI_ENUM(uiSortIndicator) {
 	uiSortIndicatorNone,
 	uiSortIndicatorAscending,
 	uiSortIndicatorDescending
 };
 
-// uiTableModel is an object that provides the data for a uiTable.
-// This data is returned via methods you provide in the
-// uiTableModelHandler struct.
-//
-// uiTableModel represents data using a table, but this table does
-// not map directly to uiTable itself. Instead, you can have data
-// columns which provide instructions for how to render a given
-// uiTable's column — for instance, one model column can be used
-// to give certain rows of a uiTable a different background color.
-// Row numbers DO match with uiTable row numbers.
-//
-// Once created, the number and data types of columns of a
-// uiTableModel cannot change.
-//
-// Row and column numbers start at 0. A uiTableModel can be
-// associated with more than one uiTable at a time.
+/**
+ * Table model delegate to retrieve data and inform about model changes.
+ *
+ * This is a wrapper around uiTableModelHandler where the actual data is
+ * held.
+ *
+ * The main purpose it to provide methods to the developer to signal that
+ * underlying data has changed.
+ *
+ * Row indexes match both the row indexes in uiTable and uiTableModelHandler.
+ *
+ * A uiTableModel can be used as the backing store for multiple uiTable views.
+ *
+ * Once created, the number of columns and their data types are not allowed
+ * to change.
+ *
+ * @warning Not informing the uiTableModel about out-of-band data changes is
+ *          an error. User edits via uiTable do *not* fall in this category.
+ * @struct uiTableModel
+ * @ingroup table
+ */
 typedef struct uiTableModel uiTableModel;
 
-// uiTableModelHandler defines the methods that uiTableModel
-// calls when it needs data. Once a uiTableModel is created, these
-// methods cannot change.
+/**
+ * Developer defined methods for data retrieval and setting.
+ *
+ * These methods get called whenever the associated uiTableModel needs to
+ * retrieve data or a uiTable wants to set data.
+ *
+ * @warning These methods are NOT allowed to change as soon as the
+ *          uiTableModelHandler is associated with a uiTableModel.
+ * @todo Validate ranges
+ * @todo Validate types on each getter/setter call (? table columns only?)
+ * @struct uiTableModelHandler
+ * @ingroup table
+ */
 typedef struct uiTableModelHandler uiTableModelHandler;
-
-// TODO validate ranges; validate types on each getter/setter call (? table columns only?)
 struct uiTableModelHandler {
-	// NumColumns returns the number of model columns in the
-	// uiTableModel. This value must remain constant through the
-	// lifetime of the uiTableModel. This method is not guaranteed
-	// to be called depending on the system.
-	// TODO strongly check column numbers and types on all platforms so these clauses can go away
+	/**
+	 * Returns the number of columns in the uiTableModel.
+	 *
+	 * @warning This value MUST remain constant throughout the lifetime of the uiTableModel.
+	 * @warning This method is not guaranteed to be called depending on the system.
+	 * @todo strongly check column numbers and types on all platforms so
+	 *       these clauses can go away
+	 */
 	int (*NumColumns)(uiTableModelHandler *, uiTableModel *);
-	// ColumnType returns the value type of the data stored in
-	// the given model column of the uiTableModel. The returned
-	// values must remain constant through the lifetime of the
-	// uiTableModel. This method is not guaranteed to be called
-	// depending on the system.
-	uiTableValueType (*ColumnType)(uiTableModelHandler *, uiTableModel *, int);
-	// NumRows returns the number or rows in the uiTableModel.
-	// This value must be non-negative.
+
+	/**
+	 * Returns the column type in for of a #uiTableValueType.
+	 *
+	 * @warning This value MUST remain constant throughout the lifetime of the uiTableModel.
+	 * @warning This method is not guaranteed to be called depending on the system.
+	 */
+	uiTableValueType (*ColumnType)(uiTableModelHandler *, uiTableModel *, int column);
+
+	/**
+	 * Returns the number of rows in the uiTableModel.
+	 */
 	int (*NumRows)(uiTableModelHandler *, uiTableModel *);
-	// CellValue returns a uiTableValue corresponding to the model
-	// cell at (row, column). The type of the returned uiTableValue
-	// must match column's value type. Under some circumstances,
-	// NULL may be returned; refer to the various methods that add
-	// columns to uiTable for details. Once returned, the uiTable
-	// that calls CellValue will free the uiTableValue returned.
+
+	/**
+	 * Returns the cell value for (row, column).
+	 *
+	 * Make sure to use the uiTableValue constructors. The returned value
+	 * must match the #uiTableValueType defined in ColumnType().
+	 *
+	 * Some columns may return `NULL` as a special value. Refer to the
+	 * appropriate `uiTableAppend*Column()` documentation.
+	 *
+	 * @note uiTableValue objects are automatically freed when requested by
+	 *       a uiTable.
+	 */
 	uiTableValue *(*CellValue)(uiTableModelHandler *mh, uiTableModel *m, int row, int column);
-	// SetCellValue changes the model cell value at (row, column)
-	// in the uiTableModel. Within this function, either do nothing
-	// to keep the current cell value or save the new cell value as
-	// appropriate. After SetCellValue is called, the uiTable will
-	// itself reload the table cell. Under certain conditions, the
-	// uiTableValue passed in can be NULL; refer to the various
-	// methods that add columns to uiTable for details. Once
-	// returned, the uiTable that called SetCellValue will free the
-	// uiTableValue passed in.
+
+	/**
+	 * Sets the cell value for (row, column).
+	 *
+	 * It is up to the handler to decide what to do with the value: change
+	 * the model or reject the change, keeping the old value.
+	 *
+	 * Some columns may call this function with `NULL` as a special value.
+	 * Refer to the appropriate `uiTableAppend*Column()` documentation.
+	 *
+	 * @note uiTableValue objects are automatically freed upon return when
+	 * set by a uiTable.
+	 */
 	void (*SetCellValue)(uiTableModelHandler *, uiTableModel *, int, int, const uiTableValue *);
 };
 
-// @role uiTableModel constructor
-// uiNewTableModel() creates a new uiTableModel with the given
-// handler methods.
+/**
+ * Creates a new table model.
+ *
+ * @param mh Table model handler.
+ * @returns A new uiTableModel instance.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN uiTableModel *uiNewTableModel(uiTableModelHandler *mh);
 
-// @role uiTableModel destructor
-// uiFreeTableModel() frees the given table model. It is an error to
-// free table models currently associated with a uiTable.
+/**
+ * Frees the table model.
+ *
+ * @param m Table model to free.
+ * @warning It is an error to free table models currently associated with a
+ *          uiTable.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiFreeTableModel(uiTableModel *m);
 
-// uiTableModelRowInserted() tell all uiTables associated with
-// the uiTableModel m that a new row has been added to m at
-// index newIndex.
-// You must insert the row data in your model before calling this
-// function.
-// NumRows() must represent the new row count before you call
-// this function.
+/**
+ * Informs all associated uiTable views that a new row has been added.
+ *
+ * You must insert the row data in your model before calling this function.
+ *
+ * NumRows() must represent the new row count before you call this function.
+ *
+ * @param m Table model that has changed.
+ * @param newIndex Index of the row that has been added.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 
-// uiTableModelRowChanged() tells any uiTable associated with m
-// that the data in the row at index has changed. You do not need to
-// call this in your SetCellValue() handlers, but you do need to call
-// this if your data changes at some other point.
+/**
+ * Informs all associated uiTable views that a row has been changed.
+ *
+ * You do NOT need to call this in your SetCellValue() handlers, but NEED
+ * to call this if your data changes at any other point.
+ *
+ * @param m Table model that has changed.
+ * @param index Index of the row that has changed.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiTableModelRowChanged(uiTableModel *m, int index);
 
-// uiTableModelRowDeleted() tells all uiTables associated with
-// the uiTableModel m that the row at index oldIndex has been
-// deleted.
-// You must delete the row from your model before you call this
-// function.
-// NumRows() must represent the new row count before you call
-// this function.
+/**
+ * Informs all associated uiTable views that a row has been deleted.
+ *
+ * You must delete the row from your model before you call this function.
+ *
+ * NumRows() must represent the new row count before you call this function.
+ *
+ * @param m Table model that has changed.
+ * @param oldIndex Index of the row that has been deleted.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiTableModelRowDeleted(uiTableModel *m, int oldIndex);
 // TODO reordering/moving
 
-// uiTableModelColumnNeverEditable and
-// uiTableModelColumnAlwaysEditable are the value of an editable
-// model column parameter to one of the uiTable create column
-// functions; if used, that jparticular uiTable colum is not editable
-// by the user and always editable by the user, respectively.
+/** Parameter to editable model columns to signify all rows are never editable. */
 #define uiTableModelColumnNeverEditable (-1)
+/** Parameter to editable model columns to signify all rows are always editable. */
 #define uiTableModelColumnAlwaysEditable (-2)
 
-// uiTableTextColumnOptionalParams are the optional parameters
-// that control the appearance of the text column of a uiTable.
+/**
+ * Optional parameters to control the appearance of text columns.
+ *
+ * @struct uiTableTextColumnOptionalParams
+ * @ingroup table
+ */
 typedef struct uiTableTextColumnOptionalParams uiTableTextColumnOptionalParams;
-
-// uiTableParams defines the parameters passed to uiNewTable().
-typedef struct uiTableParams uiTableParams;
-
 struct uiTableTextColumnOptionalParams {
-	// ColorModelColumn is the model column containing the
-	// text color of this uiTable column's text, or -1 to use the
-	// default color.
-	//
-	// If CellValue() for this column for any cell returns NULL, that
-	// cell will also use the default text color.
+	/**
+	 * uiTableModel column that defines the text color for each cell.
+	 *
+	 * #uiTableValueTypeColor Text color, `NULL` to use the default color
+	 * for that cell.
+	 *
+	 * `-1` to use the default color for all cells.
+	 */
 	int ColorModelColumn;
 };
 
+/**
+ * Table parameters passed to uiNewTable().
+ *
+ * @struct uiTableParams
+ * @ingroup table
+ */
+typedef struct uiTableParams uiTableParams;
 struct uiTableParams {
-	// Model is the uiTableModel to use for this uiTable.
-	// This parameter cannot be NULL.
+	/**
+	 * Model holding the data to be displayed. This can NOT be `NULL`.
+	 */
 	uiTableModel *Model;
-	// RowBackgroundColorModelColumn is a model column
-	// number that defines the background color used for the
-	// entire row in the uiTable, or -1 to use the default color for
-	// all rows.
-	//
-	// If CellValue() for this column for any row returns NULL, that
-	// row will also use the default background color.
+	/**
+	 * uiTableModel column that defines background color for each row,
+	 *
+	 * #uiTableValueTypeColor Background color, `NULL` to use the default
+	 * background color for that row.
+	 *
+	 * `-1` to use the default background color for all rows.
+	 */
 	int RowBackgroundColorModelColumn;
 };
 
-// uiTable is a uiControl that shows tabular data, allowing users to
-// manipulate rows of such data at a time.
+/**
+ * A control to display data in a tabular fashion.
+ *
+ * The view of the architecture.
+ *
+ * Data is retrieved from a uiTableModel via methods that you need to define
+ * in a uiTableModelHandler.
+ *
+ * Make sure the uiTableModel columns return the right type, as specified in
+ * the `uiTableAppend*Column()` parameters.
+ *
+ * The `*EditableModelColumn` parameters typically point to a uiTableModel
+ * column index, that specifies the property on a per row basis.\n
+ * They can however also be passed two special values defining the property
+ * for all rows: `uiTableModelColumnNeverEditable` and
+ * `uiTableModelColumnAlwaysEditable`.
+ *
+ * @struct uiTable
+ * @ingroup dataEntry table
+ */
 typedef struct uiTable uiTable;
 #define uiTable(this) ((uiTable *) (this))
 
-// uiTableAppendTextColumn() appends a text column to t.
-// name is displayed in the table header.
-// textModelColumn is where the text comes from.
-// If a row is editable according to textEditableModelColumn,
-// SetCellValue() is called with textModelColumn as the column.
+/**
+ * Appends a text column to the table.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param textModelColumn Column that holds the text to be displayed.\n
+ *                        #uiTableValueTypeString
+ * @param textEditableModelColumn Column that defines whether or not the text is editable.\n
+ *                                #uiTableValueTypeInt `TRUE` to make text editable, `FALSE`
+ *                                otherwise.\n
+ *                                `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textParams Text display settings, `NULL` to use defaults.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendTextColumn(uiTable *t,
 	const char *name,
 	int textModelColumn,
 	int textEditableModelColumn,
 	uiTableTextColumnOptionalParams *textParams);
 
-// uiTableAppendImageColumn() appends an image column to t.
-// Images are drawn at icon size, appropriate to the pixel density
-// of the screen showing the uiTable.
+/**
+ * Appends an image column to the table.
+ *
+ * Images are drawn at icon size, using the representation that best fits the
+ * pixel density of the screen.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param imageModelColumn Column that holds the images to be displayed.\n
+ *                         #uiTableValueTypeImage
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendImageColumn(uiTable *t,
 	const char *name,
 	int imageModelColumn);
 
-// uiTableAppendImageTextColumn() appends a column to t that
-// shows both an image and text.
+/**
+ * Appends a column to the table that displays both an image and text.
+ *
+ * Images are drawn at icon size, using the representation that best fits the
+ * pixel density of the screen.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param imageModelColumn Column that holds the images to be displayed.\n
+ *                         #uiTableValueTypeImage
+ * @param textModelColumn Column that holds the text to be displayed.\n
+ *                        #uiTableValueTypeString
+ * @param textEditableModelColumn Column that defines whether or not the text is editable.\n
+ *                                #uiTableValueTypeInt `TRUE` to make text editable, `FALSE` otherwise.\n
+ *                                `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textParams Text display settings, `NULL` to use defaults.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendImageTextColumn(uiTable *t,
 	const char *name,
 	int imageModelColumn,
@@ -3317,17 +3553,49 @@ _UI_EXTERN void uiTableAppendImageTextColumn(uiTable *t,
 	int textEditableModelColumn,
 	uiTableTextColumnOptionalParams *textParams);
 
-// uiTableAppendCheckboxColumn appends a column to t that
-// contains a checkbox that the user can interact with (assuming the
-// checkbox is editable). SetCellValue() will be called with
-// checkboxModelColumn as the column in this case.
+/**
+ * Appends a column to the table containing a checkbox.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param checkboxModelColumn Column that holds the data to be displayed.\n
+ *                            #uiTableValueTypeInt `TRUE` for a checked checkbox, `FALSE` otherwise.
+ * @param checkboxEditableModelColumn Column that defines whether or not the checkbox is editable.\n
+ *                                    #uiTableValueTypeInt `TRUE` to make checkbox editable, `FALSE` otherwise.\n
+ *                                    `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                    `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendCheckboxColumn(uiTable *t,
 	const char *name,
 	int checkboxModelColumn,
 	int checkboxEditableModelColumn);
 
-// uiTableAppendCheckboxTextColumn() appends a column to t
-// that contains both a checkbox and text.
+/**
+ * Appends a column to the table containing a checkbox and text.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param checkboxModelColumn Column that holds the data to be displayed.\n
+ *                            #uiTableValueTypeInt
+ *                            `TRUE` for a checked checkbox, `FALSE` otherwise.
+ * @param checkboxEditableModelColumn Column that defines whether or not the checkbox is editable.\n
+ *                                    #uiTableValueTypeInt `TRUE` to make checkbox editable, `FALSE` otherwise.\n
+ *                                    `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                    `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textModelColumn Column that holds the text to be displayed.\n
+ *                        #uiTableValueTypeString
+ * @param textEditableModelColumn Column that defines whether or not the text is editable.\n
+ *                                #uiTableValueTypeInt `TRUE` to make text editable, `FALSE` otherwise.\n
+ *                                `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textParams Text display settings, `NULL` to use defaults.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendCheckboxTextColumn(uiTable *t,
 	const char *name,
 	int checkboxModelColumn,
@@ -3336,58 +3604,141 @@ _UI_EXTERN void uiTableAppendCheckboxTextColumn(uiTable *t,
 	int textEditableModelColumn,
 	uiTableTextColumnOptionalParams *textParams);
 
-// uiTableAppendProgressBarColumn() appends a column to t
-// that displays a progress bar. These columns work like
-// uiProgressBar: a cell value of 0..100 displays that percentage, and
-// a cell value of -1 displays an indeterminate progress bar.
+/**
+ * Appends a column to the table containing a progress bar.
+ *
+ * The workings and valid range are exactly the same as that of uiProgressBar.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param progressModelColumn Column that holds the data to be displayed.\n
+ *                            #uiTableValueTypeInt Integer in range of `[-1, 100]`, see uiProgressBar
+ *                            for details.
+ * @see uiProgressBar
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendProgressBarColumn(uiTable *t,
 	const char *name,
 	int progressModelColumn);
 
-// uiTableAppendButtonColumn() appends a column to t
-// that shows a button that the user can click on. When the user
-// does click on the button, SetCellValue() is called with a NULL
-// value and buttonModelColumn as the column.
-// CellValue() on buttonModelColumn should return the text to show
-// in the button.
+/**
+ * Appends a column to the table containing a button.
+ *
+ * Button clicks are signaled to the uiTableModelHandler via a call to
+ * SetCellValue() with a value of `NULL` for the @p buttonModelColumn.
+ *
+ * CellValue() must return the button text to display.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param buttonModelColumn Column that holds the button text to be displayed.\n
+ *                          #uiTableValueTypeString
+ * @param buttonClickableModelColumn Column that defines whether or not the button is clickable.\n
+ *                                   #uiTableValueTypeInt `TRUE` to make button clickable, `FALSE` otherwise.\n
+ *                                   `uiTableModelColumnNeverEditable` to make all rows never clickable.\n
+ *                                   `uiTableModelColumnAlwaysEditable` to make all rows always clickable.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendButtonColumn(uiTable *t,
 	const char *name,
 	int buttonModelColumn,
 	int buttonClickableModelColumn);
 
-// uiTableHeaderVisible() returns whether the table header is visible
-// or not.
+/**
+ * Returns whether or not the table header is visible.
+ *
+ * @param t uiTable instance.
+ * @returns `TRUE` if visible, `FALSE` otherwise. [Default `TRUE`]
+ * @memberof uiTable
+ */
 _UI_EXTERN int uiTableHeaderVisible(uiTable *t);
 
-// uiTableHeaderSetVisible() sets the visibility of the table header.
+/**
+ * Sets whether or not the table header is visible.
+ *
+ * @param t uiTable instance.
+ * @param visible `TRUE` to show header, `FALSE` to hide header.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableHeaderSetVisible(uiTable *t, int visible);
 
-// uiNewTable() creates a new uiTable with the specified parameters.
+/**
+ * Creates a new table.
+ *
+ * @param params Table parameters.
+ * @returns A new uiTable instance.
+ * @memberof uiTable
+ */
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
 
-// uiTableHeaderSetSortIndicator() sets the sort indicator of the table
-// header to display an appropriate arrow on the column header
+/**
+ * Sets the column's sort indicator displayed in the table header.
+ *
+ * Use this to display appropriate arrows in the table header to indicate a
+ * sort direction.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @param indicator Sort indicator.
+ * @note Setting the indicator is purely visual and does not perform any sorting.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableHeaderSetSortIndicator(uiTable *t,
 	int column,
 	uiSortIndicator indicator);
 
-// uiTableHeaderSortIndicator returns the sort indicator of the specified
-// column
+/**
+ * Returns the column's sort indicator displayed in the table header.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @returns The current sort indicator. [Default: `uiSortIndicatorNone`]
+ * @memberof uiTable
+ */
 _UI_EXTERN uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column);
 
-// uiTableHeaderOnClicked() sets a callback function to be called
-// when a table column header is clicked
+/**
+ * Registers a callback for when a table column header is clicked.
+ *
+ * @param t uiTable instance.
+ * @param f Callback function.
+ * @param data User data to be passed to the callback.
+ * @todo document callback
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
 	void (*f)(uiTable *table, int column, void *data),
 	void *data);
 
-// uiTableColumnWidth() return current table column width
+/**
+ * Returns the table column width.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @returns Column width in pixels.
+ * @memberof uiTable
+ */
 _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
 
-// uiTableColumnSetWidth() set table column width
-// Setting width to -1 will restore automatic column sizing matching either
-// the width of the content or header title (which ever one is bigger)
-// Note: darwin currently only resizes to header title width on -1
+/**
+ * Sets the table column width.
+ *
+ * Setting the width to `-1` will restore automatic column sizing matching
+ * either the width of the content or column header (which ever one is bigger).
+ * @note Darwin currently only resizes to the column header width on `-1`.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @param width Column width to set in pixels, `-1` to restore automatic
+ *              column sizing.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
 
 #ifdef __cplusplus
