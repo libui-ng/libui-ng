@@ -39,7 +39,6 @@ static void formRelayout(uiForm *f)
 	int nStretchy;
 	int labelwid, stretchyht;
 	int thiswid;
-	int i;
 	int minimumWidth, minimumHeight;
 	uiWindowsSizing sizing;
 	int labelht, labelyoff;
@@ -170,10 +169,8 @@ static void uiFormMinimumSize(uiWindowsControl *c, int *width, int *height)
 	int maxLabelWidth, maxControlWidth;
 	int maxStretchyHeight;
 	int labelwid;
-	int i;
 	int minimumWidth, minimumHeight;
 	int nVisible;
-	uiWindowsSizing sizing;
 
 	*width = 0;
 	*height = 0;
@@ -244,7 +241,6 @@ static void formArrangeChildren(uiForm *f)
 {
 	LONG_PTR controlID;
 	HWND insertAfter;
-	int i;
 
 	controlID = 100;
 	insertAfter = NULL;

@@ -221,7 +221,6 @@ static HRESULT drawTextPart(HRESULT hr, struct drawState *s)
 {
 	COLORREF prevText;
 	int prevMode;
-	RECT r;
 	uiTableValue *value;
 	WCHAR *wstr;
 
@@ -482,7 +481,7 @@ fail:
 
 static HRESULT freeDrawState(struct drawState *s)
 {
-	HRESULT hr, hrret;
+	HRESULT hrret;
 
 	hrret = S_OK;
 	if (s->m != NULL) {
@@ -526,8 +525,6 @@ static COLORREF blend(COLORREF base, double r, double g, double b, double a)
 
 static HRESULT fillDrawState(struct drawState *s, uiTable *t, NMLVCUSTOMDRAW *nm, uiprivTableColumnParams *p)
 {
-	LRESULT state;
-	HWND header;
 	HRESULT hr;
 
 	ZeroMemory(s, sizeof (struct drawState));

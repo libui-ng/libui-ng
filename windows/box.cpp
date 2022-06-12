@@ -35,10 +35,8 @@ static void boxRelayout(uiBox *b)
 	int xpadding, ypadding;
 	int nStretchy;
 	int stretchywid, stretchyht;
-	int i;
 	int minimumWidth, minimumHeight;
 	int nVisible;
-	uiWindowsSizing *d;
 
 	if (b->controls->size() == 0)
 		return;
@@ -164,10 +162,8 @@ static void uiBoxMinimumSize(uiWindowsControl *c, int *width, int *height)
 	// these two contain the largest minimum width and height of all stretchy controls in the box
 	// all stretchy controls will use this value to determine the final minimum size
 	int maxStretchyWidth, maxStretchyHeight;
-	int i;
 	int minimumWidth, minimumHeight;
 	int nVisible;
-	uiWindowsSizing sizing;
 
 	*width = 0;
 	*height = 0;
