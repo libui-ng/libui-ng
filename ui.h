@@ -333,9 +333,10 @@ _UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
  * Registers a callback for when the window content size is changed.
  *
  * @param w uiWindow instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @todo Research if this gets called on uiWindowSetContentSize().
  *       The signal on unix does not seem to get masked. Fix this on all
@@ -343,37 +344,41 @@ _UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
  * @note Only one callback can be registered at a time.
  * @memberof uiWindow
  */
-_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w,
+	void (*f)(uiWindow *sender, void *senderData), void *data);
 
 /**
  * Registers a callback for when the window is to be closed.
  *
  * @param w uiWindow instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ *          Return:\n
+ *          `TRUE` to destroys the window.\n
+ *          `FALSE` to abort closing and keep the window alive and visible.
  * @param data User data to be passed to the callback.
- * @todo document callback
- *
- * If @p f returns `TRUE`, the window is destroyed with the Destroy method.\n
- * If @p f returns `FALSE`, or if OnClosing is never called, the window is not
- * destroyed and is kept visible.
  *
  * @note Only one callback can be registered at a time.
  * @memberof uiWindow
  */
-_UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
+_UI_EXTERN void uiWindowOnClosing(uiWindow *w,
+	int (*f)(uiWindow *sender, void *senderData), void *data);
 
 /**
  * Registers a callback for when the window focus changes.
  *
  * @param w uiWindow instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note Only one callback can be registered at a time.
  * @memberof uiWindow
  */
-_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w,
+	void (*f)(uiWindow *sender, void *senderData), void *data);
 
 /**
  * Returns whether or not the window is focused.
@@ -500,14 +505,16 @@ _UI_EXTERN void uiButtonSetText(uiButton *b, const char *text);
  * Registers a callback for when the button is clicked.
  *
  * @param b uiButton instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note Only one callback can be registered at a time.
  * @memberof uiButton
  */
-_UI_EXTERN void uiButtonOnClicked(uiButton *b, void (*f)(uiButton *b, void *data), void *data);
+_UI_EXTERN void uiButtonOnClicked(uiButton *b,
+	void (*f)(uiButton *sender, void *senderData), void *data);
 
 /**
  * Creates a new button.
@@ -646,14 +653,16 @@ _UI_EXTERN void uiCheckboxSetText(uiCheckbox *c, const char *text);
  * Registers a callback for when the checkbox is toggled by the user.
  *
  * @param c uiCheckbox instance.
- * @param f Callback function
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that initiated the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiCheckboxSetChecked().
  * @memberof uiCheckbox
  */
-_UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c, void (*f)(uiCheckbox *c, void *data), void *data);
+_UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c,
+	void (*f)(uiCheckbox *sender, void *senderData), void *data);
 
 /**
  * Returns whether or the checkbox is checked.
@@ -721,14 +730,16 @@ _UI_EXTERN void uiEntrySetText(uiEntry *e, const char *text);
  * Registers a callback for when the user changes the entry's text.
  *
  * @param e uiEntry instance.
- * @param f Callback function
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that initiated the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiEntrySetText().
  * @memberof uiEntry
  */
-_UI_EXTERN void uiEntryOnChanged(uiEntry *e, void (*f)(uiEntry *e, void *data), void *data);
+_UI_EXTERN void uiEntryOnChanged(uiEntry *e,
+	void (*f)(uiEntry *sender, void *senderData), void *data);
 
 /**
  * Returns whether or not the entry's text can be changed.
@@ -1030,15 +1041,17 @@ _UI_EXTERN void uiSpinboxSetValue(uiSpinbox *s, int value);
  * Registers a callback for when the spinbox value is changed by the user.
  *
  * @param s uiSpinbox instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiSpinboxSetValue().
  * @note Only one callback can be registered at a time.
  * @memberof uiSpinbox
  */
-_UI_EXTERN void uiSpinboxOnChanged(uiSpinbox *s, void (*f)(uiSpinbox *s, void *data), void *data);
+_UI_EXTERN void uiSpinboxOnChanged(uiSpinbox *s,
+	void (*f)(uiSpinbox *sender, void *senderData), void *data);
 
 /**
  * Creates a new spinbox.
@@ -1114,28 +1127,32 @@ _UI_EXTERN void uiSliderSetHasToolTip(uiSlider *s, int hasToolTip);
  * Registers a callback for when the slider value is changed by the user.
  *
  * @param s uiSlider instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiSliderSetValue().
  * @note Only one callback can be registered at a time.
  * @memberof uiSlider
  */
-_UI_EXTERN void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *s, void *data), void *data);
+_UI_EXTERN void uiSliderOnChanged(uiSlider *s,
+	void (*f)(uiSlider *sender, void *senderData), void *data);
 
 /**
  * Registers a callback for when the slider is released from dragging.
  *
  * @param s uiSlider instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note Only one callback can be registered at a time.
  * @memberof uiSlider
  */
-_UI_EXTERN void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *s, void *data), void *data);
+_UI_EXTERN void uiSliderOnReleased(uiSlider *s,
+	void (*f)(uiSlider *sender, void *senderData), void *data);
 
 /**
  * Sets the slider range.
@@ -1318,15 +1335,17 @@ _UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int index);
  * Registers a callback for when a combo box item is selected.
  *
  * @param c uiCombobox instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiComboboxSetSelected().
  * @note Only one callback can be registered at a time.
  * @memberof uiCombobox
  */
-_UI_EXTERN void uiComboboxOnSelected(uiCombobox *c, void (*f)(uiCombobox *c, void *data), void *data);
+_UI_EXTERN void uiComboboxOnSelected(uiCombobox *c,
+	void (*f)(uiCombobox *sender, void *senderData), void *data);
 
 /**
  * Creates a new combo box.
@@ -1396,15 +1415,17 @@ _UI_EXTERN void uiEditableComboboxSetText(uiEditableCombobox *c, const char *tex
  * Registers a callback for when an editable combo box item is selected or user text changed.
  *
  * @param c uiEditableCombobox instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiEditableComboboxSetText().
  * @note Only one callback can be registered at a time.
  * @memberof uiEditableCombobox
  */
-_UI_EXTERN void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiEditableCombobox *c, void *data), void *data);
+_UI_EXTERN void uiEditableComboboxOnChanged(uiEditableCombobox *c,
+	void (*f)(uiEditableCombobox *sender, void *senderData), void *data);
 
 /**
  * Creates a new editable combo box.
@@ -1458,15 +1479,17 @@ _UI_EXTERN void uiRadioButtonsSetSelected(uiRadioButtons *r, int index);
  * Registers a callback for when radio button is selected.
  *
  * @param r uiRadioButtons instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiRadioButtonsSetSelected().
  * @note Only one callback can be registered at a time.
  * @memberof uiRadioButtons
  */
-_UI_EXTERN void uiRadioButtonsOnSelected(uiRadioButtons *r, void (*f)(uiRadioButtons *, void *), void *data);
+_UI_EXTERN void uiRadioButtonsOnSelected(uiRadioButtons *r,
+	void (*f)(uiRadioButtons *sender, void *senderData), void *data);
 
 /**
  * Creates a new radio buttons instance.
@@ -1521,14 +1544,17 @@ _UI_EXTERN void uiDateTimePickerSetTime(uiDateTimePicker *d, const struct tm *ti
  * Registers a callback for when the date time picker value is changed by the user.
  *
  * @param d uiDateTimePicker instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
  *
  * @note The callback is not triggered when calling  uiDateTimePickerSetTime().
  * @note Only one callback can be registered at a time.
  * @memberof uiDateTimePicker
  */
-_UI_EXTERN void uiDateTimePickerOnChanged(uiDateTimePicker *d, void (*f)(uiDateTimePicker *, void *), void *data);
+_UI_EXTERN void uiDateTimePickerOnChanged(uiDateTimePicker *d,
+	void (*f)(uiDateTimePicker *sender, void *senderData), void *data);
 
 /**
  * Creates a new date picker.
@@ -1603,16 +1629,18 @@ _UI_EXTERN void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text);
  * Registers a callback for when the user changes the multi line entry's text.
  *
  * @param e uiMultilineEntry instance.
- * @param f Callback function
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that initiated the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiMultilineEntrySetText()
  *       or uiMultilineEntryAppend().
  * @note Only one callback can be registered at a time.
  * @memberof uiMultilineEntry
  */
-_UI_EXTERN void uiMultilineEntryOnChanged(uiMultilineEntry *e, void (*f)(uiMultilineEntry *e, void *data), void *data);
+_UI_EXTERN void uiMultilineEntryOnChanged(uiMultilineEntry *e,
+	void (*f)(uiMultilineEntry *sender, void *senderData), void *data);
 
 /**
  * Returns whether or not the multi line entry's text can be changed.
@@ -1682,14 +1710,17 @@ _UI_EXTERN void uiMenuItemDisable(uiMenuItem *m);
  * Registers a callback for when the menu item is clicked.
  *
  * @param m uiMenuItem instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p window Reference to the window from which the callback got triggered.\
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note Only one callback can be registered at a time.
  * @memberof uiMenuItem
  */
-_UI_EXTERN void uiMenuItemOnClicked(uiMenuItem *m, void (*f)(uiMenuItem *sender, uiWindow *window, void *data), void *data);
+_UI_EXTERN void uiMenuItemOnClicked(uiMenuItem *m,
+	void (*f)(uiMenuItem *sender, uiWindow *window, void *senderData), void *data);
 
 /**
  * Returns whether or not the menu item's checkbox is checked.
@@ -2621,14 +2652,16 @@ _UI_EXTERN void uiFontButtonFont(uiFontButton *b, uiFontDescriptor *desc);
  *  Registers a callback for when the font is changed.
  *
  * @param b uiFontButton instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note Only one callback can be registered at a time.
  * @memberof uiFontButton
  */
-_UI_EXTERN void uiFontButtonOnChanged(uiFontButton *b, void (*f)(uiFontButton *, void *), void *data);
+_UI_EXTERN void uiFontButtonOnChanged(uiFontButton *b,
+	void (*f)(uiFontButton *sender, void *senderData), void *data);
 
 /**
  * Creates a new font button.
@@ -2783,15 +2816,17 @@ _UI_EXTERN void uiColorButtonSetColor(uiColorButton *b, double r, double g, doub
 /** Registers a callback for when the color is changed.
  *
  * @param b uiColorButton instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note The callback is not triggered when calling uiColorButtonSetColor().
  * @note Only one callback can be registered at a time.
  * @memberof uiColorButton
  */
-_UI_EXTERN void uiColorButtonOnChanged(uiColorButton *b, void (*f)(uiColorButton *, void *), void *data);
+_UI_EXTERN void uiColorButtonOnChanged(uiColorButton *b,
+	void (*f)(uiColorButton *sender, void *senderData), void *data);
 
 /**
  * Creates a new color button.
@@ -3705,16 +3740,17 @@ _UI_EXTERN uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column);
  * Registers a callback for when a table column header is clicked.
  *
  * @param t uiTable instance.
- * @param f Callback function.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p column Column index that was clicked.\n
+ *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
- * @todo document callback
  *
  * @note Only one callback can be registered at a time.
  * @memberof uiTable
  */
 _UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
-	void (*f)(uiTable *table, int column, void *data),
-	void *data);
+	void (*f)(uiTable *sender, int column, void *senderData), void *data);
 
 /**
  * Returns the table column width.
