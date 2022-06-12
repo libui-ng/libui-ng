@@ -1,4 +1,5 @@
-// 5 may 2016
+#ifndef __LIBUI_DRAW_HPP__
+#define __LIBUI_DRAW_HPP__
 
 // TODO resolve overlap between this and the other hpp files (some functions leaked into uipriv_windows.hpp)
 
@@ -16,3 +17,6 @@ extern ID2D1PathGeometry *pathGeometry(uiDrawPath *p);
 
 // drawmatrix.cpp
 extern void m2d(uiDrawMatrix *m, D2D1_MATRIX_3X2_F *d);
+
+#endif
+

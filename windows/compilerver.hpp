@@ -1,4 +1,5 @@
-// 9 june 2015
+#ifndef __LIBUI_COMPILERVER__
+#define __LIBUI_COMPILERVER__
 
 // Visual Studio (Microsoft's compilers)
 // VS2013 is needed for va_copy().
@@ -93,3 +94,6 @@ so I'm not sure what is correct, but I do need to find out
 #if WCHAR_MAX > 0xFFFF
 #error unexpected: wchar_t larger than 16-bit on a Windows ABI build; contact andlabs with your build setup information
 #endif
+
+#endif
+

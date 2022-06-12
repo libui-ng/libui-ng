@@ -1,4 +1,5 @@
-// 18 december 2015
+#ifndef __LIBUI_AREA_HPP__
+#define __LIBUI_AREA_HPP__
 
 // TODOs
 // - things look very wrong on initial draw
@@ -43,3 +44,6 @@ extern BOOL areaDoEvents(uiArea *a, UINT uMsg, WPARAM wParam, LPARAM lParam, LRE
 extern void loadAreaSize(uiArea *a, ID2D1RenderTarget *rt, double *width, double *height);
 extern void pixelsToDIP(uiArea *a, double *x, double *y);
 extern void dipToPixels(uiArea *a, double *x, double *y);
+
+#endif
+
