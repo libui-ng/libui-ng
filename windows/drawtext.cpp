@@ -479,9 +479,11 @@ void uiDrawText(uiDrawContext *c, uiDrawTextLayout *tl, double x, double y)
 	textRenderer *renderer;
 	HRESULT hr;
 
+	/*
 	for (auto p : *(tl->backgroundParams)) {
 		// TODO
 	}
+	*/
 
 	// TODO document that fully opaque black is the default text color; figure out whether this is upheld in various scenarios on other platforms
 	// TODO figure out if this needs to be cleaned out
