@@ -258,6 +258,10 @@ _UI_EXTERN void uiUserBugCannotSetParentOnToplevel(const char *type);
  *
  * A window contains exactly one child control that occupied the entire window.
  *
+ * @note Many of the uiWindow methods should be regarded as mere hints.
+ *       The underlying system may override these or even choose to ignore them
+ *       completely. This is especially true for many Unix systems.
+ *
  * @warning A uiWindow can NOT be a child of another uiControl.
  *
  * @struct uiWindow
@@ -285,6 +289,7 @@ _UI_EXTERN char *uiWindowTitle(uiWindow *w);
  * @param title Window title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
  *              Data is owned by the caller.
+ * @note This method is merely a hint and may be ignored by the system.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
@@ -307,6 +312,7 @@ _UI_EXTERN void uiWindowContentSize(uiWindow *w, int *width, int *height);
  * @param width Window content width to set.
  * @param height Window content height to set.
  * @note The content size does NOT include window decorations like menus or title bars.
+ * @note This method is merely a hint and may be ignored by the system.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowSetContentSize(uiWindow *w, int width, int height);
@@ -325,6 +331,7 @@ _UI_EXTERN int uiWindowFullscreen(uiWindow *w);
  *
  * @param w uiWindow instance.
  * @param fullscreen `TRUE` to make window full screen, `FALSE` otherwise.
+ * @note This method is merely a hint and may be ignored by the system.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
@@ -403,6 +410,7 @@ _UI_EXTERN int uiWindowBorderless(uiWindow *w);
  *
  * @param w uiWindow instance.
  * @param borderless `TRUE` to make window borderless, `FALSE` otherwise.
+ * @note This method is merely a hint and may be ignored by the system.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowSetBorderless(uiWindow *w, int borderless);
@@ -450,6 +458,7 @@ _UI_EXTERN int uiWindowResizeable(uiWindow *w);
  *
  * @param w uiWindow instance.
  * @param resizeable `TRUE` to make window resizable, `FALSE` otherwise.
+ * @note This method is merely a hint and may be ignored by the system.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
