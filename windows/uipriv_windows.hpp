@@ -1,4 +1,6 @@
-// 21 april 2016
+#ifndef __LIBUI_UIPRIV_WINDOWS_HPP__
+#define __LIBUI_UIPRIV_WINDOWS_HPP__
+
 #include "winapi.hpp"
 #include "../ui.h"
 #include "../ui_windows.h"
@@ -172,3 +174,6 @@ extern HRESULT uiprivInitImage(void);
 extern void uiprivUninitImage(void);
 extern IWICBitmap *uiprivImageAppropriateForDC(uiImage *i, HDC dc);
 extern HRESULT uiprivWICToGDI(IWICBitmap *b, HDC dc, int width, int height, HBITMAP *hb);
+
+#endif
+
