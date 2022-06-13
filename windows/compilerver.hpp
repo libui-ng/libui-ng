@@ -9,9 +9,11 @@
 #endif
 #endif
 
-// LONGTERM MinGW
-
-// other compilers can be added here as necessary
+#ifdef __MINGW32__
+// Silence warning: base class 'struct IUnknown' has accessible non-virtual destructor
+// as MinGW does not process COM interfaces correctly
+#pragma GCC diagnostic ignored "-Wnon-virtual-dtor"
+#endif
 
 /* TODO this should not be necessary, but I don't know
 
