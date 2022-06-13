@@ -189,7 +189,7 @@ static void gridPadding(uiGrid *g, int *xpadding, int *ypadding)
 static void gridRelayout(uiGrid *g)
 {
 	RECT r;
-	int x, y, width, height;
+	int width, height;
 	gridLayoutData *ld;
 	int xpadding, ypadding;
 	int ix, iy;
@@ -202,8 +202,6 @@ static void gridRelayout(uiGrid *g)
 		return;		// nothing to do
 
 	uiWindowsEnsureGetClientRect(g->hwnd, &r);
-	x = r.left;
-	y = r.top;
 	width = r.right - r.left;
 	height = r.bottom - r.top;
 
