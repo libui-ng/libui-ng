@@ -64,8 +64,6 @@ char *uiEntryText(uiEntry *e)
 void uiEntrySetText(uiEntry *e, const char *text)
 {
 	int l;
-	if (!text)
-		text = "";
 	// doing this raises an EN_CHANGED
 	e->inhibitChanged = TRUE;
         uiWindowsSetWindowText(e->hwnd, text);
