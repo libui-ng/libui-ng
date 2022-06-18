@@ -595,7 +595,7 @@ static HRESULT updateAndDrawFocusRects(HRESULT hr, uiTable *t, HDC dc, int iItem
 	if ((state & LVIS_FOCUSED) == 0)
 		return S_OK;
 
-	if (realTextBackground != NULL)
+	if (realTextBackground != NULL) {
 		if (*first) {
 			*focus = *realTextBackground;
 			*first = false;
@@ -604,6 +604,7 @@ static HRESULT updateAndDrawFocusRects(HRESULT hr, uiTable *t, HDC dc, int iItem
 			focus->right = realTextBackground->right;
 			return S_OK;
 		}
+	}
 	if (DrawFocusRect(dc, focus) == 0) {
 		logLastError(L"DrawFocusRect()");
 		return E_FAIL;
