@@ -134,7 +134,7 @@ public:
 
 	~gridLayoutData()
 	{
-		size_t y;
+		int y;
 
 		delete[] this->hexpand;
 		delete[] this->vexpand;
