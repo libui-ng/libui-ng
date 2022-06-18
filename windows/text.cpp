@@ -38,6 +38,24 @@ void uiFreeText(char *text)
 	uiprivFree(text);
 }
 
+// via http://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
+#define labelHeight 8
+
+int uiWindowsWindowTextHeight(HWND hwnd)
+{
+	LRESULT len;
+	WCHAR* text, *start;
+	int lineCount = 1;
+
+	text = windowTextAndLen(hwnd, &len);
+	for (start = text; start != text + len; start++) {
+		if (*start == '\n')
+			lineCount++;
+	}
+
+	return lineCount * labelHeight;
+}
+
 int uiWindowsWindowTextWidth(HWND hwnd)
 {
 	LRESULT len;

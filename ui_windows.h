@@ -212,6 +212,7 @@ _UI_EXTERN void uiWindowsSetWindowText(HWND hwnd, const char *text);
 
 // TODO document
 _UI_EXTERN int uiWindowsWindowTextWidth(HWND hwnd);
+_UI_EXTERN int uiWindowsWindowTextHeight(HWND hwnd);
 
 // TODO document
 // TODO point out this should only be used in a resize cycle
