@@ -3,12 +3,19 @@
 #include <setjmp.h>
 #include <cmocka.h>
 
+#include <stdlib.h>
+
 #include "../../ui.h"
 
 #define UNIT_TEST_WIDTH 300
 #define UNIT_TEST_HEIGHT 200
 
-int onClosing(uiWindow *w, void *data)
+struct state {
+	uiWindow *w;
+	uiSlider *s;
+};
+
+static int onClosing(uiWindow *w, void *data)
 {
 	uiQuit();
 	return 1;
@@ -22,153 +29,139 @@ int close(void *data)
 }
 */
 
-static void test_setup(void **state)
+static void unitTestSetup(void **_state)
 {
+	struct state *state;
 	uiInitOptions o = {0};
-	uiWindow *w;
+
+	state = malloc(sizeof(*state));
+	assert_non_null(state);
 
 	assert_null(uiInit(&o));
 
-	w = uiNewWindow("Unit Test", UNIT_TEST_WIDTH, UNIT_TEST_HEIGHT, 0);
-	uiWindowOnClosing(w, onClosing, NULL);
+	state->w = uiNewWindow("Unit Test", UNIT_TEST_WIDTH, UNIT_TEST_HEIGHT, 0);
+	uiWindowOnClosing(state->w, onClosing, NULL);
 
-	*state = w;
+	*_state = state;
 }
 
-static void test_teardown(void **state)
+static void unitTestTeardown(void **_state)
 {
-	uiWindow *w = *state;
+	struct state *state = *_state;
 
-	uiControlShow(uiControl(w));
+	uiWindowSetChild(state->w, uiControl(state->s));
+	uiControlShow(uiControl(state->w));
 	//uiMain();
 	uiMainSteps();
 	uiMainStep(1);
-	uiControlDestroy(uiControl(w));
+	uiControlDestroy(uiControl(state->w));
 	uiUninit();
+	free(state);
 }
 
-static int sliderSetup(void **state)
+static int sliderUnitTestSetup(void **state)
 {
-	test_setup(state);
+	unitTestSetup(state);
 	return 0;
 }
 
-static int sliderTeardown(void **state)
+static int sliderUnitTestTeardown(void **state)
 {
-	test_teardown(state);
+	unitTestTeardown(state);
 	return 0;
 }
 
 static void sliderNew(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
 }
 
 static void sliderValueDefaultMin0(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	assert_int_equal(uiSliderValue(s), 0);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	assert_int_equal(uiSliderValue(*s), 0);
 }
 
 static void sliderValueDefaultMin1(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(1, 2);
-	assert_int_equal(uiSliderValue(s), 1);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(1, 2);
+	assert_int_equal(uiSliderValue(*s), 1);
 }
 
 static void sliderSetValue(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	uiSliderSetValue(s, 1);
-	assert_int_equal(uiSliderValue(s), 1);
-	uiSliderSetValue(s, 0);
-	assert_int_equal(uiSliderValue(s), 0);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	uiSliderSetValue(*s, 1);
+	assert_int_equal(uiSliderValue(*s), 1);
+	uiSliderSetValue(*s, 0);
+	assert_int_equal(uiSliderValue(*s), 0);
 }
 
 static void sliderSetValueOutOfRangeClampLow(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	uiSliderSetValue(s, -1);
-	assert_int_equal(uiSliderValue(s), 0);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	uiSliderSetValue(*s, -1);
+	assert_int_equal(uiSliderValue(*s), 0);
 }
 
 static void sliderSetValueOutOfRangeClampHigh(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	uiSliderSetValue(s, 2);
-	assert_int_equal(uiSliderValue(s), 1);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	uiSliderSetValue(*s, 2);
+	assert_int_equal(uiSliderValue(*s), 1);
 }
 
 static void sliderHasToolTipDefaultTrue(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	assert_int_equal(uiSliderHasToolTip(s), 1);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	assert_int_equal(uiSliderHasToolTip(*s), 1);
 }
 
 static void sliderSetHasToolTip(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	uiSliderSetHasToolTip(s, 0);
-	assert_int_equal(uiSliderHasToolTip(s), 0);
-	uiSliderSetHasToolTip(s, 1);
-	assert_int_equal(uiSliderHasToolTip(s), 1);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	uiSliderSetHasToolTip(*s, 0);
+	assert_int_equal(uiSliderHasToolTip(*s), 0);
+	uiSliderSetHasToolTip(*s, 1);
+	assert_int_equal(uiSliderHasToolTip(*s), 1);
 }
 
 static void sliderSetRangeLessThanValue(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	uiSliderSetRange(s, -2, -1);
-	assert_int_equal(uiSliderValue(s), -1);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	uiSliderSetRange(*s, -2, -1);
+	assert_int_equal(uiSliderValue(*s), -1);
 }
 
 static void sliderSetRangeGreaterThanValue(void **state)
 {
-	uiWindow *w = *state;
+	uiSlider **s = &(((struct state *)*state)->s);
 
-	uiSlider *s = uiNewSlider(0, 1);
-	uiSliderSetRange(s, 1, 2);
-	assert_int_equal(uiSliderValue(s), 1);
-
-	uiWindowSetChild(w, uiControl(s));
+	*s = uiNewSlider(0, 1);
+	uiSliderSetRange(*s, 1, 2);
+	assert_int_equal(uiSliderValue(*s), 1);
 }
 
-#define sliderUnitTest(f) cmocka_unit_test_setup_teardown((f), sliderSetup, sliderTeardown)
+#define sliderUnitTest(f) cmocka_unit_test_setup_teardown((f), \
+		sliderUnitTestSetup, sliderUnitTestTeardown)
 
 int main(void)
 {
