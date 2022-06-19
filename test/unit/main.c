@@ -29,23 +29,31 @@ int close(void *data)
 }
 */
 
-static void unitTestSetup(void **_state)
+static int unitTestsSetup(void **state)
 {
-	struct state *state;
-	uiInitOptions o = {0};
-
-	state = malloc(sizeof(*state));
-	assert_non_null(state);
-
-	assert_null(uiInit(&o));
-
-	state->w = uiNewWindow("Unit Test", UNIT_TEST_WIDTH, UNIT_TEST_HEIGHT, 0);
-	uiWindowOnClosing(state->w, onClosing, NULL);
-
-	*_state = state;
+	*state = malloc(sizeof(struct state));
+	assert_non_null(*state);
+	return 0;
 }
 
-static void unitTestTeardown(void **_state)
+static int unitTestsTeardown(void **state)
+{
+	free(*state);
+	return 0;
+}
+
+static int unitTestSetup(void **_state)
+{
+	struct state *state = *_state;
+	uiInitOptions o = {0};
+
+	assert_null(uiInit(&o));
+	state->w = uiNewWindow("Unit Test", UNIT_TEST_WIDTH, UNIT_TEST_HEIGHT, 0);
+	uiWindowOnClosing(state->w, onClosing, NULL);
+	return 0;
+}
+
+static int unitTestTeardown(void **_state)
 {
 	struct state *state = *_state;
 
@@ -56,19 +64,17 @@ static void unitTestTeardown(void **_state)
 	uiMainStep(1);
 	uiControlDestroy(uiControl(state->w));
 	uiUninit();
-	free(state);
+	return 0;
 }
 
 static int sliderUnitTestSetup(void **state)
 {
-	unitTestSetup(state);
-	return 0;
+	return unitTestSetup(state);
 }
 
 static int sliderUnitTestTeardown(void **state)
 {
-	unitTestTeardown(state);
-	return 0;
+	return unitTestTeardown(state);
 }
 
 static void sliderNew(void **state)
@@ -178,6 +184,6 @@ int main(void)
 		sliderUnitTest(sliderSetRangeGreaterThanValue),
 	};
 
-	return cmocka_run_group_tests_name("uiSlider", tests, NULL, NULL);
+	return cmocka_run_group_tests_name("uiSlider", tests, unitTestsSetup, unitTestsTeardown);
 }
 
