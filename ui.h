@@ -1848,6 +1848,7 @@ _UI_EXTERN uiMenuItem *uiMenuAppendAboutItem(uiMenu *m);
  * @memberof uiMenu
  */
 _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
+_UI_EXTERN uiMenuItem *uiMenuAppendSubmenu(uiMenu *m, uiMenu *child);
 
 /**
  * Creates a new menu.
