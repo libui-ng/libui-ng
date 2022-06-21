@@ -166,6 +166,22 @@ static void sliderSetRangeGreaterThanValue(void **state)
 	assert_int_equal(uiSliderValue(*s), 1);
 }
 
+static void onChangedNoCall(uiSlider *s, void *data)
+{
+	function_called();
+}
+
+static void sliderSetValueNoCallback(void **state)
+{
+	uiSlider **s = &(((struct state *)*state)->s);
+
+	*s = uiNewSlider(0, 1);
+	uiSliderOnChanged(*s, onChangedNoCall, NULL);
+	//expect_function_calls(onChangedNoCall, 0);
+	uiSliderSetValue(*s, 1);
+	uiSliderSetValue(*s, 0);
+}
+
 #define sliderUnitTest(f) cmocka_unit_test_setup_teardown((f), \
 		sliderUnitTestSetup, sliderUnitTestTeardown)
 
@@ -182,6 +198,7 @@ int main(void)
 		sliderUnitTest(sliderSetHasToolTip),
 		sliderUnitTest(sliderSetRangeLessThanValue),
 		sliderUnitTest(sliderSetRangeGreaterThanValue),
+		sliderUnitTest(sliderSetValueNoCallback),
 	};
 
 	return cmocka_run_group_tests_name("uiSlider", tests, unitTestsSetup, unitTestsTeardown);
