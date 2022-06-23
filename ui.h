@@ -1491,6 +1491,12 @@ _UI_EXTERN int uiTableHeaderVisible(uiTable *t);
 // uiTableHeaderSetVisible() sets the visibility of the table header.
 _UI_EXTERN void uiTableHeaderSetVisible(uiTable *t, int visible);
 
+// uiTableOnRowDoubleClicked sets a callback to be called when the user
+// double clicks a table row.
+_UI_EXTERN void uiTableOnRowDoubleClicked(uiTable *t,
+	void (*f)(uiTable *t, int row, void *data),
+	void *data);
+
 // uiNewTable() creates a new uiTable with the specified parameters.
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
 
