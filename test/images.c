@@ -655,7 +655,7 @@ static const uint8_t dat3[] = {
 
 static const struct {
 	const char *name;
-	void *data;
+	const uint8_t *data;
 	int width;
 	int height;
 	int stride;

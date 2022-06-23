@@ -49,12 +49,13 @@ void uiFreeImage(uiImage *i)
 // so I guess we can assume PBGRA is correct...? (TODO)
 #define formatForGDI GUID_WICPixelFormat32bppPBGRA
 
-void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride)
+void uiImageAppend(uiImage *i, const void *pixels, int pixelWidth, int pixelHeight, int byteStride)
 {
 	IWICBitmap *b;
 	WICRect r;
 	IWICBitmapLock *l;
-	uint8_t *pix, *data;
+	const uint8_t *pix;
+	uint8_t*data;
 	// TODO WICInProcPointer is not available in MinGW-w64
 	BYTE *dipp;
 	UINT size;
@@ -75,7 +76,7 @@ void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, in
 	if (hr != S_OK)
 		logHRESULT(L"error calling Lock() in uiImageAppend()", hr);
 
-	pix = (uint8_t *) pixels;
+	pix = (const uint8_t*) pixels;
 	// TODO can size be NULL?
 	hr = l->GetDataPointer(&size, &dipp);
 	if (hr != S_OK)

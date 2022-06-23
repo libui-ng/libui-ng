@@ -1188,7 +1188,7 @@ _UI_EXTERN void uiFreeImage(uiImage *i);
 // the number *of bytes* per row of the pixels array. Therefore,
 // pixels itself must be at least byteStride * pixelHeight bytes long.
 // TODO see if we either need the stride or can provide a way to get the OS-preferred stride (in cairo we do)
-_UI_EXTERN void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride);
+_UI_EXTERN void uiImageAppend(uiImage *i, const void *pixels, int pixelWidth, int pixelHeight, int byteStride);
 
 // uiTableValue stores a value to be passed along uiTable and
 // uiTableModel.
