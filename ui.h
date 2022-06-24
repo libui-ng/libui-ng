@@ -1770,6 +1770,10 @@ _UI_EXTERN void uiMenuItemSetChecked(uiMenuItem *m, int checked);
  * - Edit
  *   * Undo
  *   * Redo
+ *   * Cut
+ *   * Copy
+ *   * Paste
+ *   * Select All
  *   * Preferences, _use uiMenuAppendPreferencesItem()_
  * - Help
  *   * About, _use uiMenuAppendAboutItem()_
