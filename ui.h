@@ -290,7 +290,7 @@ _UI_EXTERN char *uiWindowTitle(uiWindow *w);
  * @param title Window title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
  *              Data is owned by the caller.
- * @note This method is merely a hint and may be ignored by the system.
+ * @note This method is merely a hint and may be ignored on unix platforms.
  * @memberof uiWindow
  */
 _UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
