@@ -14,6 +14,7 @@
  * @defgroup button Buttons
  * @defgroup dialogWindow Dialog windows
  * @defgroup menu Menus
+ * @defgroup table Tables
  */
 
 #ifndef __LIBUI_UI_H__
@@ -3111,7 +3112,8 @@ _UI_EXTERN void uiFreeImage(uiImage *i);
 _UI_EXTERN void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride);
 
 /**
- * @defgroup table Tables
+ * @addtogroup table
+ * @{
  *
  * Types and methods for organizing and displaying tabular data.
  *
@@ -3139,6 +3141,8 @@ _UI_EXTERN void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixe
  *
  * You can create multiple differing views (uiTable) using the same
  * uiTableModel.
+ *
+ * @}
  */
 
 /**
