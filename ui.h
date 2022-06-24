@@ -3527,6 +3527,7 @@ struct uiTableParams {
  * `uiTableModelColumnAlwaysEditable`.
  *
  * @struct uiTable
+ * @extends uiControl
  * @ingroup dataEntry table
  */
 typedef struct uiTable uiTable;
