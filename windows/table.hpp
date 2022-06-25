@@ -1,4 +1,6 @@
-// 10 june 2018
+#ifndef __LIBUI_TABLE_HPP__
+#define __LIBUI_TABLE_HPP__
+
 #include "../common/table.h"
 
 // table.cpp
@@ -40,6 +42,8 @@ struct uiTable {
 	HWND edit;
 	int editedItem;
 	int editedSubitem;
+	void (*headerOnClicked)(uiTable *, int, void *);
+	void *headerOnClickedData;
 };
 extern int uiprivTableProgress(uiTable *t, int item, int subitem, int modelColumn, LONG *pos);
 
@@ -79,3 +83,6 @@ struct uiprivTableMetrics {
 	RECT realTextRect;
 };
 extern HRESULT uiprivTableGetMetrics(uiTable *t, int iItem, int iSubItem, uiprivTableMetrics **mout);
+
+#endif
+

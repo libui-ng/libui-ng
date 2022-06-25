@@ -161,3 +161,6 @@ extern BOOL uiprivFUTURE_NSWindow_performWindowDragWithEvent(NSWindow *w, NSEven
 extern CFStringRef uiprivUNDOC_kCTFontPreferredSubFamilyNameKey;
 extern CFStringRef uiprivUNDOC_kCTFontPreferredFamilyNameKey;
 extern void uiprivLoadUndocumented(void);
+
+// event.m
+extern BOOL uiprivSendKeyboardEditEvents(uiprivApplicationClass *app, NSEvent *e);

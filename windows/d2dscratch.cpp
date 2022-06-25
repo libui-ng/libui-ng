@@ -94,7 +94,7 @@ static LRESULT CALLBACK d2dScratchWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, L
 			if (ValidateRect(hwnd, NULL) == 0)
 				logLastError(L"error validating D2D scratch control rect");
 			break;
-		case D2DERR_RECREATE_TARGET:
+		case (HRESULT)D2DERR_RECREATE_TARGET:
 			// DON'T validate the rect
 			// instead, simply drop the render target
 			// we'll get another WM_PAINT and make the render target again

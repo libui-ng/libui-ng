@@ -132,7 +132,7 @@ struct uiFontButton {
 	(*(b->onChanged))(b, b->onChangedData);
 }
 
-- (NSUInteger)validModesForFontPanel:(NSFontPanel *)panel
+- (NSFontPanelModeMask)validModesForFontPanel:(NSFontPanel *)panel
 {
 	return NSFontPanelFaceModeMask |
 		NSFontPanelSizeModeMask |
@@ -227,6 +227,5 @@ uiFontButton *uiNewFontButton(void)
 
 void uiFreeFontButtonFont(uiFontDescriptor *desc)
 {
-	// TODO ensure this is synchronized with fontmatch.m
-	uiFreeText((char *) (desc->Family));
+	uiFreeFontDescriptor(desc);
 }

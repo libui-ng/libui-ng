@@ -2,10 +2,20 @@
 
 Fork of [andlabs/libui](https://github.com/andlabs/libui). This README is being written.<br>
 [![Build Status, GitHub Actions](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml/badge.svg)](https://github.com/libui-ng/libui-ng/actions/workflows/build.yml)
+[![GitLab](https://img.shields.io/badge/gitlab-%23181717.svg?style=for-the-badge&logo=gitlab&logoColor=white)](https://gitlab.com/libui-ng/libui-ng)
+[![GitHub](https://img.shields.io/badge/github-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)](https://github.com/libui-ng/libui-ng)
+
+## About
+
+Simple and portable (but not inflexible) GUI library in C that uses the native GUI technologies of each platform it supports.
 
 ## Status
 
-*Old announcements can be found in the NEWS.md file.*
+libui-ng is currently **mid-alpha** software.
+
+See [CHANGELOG.md](CHANGELOG.md)
+
+*Old announcements can be found in the [news.md](old/news.md) file.*
 
 ## Runtime Requirements
 
@@ -64,7 +74,7 @@ When running `meson`, the `--prefix` option will set the installation prefix. [T
 
 #### Arch Linux
 
-Can be built from AUR: https://aur.archlinux.org/packages/libui-git/
+Can be built from AUR: https://aur.archlinux.org/packages/libui-ng-git/
 
 ## Documentation
 
@@ -80,7 +90,7 @@ Language | Bindings
 --- | ---
 C++ | [libui-cpp](https://github.com/billyquith/libui-cpp), [cpp-libui-qtlike](https://github.com/aoloe/cpp-libui-qtlike)
 C# / .NET Framework | [LibUI.Binding](https://github.com/NattyNarwhal/LibUI.Binding)
-C# / .NET Core | [DevZH.UI](https://github.com/noliar/DevZH.UI), [SharpUI](https://github.com/benpye/sharpui/), [TCD.UI](https://github.com/tacdevel/tcdfx)
+C# / .NET Core | [DevZH.UI](https://github.com/noliar/DevZH.UI), [SharpUI](https://github.com/benpye/sharpui/), [SimplexiDev.UI](https://github.com/simplexidev/sdfx)
 CHICKEN Scheme | [wasamasa/libui](https://github.com/wasamasa/libui)
 Common Lisp | [jinwoo/cl-ui](https://github.com/jinwoo/cl-ui)
 Crystal | [libui.cr](https://github.com/Fusion/libui.cr), [hedron](https://github.com/Qwerp-Derp/hedron)
@@ -88,6 +98,7 @@ D | [DerelictLibui (flat API)](https://github.com/Extrawurst/DerelictLibui), [li
 Euphoria | [libui-euphoria](https://github.com/ghaberek/libui-euphoria)
 Harbour | [hbui](https://github.com/rjopek/hbui)
 Haskell | [haskell-libui](https://github.com/beijaflor-io/haskell-libui)
+Janet | [JanetUI](https://github.com/janet-lang/janetui)
 JavaScript/Node.js | [libui-node](https://github.com/parro-it/libui-node), [libui.js (merged into libui-node?)](https://github.com/mavenave/libui.js), [proton-native](https://github.com/kusti8/proton-native), [vuido](https://github.com/mimecorg/vuido)
 Julia | [Libui.jl](https://github.com/joa-quim/Libui.jl)
 Kotlin | [kotlin-libui](https://github.com/msink/kotlin-libui)
@@ -96,8 +107,8 @@ Nim | [ui](https://github.com/nim-lang/ui)
 Perl6 | [perl6-libui](https://github.com/Garland-g/perl6-libui)
 PHP | [ui](https://github.com/krakjoe/ui)
 Python | [pylibui](https://github.com/joaoventura/pylibui)
-Ruby | [libui-ruby](https://github.com/jamescook/libui-ruby), [libui](https://github.com/kojix2/libui)
-Rust | [libui-rs](https://github.com/rust-native-ui/libui-rs)
+Ruby | [libui-ruby](https://github.com/jamescook/libui-ruby), [LibUI](https://github.com/kojix2/libui), [Glimmer DSL for LibUI](https://github.com/AndyObtiva/glimmer-dsl-libui)
+Rust | [libui-ng-sys](https://github.com/norepimorphism/libui-ng-sys), [boing](https://github.com/norepimorphism/boing), [libui-rs](https://github.com/rust-native-ui/libui-rs)
 Scala | [scalaui](https://github.com/lolgab/scalaui)
 Swift | [libui-swift](https://github.com/sclukey/libui-swift)
 
@@ -112,7 +123,7 @@ See also [this](https://github.com/andlabs/libui/pull/20#issuecomment-211381971)
 
 ## Contributing
 
-See `CONTRIBUTING.md`.
+See [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Screenshots
 

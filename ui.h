@@ -123,14 +123,19 @@ _UI_EXTERN void uiWindowContentSize(uiWindow *w, int *width, int *height);
 _UI_EXTERN void uiWindowSetContentSize(uiWindow *w, int width, int height);
 _UI_EXTERN int uiWindowFullscreen(uiWindow *w);
 _UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
-_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
-_UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
 _UI_EXTERN int uiWindowBorderless(uiWindow *w);
 _UI_EXTERN void uiWindowSetBorderless(uiWindow *w, int borderless);
 _UI_EXTERN void uiWindowSetChild(uiWindow *w, uiControl *child);
 _UI_EXTERN int uiWindowMargined(uiWindow *w);
 _UI_EXTERN void uiWindowSetMargined(uiWindow *w, int margined);
+_UI_EXTERN int uiWindowResizeable(uiWindow *w);
+_UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
 _UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar);
+
+_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+_UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
+_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+_UI_EXTERN int uiWindowFocused(uiWindow *w);
 
 typedef struct uiButton uiButton;
 #define uiButton(this) ((uiButton *) (this))
@@ -142,6 +147,7 @@ _UI_EXTERN uiButton *uiNewButton(const char *text);
 typedef struct uiBox uiBox;
 #define uiBox(this) ((uiBox *) (this))
 _UI_EXTERN void uiBoxAppend(uiBox *b, uiControl *child, int stretchy);
+_UI_EXTERN int uiBoxNumChildren(uiBox *b);
 _UI_EXTERN void uiBoxDelete(uiBox *b, int index);
 _UI_EXTERN int uiBoxPadded(uiBox *b);
 _UI_EXTERN void uiBoxSetPadded(uiBox *b, int padded);
@@ -209,7 +215,11 @@ typedef struct uiSlider uiSlider;
 #define uiSlider(this) ((uiSlider *) (this))
 _UI_EXTERN int uiSliderValue(uiSlider *s);
 _UI_EXTERN void uiSliderSetValue(uiSlider *s, int value);
+_UI_EXTERN int uiSliderHasToolTip(uiSlider *s);
+_UI_EXTERN void uiSliderSetHasToolTip(uiSlider *s, int hasToolTip);
 _UI_EXTERN void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *s, void *data), void *data);
+_UI_EXTERN void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *s, void *data), void *data);
+_UI_EXTERN void uiSliderSetRange(uiSlider *s, int min, int max);
 _UI_EXTERN uiSlider *uiNewSlider(int min, int max);
 
 typedef struct uiProgressBar uiProgressBar;
@@ -226,6 +236,10 @@ _UI_EXTERN uiSeparator *uiNewVerticalSeparator(void);
 typedef struct uiCombobox uiCombobox;
 #define uiCombobox(this) ((uiCombobox *) (this))
 _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
+_UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int n, const char *text);
+_UI_EXTERN void uiComboboxDelete(uiCombobox *c, int n);
+_UI_EXTERN void uiComboboxClear(uiCombobox *c);
+_UI_EXTERN int uiComboboxNumItems(uiCombobox *c);
 _UI_EXTERN int uiComboboxSelected(uiCombobox *c);
 _UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int n);
 _UI_EXTERN void uiComboboxOnSelected(uiCombobox *c, void (*f)(uiCombobox *c, void *data), void *data);
@@ -293,6 +307,7 @@ _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
 _UI_EXTERN uiMenu *uiNewMenu(const char *name);
 
 _UI_EXTERN char *uiOpenFile(uiWindow *parent);
+_UI_EXTERN char *uiOpenFolder(uiWindow *parent);
 _UI_EXTERN char *uiSaveFile(uiWindow *parent);
 _UI_EXTERN void uiMsgBox(uiWindow *parent, const char *title, const char *description);
 _UI_EXTERN void uiMsgBoxError(uiWindow *parent, const char *title, const char *description);
@@ -473,6 +488,7 @@ _UI_EXTERN void uiDrawPathCloseFigure(uiDrawPath *p);
 // TODO effect of these when a figure is already started
 _UI_EXTERN void uiDrawPathAddRectangle(uiDrawPath *p, double x, double y, double width, double height);
 
+_UI_EXTERN int uiDrawPathEnded(uiDrawPath *p);
 _UI_EXTERN void uiDrawPathEnd(uiDrawPath *p);
 
 _UI_EXTERN void uiDrawStroke(uiDrawContext *c, uiDrawPath *path, uiDrawBrush *b, uiDrawStrokeParams *p);
@@ -923,6 +939,9 @@ struct uiFontDescriptor {
 	uiTextStretch Stretch;
 };
 
+_UI_EXTERN void uiLoadControlFont(uiFontDescriptor *f);
+_UI_EXTERN void uiFreeFontDescriptor(uiFontDescriptor *desc);
+
 // uiDrawTextLayout is a concrete representation of a
 // uiAttributedString that can be displayed in a uiDrawContext.
 // It includes information important for the drawing of a block of
@@ -1100,6 +1119,7 @@ _UI_EXTERN uiColorButton *uiNewColorButton(void);
 typedef struct uiForm uiForm;
 #define uiForm(this) ((uiForm *) (this))
 _UI_EXTERN void uiFormAppend(uiForm *f, const char *label, uiControl *c, int stretchy);
+_UI_EXTERN int uiFormNumChildren(uiForm *f);
 _UI_EXTERN void uiFormDelete(uiForm *f, int index);
 _UI_EXTERN int uiFormPadded(uiForm *f);
 _UI_EXTERN void uiFormSetPadded(uiForm *f, int padded);
@@ -1255,6 +1275,12 @@ _UI_EXTERN uiTableValue *uiNewTableValueColor(double r, double g, double b, doub
 // TODO define whether all this, for both uiTableValue and uiAttribute, is undefined behavior or a caught error
 _UI_EXTERN void uiTableValueColor(const uiTableValue *v, double *r, double *g, double *b, double *a);
 
+_UI_ENUM(uiSortIndicator) {
+	uiSortIndicatorNone,
+	uiSortIndicatorAscending,
+	uiSortIndicatorDescending
+};
+
 // uiTableModel is an object that provides the data for a uiTable.
 // This data is returned via methods you provide in the
 // uiTableModelHandler struct.
@@ -1324,11 +1350,13 @@ _UI_EXTERN uiTableModel *uiNewTableModel(uiTableModelHandler *mh);
 // free table models currently associated with a uiTable.
 _UI_EXTERN void uiFreeTableModel(uiTableModel *m);
 
-// uiTableModelRowInserted() tells any uiTable associated with m
-// that a new row has been added to m at index index. You call
-// this function when the number of rows in your model has
-// changed; after calling it, NumRows() should returm the new row
-// count.
+// uiTableModelRowInserted() tell all uiTables associated with
+// the uiTableModel m that a new row has been added to m at
+// index newIndex.
+// You must insert the row data in your model before calling this
+// function.
+// NumRows() must represent the new row count before you call
+// this function.
 _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 
 // uiTableModelRowChanged() tells any uiTable associated with m
@@ -1337,12 +1365,13 @@ _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 // this if your data changes at some other point.
 _UI_EXTERN void uiTableModelRowChanged(uiTableModel *m, int index);
 
-// uiTableModelRowDeleted() tells any uiTable associated with m
-// that the row at index index has been deleted. You call this
-// function when the number of rows in your model has changed;
-// after calling it, NumRows() should returm the new row
-// count.
-// TODO for this and Inserted: make sure the "after" part is right; clarify if it's after returning or after calling
+// uiTableModelRowDeleted() tells all uiTables associated with
+// the uiTableModel m that the row at index oldIndex has been
+// deleted.
+// You must delete the row from your model before you call this
+// function.
+// NumRows() must represent the new row count before you call
+// this function.
 _UI_EXTERN void uiTableModelRowDeleted(uiTableModel *m, int oldIndex);
 // TODO reordering/moving
 
@@ -1455,8 +1484,40 @@ _UI_EXTERN void uiTableAppendButtonColumn(uiTable *t,
 	int buttonModelColumn,
 	int buttonClickableModelColumn);
 
+// uiTableHeaderVisible() returns whether the table header is visible
+// or not.
+_UI_EXTERN int uiTableHeaderVisible(uiTable *t);
+
+// uiTableHeaderSetVisible() sets the visibility of the table header.
+_UI_EXTERN void uiTableHeaderSetVisible(uiTable *t, int visible);
+
 // uiNewTable() creates a new uiTable with the specified parameters.
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
+
+// uiTableHeaderSetSortIndicator() sets the sort indicator of the table
+// header to display an appropriate arrow on the column header
+_UI_EXTERN void uiTableHeaderSetSortIndicator(uiTable *t,
+	int column,
+	uiSortIndicator indicator);
+
+// uiTableHeaderSortIndicator returns the sort indicator of the specified
+// column
+_UI_EXTERN uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column);
+
+// uiTableHeaderOnClicked() sets a callback function to be called
+// when a table column header is clicked
+_UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
+	void (*f)(uiTable *table, int column, void *data),
+	void *data);
+
+// uiTableColumnWidth() return current table column width
+_UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
+
+// uiTableColumnSetWidth() set table column width
+// Setting width to -1 will restore automatic column sizing matching either
+// the width of the content or header title (which ever one is bigger)
+// Note: darwin currently only resizes to header title width on -1
+_UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
 
 #ifdef __cplusplus
 }

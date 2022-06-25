@@ -33,14 +33,7 @@ void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text)
 
 char *uiEditableComboboxText(uiEditableCombobox *c)
 {
-	char *s;
-	char *out;
-
-	s = gtk_combo_box_text_get_active_text(c->comboboxText);
-	// s will always be non-NULL in the case of a combobox with an entry (according to the source code)
-	out = uiUnixStrdupText(s);
-	g_free(s);
-	return out;
+	return gtk_combo_box_text_get_active_text(c->comboboxText);
 }
 
 void uiEditableComboboxSetText(uiEditableCombobox *c, const char *text)

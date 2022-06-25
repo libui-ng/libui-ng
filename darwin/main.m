@@ -16,6 +16,8 @@ static BOOL stepsIsRunning;
 {
 	if (uiprivSendAreaEvents(e) != 0)
 		return;
+	if (uiprivSendKeyboardEditEvents(self, e))
+		return;
 	[super sendEvent:e];
 }
 
@@ -199,7 +201,6 @@ int uiMainStep(int wait)
 // - https://github.com/gnustep/gui/blob/master/Source/NSApplication.m
 int uiprivMainStep(uiprivNextEventArgs *nea, BOOL (^interceptEvent)(NSEvent *e))
 {
-	NSDate *expire;
 	NSEvent *e;
 	NSEventType type;
 

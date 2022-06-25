@@ -10,16 +10,21 @@ struct uiWindow {
 	uiControl *child;
 	BOOL shownOnce;
 	int visible;
-	int (*onClosing)(uiWindow *, void *);
-	void *onClosingData;
 	int margined;
+	int resizeable;
 	BOOL hasMenubar;
-	void (*onContentSizeChanged)(uiWindow *, void *);
-	void *onContentSizeChangedData;
 	BOOL changingSize;
 	int fullscreen;
 	WINDOWPLACEMENT fsPrevPlacement;
 	int borderless;
+	int focused;
+
+	int (*onClosing)(uiWindow *, void *);
+	void *onClosingData;
+	void (*onContentSizeChanged)(uiWindow *, void *);
+	void *onContentSizeChangedData;
+	void (*onFocusChanged)(uiWindow *, void *);
+	void *onFocusChangedData;
 };
 
 // from https://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
@@ -111,6 +116,13 @@ static LRESULT CALLBACK windowWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 		mmi->ptMinTrackSize.x = width;
 		mmi->ptMinTrackSize.y = height;
 		return lResult;
+	case WM_ACTIVATE:
+		if (LOWORD(wParam) == WA_INACTIVE)
+			w->focused = 0;
+		else
+			w->focused = 1;
+		w->onFocusChanged(w, w->onFocusChangedData);
+		return 0;
 	case WM_PRINTCLIENT:
 		// we do no special painting; just erase the background
 		// don't worry about the return value; we let DefWindowProcW() handle this message
@@ -150,6 +162,11 @@ static int defaultOnClosing(uiWindow *w, void *data)
 }
 
 static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnFocusChanged(uiWindow *w, void *data)
 {
 	// do nothing
 }
@@ -385,6 +402,17 @@ void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
 	w->onClosingData = data;
 }
 
+void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+{
+	w->onFocusChanged = f;
+	w->onFocusChangedData = data;
+}
+
+int uiWindowFocused(uiWindow *w)
+{
+	return w->focused;
+}
+
 int uiWindowBorderless(uiWindow *w)
 {
 	return w->borderless;
@@ -428,6 +456,21 @@ void uiWindowSetMargined(uiWindow *w, int margined)
 	windowRelayout(w);
 }
 
+int uiWindowResizeable(uiWindow *w)
+{
+	return w->resizeable;
+}
+
+void uiWindowSetResizeable(uiWindow *w, int resizeable)
+{
+	w->resizeable = resizeable;
+	if (w->resizeable) {
+		setStyle(w->hwnd, getStyle(w->hwnd) | WS_THICKFRAME | WS_MAXIMIZEBOX);
+	} else {
+		setStyle(w->hwnd, getStyle(w->hwnd) & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX);
+	}
+}
+
 // see http://blogs.msdn.com/b/oldnewthing/archive/2003/09/11/54885.aspx and http://blogs.msdn.com/b/oldnewthing/archive/2003/09/13/54917.aspx
 // TODO use clientSizeToWindowSize()
 static void setClientSize(uiWindow *w, int width, int height, BOOL hasMenubar, DWORD style, DWORD exstyle)
@@ -460,6 +503,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	uiWindowsNewControl(uiWindow, w);
 
+	w->resizeable = TRUE;
 	hasMenubarBOOL = FALSE;
 	if (hasMenubar)
 		hasMenubarBOOL = TRUE;
@@ -493,6 +537,8 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
+
+	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
 
 	windows[w] = true;
 	return w;

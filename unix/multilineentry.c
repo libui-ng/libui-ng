@@ -33,15 +33,11 @@ static void defaultOnChanged(uiMultilineEntry *e, void *data)
 char *uiMultilineEntryText(uiMultilineEntry *e)
 {
 	GtkTextIter start, end;
-	char *tret, *out;
 
 	gtk_text_buffer_get_start_iter(e->textbuf, &start);
 	gtk_text_buffer_get_end_iter(e->textbuf, &end);
-	tret = gtk_text_buffer_get_text(e->textbuf, &start, &end, TRUE);
-	// theoretically we could just return tret because uiUnixStrdupText() is just g_strdup(), but if that ever changes we can't, so let's do it this way to be safe
-	out = uiUnixStrdupText(tret);
-	g_free(tret);
-	return out;
+
+	return gtk_text_buffer_get_text(e->textbuf, &start, &end, TRUE);
 }
 
 void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text)

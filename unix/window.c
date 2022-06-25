@@ -19,11 +19,15 @@ struct uiWindow {
 
 	uiControl *child;
 	int margined;
+	int resizeable;
+	int focused;
 
 	int (*onClosing)(uiWindow *, void *);
 	void *onClosingData;
 	void (*onContentSizeChanged)(uiWindow *, void *);
 	void *onContentSizeChangedData;
+	void (*onFocusChanged)(uiWindow *, void *);
+	void *onFocusChangedData;
 	gboolean fullscreen;
 };
 
@@ -46,12 +50,33 @@ static void onSizeAllocate(GtkWidget *widget, GdkRectangle *allocation, gpointer
 	(*(w->onContentSizeChanged))(w, w->onContentSizeChangedData);
 }
 
+static gboolean onGetFocus(GtkWidget *win, GdkEvent *e, gpointer data)
+{
+	uiWindow *w = uiWindow(data);
+	w->focused = 1;
+	w->onFocusChanged(w, w->onFocusChangedData);
+	return FALSE;
+}
+
+static gboolean onLoseFocus(GtkWidget *win, GdkEvent *e, gpointer data)
+{
+	uiWindow *w = uiWindow(data);
+	w->focused = 0;
+	w->onFocusChanged(w, w->onFocusChangedData);
+	return FALSE;
+}
+
 static int defaultOnClosing(uiWindow *w, void *data)
 {
 	return 0;
 }
 
 static void defaultOnPositionContentSizeChanged(uiWindow *w, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnFocusChanged(uiWindow *w, void *data)
 {
 	// do nothing
 }
@@ -194,6 +219,17 @@ void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
 	w->onClosingData = data;
 }
 
+int uiWindowFocused(uiWindow *w)
+{
+	return w->focused;
+}
+
+void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+{
+	w->onFocusChanged = f;
+	w->onFocusChangedData = data;
+}
+
 int uiWindowBorderless(uiWindow *w)
 {
 	return gtk_window_get_decorated(w->window) == FALSE;
@@ -229,12 +265,34 @@ void uiWindowSetMargined(uiWindow *w, int margined)
 	uiprivSetMargined(w->childHolderContainer, w->margined);
 }
 
+int uiWindowResizeable(uiWindow *w)
+{
+	return w->resizeable;
+}
+
+void uiWindowSetResizeable(uiWindow *w, int resizeable)
+{
+	// workaround for https://gitlab.gnome.org/GNOME/gtk/-/issues/4945
+	// calling gtk_window_set_resizable(w->window, 0) will cause the window to resize to default size
+	// (default is smallest size here because we're using gtk_window_resize() when creating the window)
+	// to prevent this we call gtk_window_set_default_size() on the current window size so that it doesn't resize
+	if (resizeable == 0) {
+		gint width, height;
+		gtk_window_get_size(w->window, &width, &height);
+		gtk_window_set_default_size(w->window, width, height);
+	}
+
+	w->resizeable = resizeable;
+	gtk_window_set_resizable(w->window, resizeable);
+}
+
 uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 {
 	uiWindow *w;
 
 	uiUnixNewControl(uiWindow, w);
 
+	w->resizeable = TRUE;
 	w->widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	w->container = GTK_CONTAINER(w->widget);
 	w->window = GTK_WINDOW(w->widget);
@@ -268,8 +326,13 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	// and connect our events
 	g_signal_connect(w->widget, "delete-event", G_CALLBACK(onClosing), w);
 	g_signal_connect(w->childHolderWidget, "size-allocate", G_CALLBACK(onSizeAllocate), w);
+	g_signal_connect(w->widget, "focus-in-event", G_CALLBACK(onGetFocus), w);
+	g_signal_connect(w->widget, "focus-out-event", G_CALLBACK(onLoseFocus), w);
+
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
+
+	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
 
 	// normally it's SetParent() that does this, but we can't call SetParent() on a uiWindow
 	// TODO we really need to clean this up, especially since see uiWindowDestroy() above

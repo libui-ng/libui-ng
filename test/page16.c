@@ -98,11 +98,49 @@ static void modelSetCellValue(uiTableModelHandler *mh, uiTableModel *m, int row,
 		checkStates[row] = uiTableValueInt(val);
 }
 
+void headerVisibleToggled(uiCheckbox *c, void *data)
+{
+	uiTable *t = data;
+	uiTableHeaderSetVisible(t, uiCheckboxChecked(c));
+	uiCheckboxSetChecked(c, uiTableHeaderVisible(t));
+}
+
+uiSpinbox *columnID;
+uiSpinbox *columnWidth;
+static void changedColumnID(uiSpinbox *s, void *data)
+{
+	uiTable *t = data;
+	uiSpinboxSetValue(columnWidth, uiTableColumnWidth(t, uiSpinboxValue(columnID)));
+}
+
+static void changedColumnWidth(uiSpinbox *s, void *data)
+{
+	uiTable *t = data;
+	uiTableColumnSetWidth(t, uiSpinboxValue(columnID), uiSpinboxValue(columnWidth));
+}
+
 static uiTableModel *m;
+
+static void headerOnClicked(uiTable *t, int col, void *data)
+{
+	static int prev = 0;
+
+	if (prev != col)
+		uiTableHeaderSetSortIndicator(t, prev, uiSortIndicatorNone);
+
+	if (uiTableHeaderSortIndicator(t, col) == uiSortIndicatorAscending)
+		uiTableHeaderSetSortIndicator(t, col, uiSortIndicatorDescending);
+	else
+		uiTableHeaderSetSortIndicator(t, col, uiSortIndicatorAscending);
+
+	prev = col;
+}
 
 uiBox *makePage16(void)
 {
 	uiBox *page16;
+	uiBox *controls;
+	uiCheckbox *headerVisible;
 	uiTable *t;
 	uiTableParams p;
 	uiTableTextColumnOptionalParams tp;
@@ -119,6 +157,9 @@ uiBox *makePage16(void)
 	memset(checkStates, 0, 15 * sizeof (int));
 
 	page16 = newVerticalBox();
+	controls = newHorizontalBox();
+	uiBoxSetPadded(controls, 1);
+	uiBoxAppend(page16, uiControl(controls), 0);
 
 	mh.NumColumns = modelNumColumns;
 	mh.ColumnType = modelColumnType;
@@ -151,6 +192,25 @@ uiBox *makePage16(void)
 
 	uiTableAppendProgressBarColumn(t, "Progress Bar",
 		8);
+
+	uiTableHeaderOnClicked(t, headerOnClicked, NULL);
+
+	headerVisible = uiNewCheckbox("Header Visible");
+	uiCheckboxSetChecked(headerVisible, uiTableHeaderVisible(t));
+	uiCheckboxOnToggled(headerVisible, headerVisibleToggled, t);
+	uiBoxAppend(controls, uiControl(headerVisible), 0);
+
+	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
+
+	uiBoxAppend(controls, uiControl(uiNewLabel("Column")), 0);
+	columnID = uiNewSpinbox(0, 5);
+	uiBoxAppend(controls, uiControl(columnID), 0);
+	uiBoxAppend(controls, uiControl(uiNewLabel("Width")), 0);
+	columnWidth = uiNewSpinbox(-1, INT_MAX);
+	uiBoxAppend(controls, uiControl(columnWidth), 0);
+
+	uiSpinboxOnChanged(columnID, changedColumnID, t);
+	uiSpinboxOnChanged(columnWidth, changedColumnWidth, t);
 
 	return page16;
 }

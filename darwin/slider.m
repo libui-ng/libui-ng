@@ -26,7 +26,12 @@ struct uiSlider {
 	NSSlider *slider;
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
+	void (*onReleased)(uiSlider *, void *);
+	void *onReleasedData;
+	BOOL hasToolTip;
 };
+
+static void _uiSliderUpdateToolTip(uiSlider *s);
 
 @interface sliderDelegateClass : NSObject {
 	uiprivMap *sliders;
@@ -55,9 +60,17 @@ struct uiSlider {
 - (IBAction)onChanged:(id)sender
 {
 	uiSlider *s;
-
 	s = (uiSlider *) uiprivMapGet(self->sliders, sender);
-	(*(s->onChanged))(s, s->onChangedData);
+
+	NSEvent *currentEvent = [[sender window] currentEvent];
+	if([currentEvent type] == NSLeftMouseUp) {
+		(*(s->onReleased))(s, s->onReleasedData);
+	} else {
+		(*(s->onChanged))(s, s->onChangedData);
+	}
+
+	if (s->hasToolTip)
+		_uiSliderUpdateToolTip(s);
 }
 
 - (void)registerSlider:(uiSlider *)s
@@ -88,6 +101,26 @@ static void uiSliderDestroy(uiControl *c)
 	uiFreeControl(uiControl(s));
 }
 
+static void _uiSliderUpdateToolTip(uiSlider *s)
+{
+	[s->slider setToolTip:[NSString stringWithFormat:@"%ld", [s->slider integerValue]]];
+}
+
+int uiSliderHasToolTip(uiSlider *s)
+{
+	return s->hasToolTip;
+}
+
+void uiSliderSetHasToolTip(uiSlider *s, int hasToolTip)
+{
+	s->hasToolTip = hasToolTip;
+
+	if (hasToolTip)
+		_uiSliderUpdateToolTip(s);
+	else
+		[s->slider setToolTip:nil];
+}
+
 int uiSliderValue(uiSlider *s)
 {
 	return [s->slider integerValue];
@@ -107,6 +140,31 @@ void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
 static void defaultOnChanged(uiSlider *s, void *data)
 {
 	// do nothing
+}
+
+void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
+{
+	s->onReleased = f;
+	s->onReleasedData = data;
+}
+
+static void defaultOnReleased(uiSlider *s, void *data)
+{
+	// do nothing
+}
+
+void uiSliderSetRange(uiSlider *s, int min, int max)
+{
+	int temp;
+
+	if (min >= max) {
+		temp = min;
+		min = max;
+		max = temp;
+	}
+
+	[s->slider setMinValue:min];
+	[s->slider setMaxValue:max];
 }
 
 uiSlider *uiNewSlider(int min, int max)
@@ -142,6 +200,9 @@ uiSlider *uiNewSlider(int min, int max)
 	}
 	[sliderDelegate registerSlider:s];
 	uiSliderOnChanged(s, defaultOnChanged, NULL);
+	uiSliderOnReleased(s, defaultOnReleased, NULL);
+
+	uiSliderSetHasToolTip(s, 1);
 
 	return s;
 }

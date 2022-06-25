@@ -6,13 +6,21 @@ struct uiSlider {
 	HWND hwnd;
 	void (*onChanged)(uiSlider *, void *);
 	void *onChangedData;
+	void (*onReleased)(uiSlider *, void *);
+	void *onReleasedData;
+	HWND hwndToolTip;
 };
 
 static BOOL onWM_HSCROLL(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 {
 	uiSlider *s = uiSlider(c);
 
-	(*(s->onChanged))(s, s->onChangedData);
+	if (code == TB_ENDTRACK) {
+		(*(s->onReleased))(s, s->onReleasedData);
+	} else {
+		(*(s->onChanged))(s, s->onChangedData);
+	}
+
 	*lResult = 0;
 	return TRUE;
 }
@@ -20,6 +28,9 @@ static BOOL onWM_HSCROLL(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 static void uiSliderDestroy(uiControl *c)
 {
 	uiSlider *s = uiSlider(c);
+
+	// ensure TRACKBAR_CLASSW takes care of destroying the tooltip
+	uiSliderSetHasToolTip(s, 1);
 
 	uiWindowsUnregisterWM_HSCROLLHandler(s->hwnd);
 	uiWindowsEnsureDestroyWindow(s->hwnd);
@@ -46,7 +57,25 @@ static void uiSliderMinimumSize(uiWindowsControl *c, int *width, int *height)
 	*height = y;
 }
 
+int uiSliderHasToolTip(uiSlider *s)
+{
+	return ((HWND) SendMessage(s->hwnd, TBM_GETTOOLTIPS, 0, 0) == s->hwndToolTip);
+}
+
+void uiSliderSetHasToolTip(uiSlider *s, int hasToolTip)
+{
+	if (hasToolTip)
+		SendMessage(s->hwnd, TBM_SETTOOLTIPS, (WPARAM) s->hwndToolTip, 0);
+	else
+		SendMessage(s->hwnd, TBM_SETTOOLTIPS, 0, 0);
+}
+
 static void defaultOnChanged(uiSlider *s, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnReleased(uiSlider *s, void *data)
 {
 	// do nothing
 }
@@ -66,6 +95,26 @@ void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
 {
 	s->onChanged = f;
 	s->onChangedData = data;
+}
+
+void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
+{
+	s->onReleased = f;
+	s->onReleasedData = data;
+}
+
+void uiSliderSetRange(uiSlider *s, int min, int max)
+{
+	int temp;
+
+	if (min >= max) {
+		temp = min;
+		min = max;
+		max = temp;
+	}
+
+	SendMessageW(s->hwnd, TBM_SETRANGEMIN, (WPARAM) TRUE, (LPARAM) min);
+	SendMessageW(s->hwnd, TBM_SETRANGEMAX, (WPARAM) TRUE, (LPARAM) max);
 }
 
 uiSlider *uiNewSlider(int min, int max)
@@ -89,10 +138,13 @@ uiSlider *uiNewSlider(int min, int max)
 
 	uiWindowsRegisterWM_HSCROLLHandler(s->hwnd, onWM_HSCROLL, uiControl(s));
 	uiSliderOnChanged(s, defaultOnChanged, NULL);
+	uiSliderOnReleased(s, defaultOnReleased, NULL);
 
 	SendMessageW(s->hwnd, TBM_SETRANGEMIN, (WPARAM) TRUE, (LPARAM) min);
 	SendMessageW(s->hwnd, TBM_SETRANGEMAX, (WPARAM) TRUE, (LPARAM) max);
 	SendMessageW(s->hwnd, TBM_SETPOS, (WPARAM) TRUE, (LPARAM) min);
+
+	s->hwndToolTip = (HWND) SendMessage(s->hwnd, TBM_GETTOOLTIPS, 0, 0);
 
 	return s;
 }

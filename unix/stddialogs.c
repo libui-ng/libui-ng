@@ -28,7 +28,7 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 		gtk_widget_destroy(fcd);
 		return NULL;
 	}
-	filename = uiUnixStrdupText(gtk_file_chooser_get_filename(fc));
+	filename = gtk_file_chooser_get_filename(fc);
 	gtk_widget_destroy(fcd);
 	return filename;
 }
@@ -36,6 +36,11 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 char *uiOpenFile(uiWindow *parent)
 {
 	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_OPEN, "_Open");
+}
+
+char *uiOpenFolder(uiWindow *parent)
+{
+	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "_Open");
 }
 
 char *uiSaveFile(uiWindow *parent)

@@ -41,8 +41,9 @@ void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, in
 	// note that this is native-endian
 	cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
 		pixelWidth, pixelHeight);
-	if (cairo_surface_status(cs) != CAIRO_STATUS_SUCCESS)
-		/* TODO */;
+	if (cairo_surface_status(cs) != CAIRO_STATUS_SUCCESS) {
+		/* TODO */
+	}
 	cairo_surface_flush(cs);
 
 	pix = (uint8_t *) pixels;

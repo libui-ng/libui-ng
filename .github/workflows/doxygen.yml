@@ -1,0 +1,44 @@
+name: Auto build and deploy doc
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Check out Doxygen theme
+      uses: actions/checkout@v2
+      with:
+        repository: jothepro/doxygen-awesome-css
+        path: doc/doxygen-awesome-css
+        # v1.6.1
+        ref: e5d9fd7d4c77cd5343e4de53b93dac433698012d
+    - name: Doxygen Action
+      # Note: Dark Mode Toggle need doxygen 1.9.2+
+      uses: mattnotmitt/doxygen-action@v1.9.2
+      with:
+        doxyfile-path: "./Doxyfile"
+        working-directory: "."
+
+    - name: Deploy to github pages
+      # doc: https://github.com/peaceiris/actions-gh-pages
+      uses: peaceiris/actions-gh-pages@v3
+      # Only run deploy on master
+      if: ${{ github.ref == 'refs/heads/master' }}
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_dir: ./doc/html
+        # make publish branch with only the latest commit
+        force_orphan: true
+
+    - name: Upload html
+      uses: actions/upload-artifact@v2
+      with:
+        name: html-doc
+        path: doc/html/
