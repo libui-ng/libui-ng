@@ -6,34 +6,34 @@
 
 int onClosing(uiWindow *w, void *data)
 {
-    uiQuit();
-    return 1;
+	uiQuit();
+	return 1;
 }
 
 int main(void)
 {
-    uiInitOptions o;
-    const char *err;
-    uiWindow *w;
-    uiLabel *label;
+	uiInitOptions o;
+	const char *err;
+	uiWindow *w;
+	uiLabel *label;
 
-    memset(&o, 0, sizeof (uiInitOptions));
-    err = uiInit(&o);
-    if (err != NULL) {
-        fprintf(stderr, "error initializing ui: %s\n", err);
-        uiFreeInitError(err);
-        return 1;
-    }
+	memset(&o, 0, sizeof (uiInitOptions));
+	err = uiInit(&o);
+	if (err != NULL) {
+		fprintf(stderr, "error initializing ui: %s\n", err);
+		uiFreeInitError(err);
+		return 1;
+	}
 
-    // Create a new window
-    w = uiNewWindow("Hello Window", 300, 30, 0);
-    uiWindowOnClosing(w, onClosing, NULL);
-    
-    label = uiNewLabel("Hello, World!");
-    uiWindowSetChild(w, uiControl(label));
+	// Create a new window
+	w = uiNewWindow("Hello Window", 300, 30, 0);
+	uiWindowOnClosing(w, onClosing, NULL);
 
-    uiControlShow(uiControl(w));
-    uiMain();
-    uiUninit();
-    return 0;
+	label = uiNewLabel("Hello, World!");
+	uiWindowSetChild(w, uiControl(label));
+
+	uiControlShow(uiControl(w));
+	uiMain();
+	uiUninit();
+	return 0;
 }
