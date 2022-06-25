@@ -23,5 +23,6 @@ int main(void)
     uiWindowOnClosing(w, onClosing, NULL);
     uiControlShow(uiControl(w));
     uiMain();
+    uiUninit();
     return 0;
 }
