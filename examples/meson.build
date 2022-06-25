@@ -51,8 +51,8 @@ libui_examples = {
 	'hello-world': {
 		'sources':		['hello-world/main.c'],
 	},
-	'hello-window': {
-		'sources':		['hello-window/main.c'],
+	'window': {
+		'sources':		['window/main.c'],
 	},
 }
 foreach name, args : libui_examples
