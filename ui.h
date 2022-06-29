@@ -214,7 +214,7 @@ _UI_EXTERN void uiControlDisable(uiControl *c);
  *
  * @param n Size of type to allocate.
  * @todo Document parameters
- * @memberof uiControl
+ * @memberof uiControl @static
  */
 _UI_EXTERN uiControl *uiAllocControl(size_t n, uint32_t OSsig, uint32_t typesig, const char *typenamestr);
 
@@ -474,7 +474,7 @@ _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
  * @param height Window height.
  * @param hasMenubar Whether or not the window should display a menu bar.
  * @returns A new uiWindow instance.
- * @memberof uiWindow
+ * @memberof uiWindow @static
  */
 _UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar);
 
@@ -533,7 +533,7 @@ _UI_EXTERN void uiButtonOnClicked(uiButton *b,
  *             A valid, `NUL` terminated UTF-8 string.\n
  *             Data is owned by the caller.
  * @returns A new uiButton instance.
- * @memberof uiButton
+ * @memberof uiButton @static
  */
 _UI_EXTERN uiButton *uiNewButton(const char *text);
 
@@ -612,7 +612,7 @@ _UI_EXTERN void uiBoxSetPadded(uiBox *b, int padded);
  * Controls within the box are placed next to each other horizontally.
  *
  * @returns A new uiBox instance.
- * @memberof uiBox
+ * @memberof uiBox @static
  */
 _UI_EXTERN uiBox *uiNewHorizontalBox(void);
 
@@ -622,7 +622,7 @@ _UI_EXTERN uiBox *uiNewHorizontalBox(void);
  * Controls within the box are placed next to each other vertically.
  *
  * @returns A new uiBox instance.
- * @memberof uiBox
+ * @memberof uiBox @static
  */
 _UI_EXTERN uiBox *uiNewVerticalBox(void);
 
@@ -699,7 +699,7 @@ _UI_EXTERN void uiCheckboxSetChecked(uiCheckbox *c, int checked);
  *             A valid, `NUL` terminated UTF-8 string.\n
  *             Data is owned by the caller.
  * @returns A new uiCheckbox instance.
- * @memberof uiCheckbox
+ * @memberof uiCheckbox @static
  */
 _UI_EXTERN uiCheckbox *uiNewCheckbox(const char *text);
 
@@ -773,7 +773,7 @@ _UI_EXTERN void uiEntrySetReadOnly(uiEntry *e, int readonly);
  * Creates a new entry.
  *
  * @returns A new uiEntry instance.
- * @memberof uiEntry
+ * @memberof uiEntry @static
  */
 _UI_EXTERN uiEntry *uiNewEntry(void);
 
@@ -783,7 +783,7 @@ _UI_EXTERN uiEntry *uiNewEntry(void);
  * The entered text is NOT readable by the user but masked as *******.
  *
  * @returns A new uiEntry instance.
- * @memberof uiEntry
+ * @memberof uiEntry @static
  */
 _UI_EXTERN uiEntry *uiNewPasswordEntry(void);
 
@@ -794,7 +794,7 @@ _UI_EXTERN uiEntry *uiNewPasswordEntry(void);
  * a more natural feel.
  *
  * @returns A new uiEntry instance.
- * @memberof uiEntry
+ * @memberof uiEntry @static
  */
 _UI_EXTERN uiEntry *uiNewSearchEntry(void);
 
@@ -838,7 +838,7 @@ _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
  *             A valid, `NUL` terminated UTF-8 string.\n
  *             Data is owned by the caller.
  * @returns A new uiLabel instance.
- * @memberof uiLabel
+ * @memberof uiLabel @static
  */
 _UI_EXTERN uiLabel *uiNewLabel(const char *text);
 
@@ -926,7 +926,7 @@ _UI_EXTERN void uiTabSetMargined(uiTab *t, int index, int margined);
  * Creates a new tab container.
  *
  * @return A new uiTab instance.
- * @memberof uiTab
+ * @memberof uiTab @static
  */
 _UI_EXTERN uiTab *uiNewTab(void);
 
@@ -1005,7 +1005,7 @@ _UI_EXTERN void uiGroupSetMargined(uiGroup *g, int margined);
  *              A valid, `NUL` terminated UTF-8 string.\n
  *              Data is owned by the caller.
  * @returns A new uiGroup instance.
- * @memberof uiGroup
+ * @memberof uiGroup @static
  */
 _UI_EXTERN uiGroup *uiNewGroup(const char *title);
 
@@ -1075,7 +1075,7 @@ _UI_EXTERN void uiSpinboxOnChanged(uiSpinbox *s,
  * @param max Maximum value.
  * @returns A new uiSpinbox instance.
  * @todo complain or disallow min>max?
- * @memberof uiSpinbox
+ * @memberof uiSpinbox @static
  */
 _UI_EXTERN uiSpinbox *uiNewSpinbox(int min, int max);
 
@@ -1188,7 +1188,7 @@ _UI_EXTERN void uiSliderSetRange(uiSlider *s, int min, int max);
  * @param max Maximum value.
  * @returns A new uiSlider instance.
  * @todo complain or disallow min>max?
- * @memberof uiSlider
+ * @memberof uiSlider @static
  */
 _UI_EXTERN uiSlider *uiNewSlider(int min, int max);
 
@@ -1231,7 +1231,7 @@ _UI_EXTERN void uiProgressBarSetValue(uiProgressBar *p, int n);
  * Creates a new progress bar.
  *
  * @returns A new uiProgressBar instance.
- * @memberof uiProgressBar
+ * @memberof uiProgressBar @static
  */
 _UI_EXTERN uiProgressBar *uiNewProgressBar(void);
 
@@ -1250,7 +1250,7 @@ typedef struct uiSeparator uiSeparator;
  * Creates a new horizontal separator.
  *
  * @returns A new uiSeparator instance.
- * @memberof uiSeparator
+ * @memberof uiSeparator @static
  */
 _UI_EXTERN uiSeparator *uiNewHorizontalSeparator(void);
 
@@ -1258,7 +1258,7 @@ _UI_EXTERN uiSeparator *uiNewHorizontalSeparator(void);
  * Creates a new vertical separator.
  *
  * @returns A new uiSeparator instance.
- * @memberof uiSeparator
+ * @memberof uiSeparator @static
  */
 _UI_EXTERN uiSeparator *uiNewVerticalSeparator(void);
 
@@ -1361,7 +1361,7 @@ _UI_EXTERN void uiComboboxOnSelected(uiCombobox *c,
  * Creates a new combo box.
  *
  * @returns A new uiCombobox instance.
- * @memberof uiCombobox
+ * @memberof uiCombobox @static
  */
 _UI_EXTERN uiCombobox *uiNewCombobox(void);
 
@@ -1440,8 +1440,8 @@ _UI_EXTERN void uiEditableComboboxOnChanged(uiEditableCombobox *c,
 /**
  * Creates a new editable combo box.
  *
- * @memberof uiEditableCombobox
  * @returns A new uiEditableCombobox instance.
+ * @memberof uiEditableCombobox @static
  */
 _UI_EXTERN uiEditableCombobox *uiNewEditableCombobox(void);
 
@@ -1505,7 +1505,7 @@ _UI_EXTERN void uiRadioButtonsOnSelected(uiRadioButtons *r,
  * Creates a new radio buttons instance.
  *
  * @returns A new uiRadioButtons instance.
- * @memberof uiRadioButtons
+ * @memberof uiRadioButtons @static
  */
 _UI_EXTERN uiRadioButtons *uiNewRadioButtons(void);
 
@@ -1570,7 +1570,7 @@ _UI_EXTERN void uiDateTimePickerOnChanged(uiDateTimePicker *d,
  * Creates a new date picker.
  *
  * @returns A new uiDateTimePicker instance.
- * @memberof uiDateTimePicker
+ * @memberof uiDateTimePicker @static
  */
 _UI_EXTERN uiDateTimePicker *uiNewDateTimePicker(void);
 
@@ -1578,7 +1578,7 @@ _UI_EXTERN uiDateTimePicker *uiNewDateTimePicker(void);
  * Creates a new time picker.
  *
  * @returns A new uiDateTimePicker instance.
- * @memberof uiDateTimePicker
+ * @memberof uiDateTimePicker @static
  */
 _UI_EXTERN uiDateTimePicker *uiNewDatePicker(void);
 
@@ -1586,7 +1586,7 @@ _UI_EXTERN uiDateTimePicker *uiNewDatePicker(void);
  * Creates a new date and time picker.
  *
  * @returns A new uiDateTimePicker instance.
- * @static @memberof uiDateTimePicker
+ * @memberof uiDateTimePicker @static
  */
 _UI_EXTERN uiDateTimePicker *uiNewTimePicker(void);
 
@@ -1674,7 +1674,7 @@ _UI_EXTERN void uiMultilineEntrySetReadOnly(uiMultilineEntry *e, int readonly);
  * Creates a new multi line entry that visually wraps text when lines overflow.
  *
  * @returns A new uiMultilineEntry instance.
- * @memberof uiMultilineEntry
+ * @memberof uiMultilineEntry @static
  */
 _UI_EXTERN uiMultilineEntry *uiNewMultilineEntry(void);
 
@@ -1684,7 +1684,7 @@ _UI_EXTERN uiMultilineEntry *uiNewMultilineEntry(void);
  * @remark Windows does not allow for this style to be changed after creation,
  *         hence the two constructors.
  * @returns A new uiMultilineEntry instance.
- * @memberof uiMultilineEntry
+ * @memberof uiMultilineEntry @static
  */
 _UI_EXTERN uiMultilineEntry *uiNewNonWrappingMultilineEntry(void);
 
@@ -1856,7 +1856,7 @@ _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
  *             A `NUL` terminated UTF-8 string.\n
  *             Data is owned by the caller.
  * @returns A new uiMenu instance.
- * @memberof uiMenu
+ * @memberof uiMenu @static
  */
 _UI_EXTERN uiMenu *uiNewMenu(const char *name);
 
@@ -2683,7 +2683,7 @@ _UI_EXTERN void uiFontButtonOnChanged(uiFontButton *b,
  * The default font is determined by the OS defaults.
  *
  * @returns A new uiFontButton instance.
- * @memberof uiFontButton
+ * @memberof uiFontButton @static
  */
 _UI_EXTERN uiFontButton *uiNewFontButton(void);
 
@@ -2846,6 +2846,7 @@ _UI_EXTERN void uiColorButtonOnChanged(uiColorButton *b,
  * Creates a new color button.
  *
  * @returns A new uiColorButton instance.
+ * @memberof uiColorButton @static
  */
 _UI_EXTERN uiColorButton *uiNewColorButton(void);
 
@@ -2929,7 +2930,7 @@ _UI_EXTERN void uiFormSetPadded(uiForm *f, int padded);
  * Creates a new form.
  *
  * @returns A new uiForm instance.
- * @memberof uiForm
+ * @memberof uiForm @static
  */
 _UI_EXTERN uiForm *uiNewForm(void);
 
@@ -3045,7 +3046,7 @@ _UI_EXTERN void uiGridSetPadded(uiGrid *g, int padded);
  * Creates a new grid.
  *
  * @returns A new uiGrid instance.
- * @memberof uiGrid
+ * @memberof uiGrid @static
  */
 _UI_EXTERN uiGrid *uiNewGrid(void);
 
@@ -3081,7 +3082,7 @@ typedef struct uiImage uiImage;
  * @param width Width in points.
  * @param height Height in points.
  * @returns A new uiImage instance.
- * @memberof uiImage
+ * @memberof uiImage @static
  */
 _UI_EXTERN uiImage *uiNewImage(double width, double height);
 
@@ -3206,7 +3207,7 @@ _UI_EXTERN uiTableValueType uiTableValueGetType(const uiTableValue *v);
  *            A valid, `NUL` terminated UTF-8 string.\n
  *            Data is owned by the caller.
  * @returns A new uiTableValue instance.
- * @memberof uiTableValue
+ * @memberof uiTableValue @static
  */
 _UI_EXTERN uiTableValue *uiNewTableValueString(const char *str);
 
@@ -3235,7 +3236,7 @@ _UI_EXTERN const char *uiTableValueString(const uiTableValue *v);
  *          As a general rule: if the constructor is called via the
  *          uiTableModelHandler, the image is safe to free once execution
  *          returns to ANY of your code.
- * @memberof uiTableValue
+ * @memberof uiTableValue @static
  */
 _UI_EXTERN uiTableValue *uiNewTableValueImage(uiImage *img);
 
@@ -3262,7 +3263,7 @@ _UI_EXTERN uiImage *uiTableValueImage(const uiTableValue *v);
  *
  * @param i Integer value.
  * @returns A new uiTableValue instance.
- * @memberof uiTableValue
+ * @memberof uiTableValue @static
  */
 _UI_EXTERN uiTableValue *uiNewTableValueInt(int i);
 
@@ -3285,7 +3286,7 @@ _UI_EXTERN int uiTableValueInt(const uiTableValue *v);
  * @param b Blue. Double in range of [0, 1.0].
  * @param a Alpha. Double in range of [0, 1.0].
  * @returns A new uiTableValue instance.
- * @memberof uiTableValue
+ * @memberof uiTableValue @static
  */
 _UI_EXTERN uiTableValue *uiNewTableValueColor(double r, double g, double b, double a);
 
@@ -3413,7 +3414,7 @@ struct uiTableModelHandler {
  *
  * @param mh Table model handler.
  * @returns A new uiTableModel instance.
- * @memberof uiTableModel
+ * @memberof uiTableModel @static
  */
 _UI_EXTERN uiTableModel *uiNewTableModel(uiTableModelHandler *mh);
 
@@ -3724,7 +3725,7 @@ _UI_EXTERN void uiTableHeaderSetVisible(uiTable *t, int visible);
  *
  * @param params Table parameters.
  * @returns A new uiTable instance.
- * @memberof uiTable
+ * @memberof uiTable @static
  */
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
 
