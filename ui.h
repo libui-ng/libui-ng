@@ -1202,6 +1202,7 @@ _UI_EXTERN uiSlider *uiNewSlider(int min, int max);
  *
  * @struct uiProgressBar
  * @extends uiControl
+ * @ingroup static
  */
 typedef struct uiProgressBar uiProgressBar;
 #define uiProgressBar(this) ((uiProgressBar *) (this))
