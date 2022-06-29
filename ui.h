@@ -114,6 +114,7 @@ struct uiControl {
  * Dispose and free all allocated resources.
  *
  * @param c uiControl instance.
+ * @todo Document ownership.
  * @memberof uiControl
  */
 _UI_EXTERN void uiControlDestroy(uiControl *c);
@@ -141,6 +142,7 @@ _UI_EXTERN uiControl *uiControlParent(uiControl *c);
  *
  * @param c uiControl instance.
  * @param parent The parent control, `NULL` to detach.
+ * @todo Document ownership.
  * @memberof uiControl
  */
 _UI_EXTERN void uiControlSetParent(uiControl *c, uiControl *parent);
