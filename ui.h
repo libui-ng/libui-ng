@@ -1403,7 +1403,6 @@ _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text
  *          A `NUL` terminated UTF-8 string.\n
  *          Data is owned by the caller, make sure to call `uiFreeText()`.
  * @memberof uiEditableCombobox
- * returns the text in the entry of the uiEditableCombobox,
  */
 _UI_EXTERN char *uiEditableComboboxText(uiEditableCombobox *c);
 
@@ -3250,6 +3249,7 @@ _UI_EXTERN uiTableValue *uiNewTableValueImage(uiImage *img);
  *          Data is owned by the caller of uiNewTableValueImage().
  * @warning The image returned is not owned by the object @p v,
  *          hence no lifetime guarantees can be made.
+ * @memberof uiTableValue
  */
 _UI_EXTERN uiImage *uiTableValueImage(const uiTableValue *v);
 
