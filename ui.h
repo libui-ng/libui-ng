@@ -8,9 +8,9 @@
 // - normalize documentation between typedefs and structs
 
 /**
- * @defgroup container Container widgets
- * @defgroup dataEntry Data entry widgets
- * @defgroup static Static widgets
+ * @defgroup container Container controls
+ * @defgroup dataEntry Data entry controls
+ * @defgroup static Static controls
  * @defgroup button Buttons
  * @defgroup dialogWindow Dialog windows
  * @defgroup menu Menus
