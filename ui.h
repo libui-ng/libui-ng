@@ -7,6 +7,16 @@
 // - const-correct everything
 // - normalize documentation between typedefs and structs
 
+/**
+ * @defgroup container Container controls
+ * @defgroup dataEntry Data entry controls
+ * @defgroup static Static controls
+ * @defgroup button Buttons
+ * @defgroup dialogWindow Dialog windows
+ * @defgroup menu Menus
+ * @defgroup table Tables
+ */
+
 #ifndef __LIBUI_UI_H__
 #define __LIBUI_UI_H__
 
@@ -74,8 +84,13 @@ _UI_EXTERN void uiOnShouldQuit(int (*f)(void *data), void *data);
 
 _UI_EXTERN void uiFreeText(char *text);
 
-typedef struct uiControl uiControl;
 
+/**
+ * Base class for GUI controls providing common methods.
+ *
+ * @struct uiControl
+ */
+typedef struct uiControl uiControl;
 struct uiControl {
 	uint32_t Signature;
 	uint32_t OSSignature;
@@ -94,222 +109,1833 @@ struct uiControl {
 };
 // TOOD add argument names to all arguments
 #define uiControl(this) ((uiControl *) (this))
-_UI_EXTERN void uiControlDestroy(uiControl *);
-_UI_EXTERN uintptr_t uiControlHandle(uiControl *);
-_UI_EXTERN uiControl *uiControlParent(uiControl *);
-_UI_EXTERN void uiControlSetParent(uiControl *, uiControl *);
-_UI_EXTERN int uiControlToplevel(uiControl *);
-_UI_EXTERN int uiControlVisible(uiControl *);
-_UI_EXTERN void uiControlShow(uiControl *);
-_UI_EXTERN void uiControlHide(uiControl *);
-_UI_EXTERN int uiControlEnabled(uiControl *);
-_UI_EXTERN void uiControlEnable(uiControl *);
-_UI_EXTERN void uiControlDisable(uiControl *);
 
+/**
+ * Dispose and free all allocated resources.
+ *
+ * @param c uiControl instance.
+ * @todo Document ownership.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlDestroy(uiControl *c);
+
+/**
+ * Returns the control's OS-level handle.
+ *
+ * @param c uiControl instance.
+ * @returns OS-level handle.
+ * @memberof uiControl
+ */
+_UI_EXTERN uintptr_t uiControlHandle(uiControl *c);
+
+/**
+ * Returns the parent control.
+ *
+ * @param c uiControl instance.
+ * @returns The parent control, `NULL` if detached.
+ * @memberof uiControl
+ */
+_UI_EXTERN uiControl *uiControlParent(uiControl *c);
+
+/**
+ * Sets the control's parent.
+ *
+ * @param c uiControl instance.
+ * @param parent The parent control, `NULL` to detach.
+ * @todo Document ownership.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlSetParent(uiControl *c, uiControl *parent);
+
+/**
+ * Returns whether or not the control is a top level control.
+ *
+ * @param c uiControl instance.
+ * @returns `TRUE` if top level control, `FALSE` otherwise.
+ * @memberof uiControl
+ */
+_UI_EXTERN int uiControlToplevel(uiControl *c);
+
+/**
+ * Returns whether or not the control is visible.
+ *
+ * @param c uiControl instance.
+ * @returns `TRUE` if visible, `FALSE` otherwise.
+ * @memberof uiControl
+ */
+_UI_EXTERN int uiControlVisible(uiControl *c);
+
+/**
+ * Shows the control.
+ *
+ * @param c uiControl instance.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlShow(uiControl *c);
+
+/**
+ * Hides the control.
+ *
+ * @param c uiControl instance.
+ * @note Hidden controls do not take up space within the layout.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlHide(uiControl *c);
+
+/**
+ * Returns whether or not the control is enabled.
+ *
+ * Defaults to `true`.
+ *
+ * @param c uiControl instance.
+ * @see uiControlEnabledToUser
+ * @memberof uiControl
+ */
+_UI_EXTERN int uiControlEnabled(uiControl *c);
+
+/**
+ * Enables the control.
+ *
+ * @param c uiControl instance.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlEnable(uiControl *c);
+
+/**
+ * Disables the control.
+ *
+ * @param c uiControl instance.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlDisable(uiControl *c);
+
+/**
+ * Allocates a uiControl.
+ *
+ * Helper to allocate new controls.
+ *
+ * @param n Size of type to allocate.
+ * @todo Document parameters
+ * @memberof uiControl @static
+ */
 _UI_EXTERN uiControl *uiAllocControl(size_t n, uint32_t OSsig, uint32_t typesig, const char *typenamestr);
-_UI_EXTERN void uiFreeControl(uiControl *);
 
-// TODO make sure all controls have these
-_UI_EXTERN void uiControlVerifySetParent(uiControl *, uiControl *);
-_UI_EXTERN int uiControlEnabledToUser(uiControl *);
+/**
+ * Frees the control.
+ *
+ * @param c uiControl instance.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiFreeControl(uiControl *c);
 
+/**
+ * Makes sure the control's parent can be set to @p parent.
+ *
+ * @param c uiControl instance.
+ * @param parent uiControl instance.
+ * @todo Make sure all controls have these
+ * @warning This will crash the application if `FALSE`.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlVerifySetParent(uiControl *c, uiControl *parent);
+
+/**
+ * Returns whether or not the control can be interacted with by the user.
+ *
+ * Checks if the control and all it's parents are enabled to make sure it can
+ * be interacted with by the user.
+ *
+ * @param c uiControl instance.
+ * @returns `TRUE` if enabled, `FALSE` otherwise.
+ * @see uiControlEnabled
+ * @memberof uiControl
+ */
+_UI_EXTERN int uiControlEnabledToUser(uiControl *c);
+
+// TODO Move this to private API? According to old/new.md this should be used by toplevel controls.
 _UI_EXTERN void uiUserBugCannotSetParentOnToplevel(const char *type);
 
+
+/**
+ * A control that represents a top-level window.
+ *
+ * A window contains exactly one child control that occupied the entire window.
+ *
+ * @note Many of the uiWindow methods should be regarded as mere hints.
+ *       The underlying system may override these or even choose to ignore them
+ *       completely. This is especially true for many Unix systems.
+ *
+ * @warning A uiWindow can NOT be a child of another uiControl.
+ *
+ * @struct uiWindow
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiWindow uiWindow;
 #define uiWindow(this) ((uiWindow *) (this))
-_UI_EXTERN char *uiWindowTitle(uiWindow *w);
-_UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
-_UI_EXTERN void uiWindowContentSize(uiWindow *w, int *width, int *height);
-_UI_EXTERN void uiWindowSetContentSize(uiWindow *w, int width, int height);
-_UI_EXTERN int uiWindowFullscreen(uiWindow *w);
-_UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
-_UI_EXTERN int uiWindowBorderless(uiWindow *w);
-_UI_EXTERN void uiWindowSetBorderless(uiWindow *w, int borderless);
-_UI_EXTERN void uiWindowSetChild(uiWindow *w, uiControl *child);
-_UI_EXTERN int uiWindowMargined(uiWindow *w);
-_UI_EXTERN void uiWindowSetMargined(uiWindow *w, int margined);
-_UI_EXTERN int uiWindowResizeable(uiWindow *w);
-_UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
-_UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar);
 
-_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
-_UI_EXTERN void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *w, void *data), void *data);
-_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data);
+/**
+ * Returns the window title.
+ *
+ * @param w uiWindow instance.
+ * @returns The window title text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiWindow
+ */
+_UI_EXTERN char *uiWindowTitle(uiWindow *w);
+
+/**
+ * Sets the window title.
+ *
+ * @param w uiWindow instance.
+ * @param title Window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @note This method is merely a hint and may be ignored on unix platforms.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
+
+/**
+ * Gets the window content size.
+ *
+ * @param w uiWindow instance.
+ * @param[out] width Window content width.
+ * @param[out] height Window content height.
+ * @note The content size does NOT include window decorations like menus or title bars.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowContentSize(uiWindow *w, int *width, int *height);
+
+/**
+ * Sets the window content size.
+ *
+ * @param w uiWindow instance.
+ * @param width Window content width to set.
+ * @param height Window content height to set.
+ * @note The content size does NOT include window decorations like menus or title bars.
+ * @note This method is merely a hint and may be ignored by the system.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetContentSize(uiWindow *w, int width, int height);
+
+/**
+ * Returns whether or not the window is full screen.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if full screen, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiWindow
+ */
+_UI_EXTERN int uiWindowFullscreen(uiWindow *w);
+
+/**
+ * Sets whether or not the window is full screen.
+ *
+ * @param w uiWindow instance.
+ * @param fullscreen `TRUE` to make window full screen, `FALSE` otherwise.
+ * @note This method is merely a hint and may be ignored by the system.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetFullscreen(uiWindow *w, int fullscreen);
+
+/**
+ * Registers a callback for when the window content size is changed.
+ *
+ * @param w uiWindow instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @todo Research if this gets called on uiWindowSetContentSize().
+ *       The signal on unix does not seem to get masked. Fix this on all
+ *       platforms and document the masking here.
+ * @note Only one callback can be registered at a time.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowOnContentSizeChanged(uiWindow *w,
+	void (*f)(uiWindow *sender, void *senderData), void *data);
+
+/**
+ * Registers a callback for when the window is to be closed.
+ *
+ * @param w uiWindow instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ *          Return:\n
+ *          `TRUE` to destroys the window.\n
+ *          `FALSE` to abort closing and keep the window alive and visible.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowOnClosing(uiWindow *w,
+	int (*f)(uiWindow *sender, void *senderData), void *data);
+
+/**
+ * Registers a callback for when the window focus changes.
+ *
+ * @param w uiWindow instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w,
+	void (*f)(uiWindow *sender, void *senderData), void *data);
+
+/**
+ * Returns whether or not the window is focused.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window is focused, `FALSE` otherwise.
+ * @memberof uiWindow
+ */
 _UI_EXTERN int uiWindowFocused(uiWindow *w);
 
+/**
+ * Returns whether or not the window is borderless.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window is borderless, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiWindow
+ */
+_UI_EXTERN int uiWindowBorderless(uiWindow *w);
+
+/**
+ * Sets whether or not the window is borderless.
+ *
+ * @param w uiWindow instance.
+ * @param borderless `TRUE` to make window borderless, `FALSE` otherwise.
+ * @note This method is merely a hint and may be ignored by the system.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetBorderless(uiWindow *w, int borderless);
+
+/**
+ * Sets the window's child.
+ *
+ * @param w uiWindow instance.
+ * @param child Control to be made child.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetChild(uiWindow *w, uiControl *child);
+
+/**
+ * Returns whether or not the window has a margin.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window has a margin, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiWindow
+ */
+_UI_EXTERN int uiWindowMargined(uiWindow *w);
+
+/**
+ * Sets whether or not the window has a margin.
+ *
+ * The margin size is determined by the OS defaults.
+ *
+ * @param w uiWindow instance.
+ * @param margined `TRUE` to set a window margin, `FALSE` otherwise.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetMargined(uiWindow *w, int margined);
+
+/**
+ * Returns whether or not the window is user resizeable.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window is resizable, `FALSE` otherwise. [Default: `TRUE`]
+ * @memberof uiWindow
+ */
+_UI_EXTERN int uiWindowResizeable(uiWindow *w);
+
+/**
+ * Sets whether or not the window is user resizeable.
+ *
+ * @param w uiWindow instance.
+ * @param resizeable `TRUE` to make window resizable, `FALSE` otherwise.
+ * @note This method is merely a hint and may be ignored by the system.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
+
+/**
+ * Creates a new uiWindow.
+ *
+ * @param title Window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @param width Window width.
+ * @param height Window height.
+ * @param hasMenubar Whether or not the window should display a menu bar.
+ * @returns A new uiWindow instance.
+ * @memberof uiWindow @static
+ */
+_UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar);
+
+
+/**
+ * A control that visually represents a button to be clicked by the user to trigger an action.
+ *
+ * @struct uiButton
+ * @extends uiControl
+ * @ingroup button
+ */
 typedef struct uiButton uiButton;
 #define uiButton(this) ((uiButton *) (this))
+
+/**
+ * Returns the button label text.
+ *
+ * @param b uiButton instance.
+ * @returns The text of the label.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiButton
+ */
 _UI_EXTERN char *uiButtonText(uiButton *b);
+
+/**
+ * Sets the button label text.
+ *
+ * @param b uiButton instance.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiButton
+ */
 _UI_EXTERN void uiButtonSetText(uiButton *b, const char *text);
-_UI_EXTERN void uiButtonOnClicked(uiButton *b, void (*f)(uiButton *b, void *data), void *data);
+
+/**
+ * Registers a callback for when the button is clicked.
+ *
+ * @param b uiButton instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiButton
+ */
+_UI_EXTERN void uiButtonOnClicked(uiButton *b,
+	void (*f)(uiButton *sender, void *senderData), void *data);
+
+/**
+ * Creates a new button.
+ *
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiButton instance.
+ * @memberof uiButton @static
+ */
 _UI_EXTERN uiButton *uiNewButton(const char *text);
 
+
+/**
+ * A boxlike container that holds a group of controls.
+ *
+ * The contained controls are arranged to be displayed either horizontally or
+ * vertically next to each other.
+ *
+ * @struct uiBox
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiBox uiBox;
 #define uiBox(this) ((uiBox *) (this))
+
+/**
+ * Appends a control to the box.
+ *
+ * Stretchy items expand to use the remaining space within the box.
+ * In the case of multiple stretchy items the space is shared equally.
+ *
+ * @param b uiBox instance.
+ * @param child Control instance to append.
+ * @param stretchy `TRUE` to stretch control, `FALSE` otherwise.
+ * @memberof uiBox
+ */
 _UI_EXTERN void uiBoxAppend(uiBox *b, uiControl *child, int stretchy);
+
+/**
+ * Returns the number of controls contained within the box.
+ *
+ * @param b uiBox instance.
+ * @returns Number of children.
+ * @memberof uiBox
+ */
 _UI_EXTERN int uiBoxNumChildren(uiBox *b);
+
+/**
+ * Removes the control at @p index from the box.
+ *
+ * @param b uiBox instance.
+ * @param index Index of control to be removed.
+ * @note The control neither destroyed nor freed.
+ * @memberof uiBox
+ */
 _UI_EXTERN void uiBoxDelete(uiBox *b, int index);
+
+/**
+ * Returns whether or not controls within the box are padded.
+ *
+ * Padding is defined as space between individual controls.
+ *
+ * @param b uiBox instance.
+ * @returns `TRUE` if controls are padded, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiBox
+ */
 _UI_EXTERN int uiBoxPadded(uiBox *b);
+
+/**
+ * Sets whether or not controls within the box are padded.
+ *
+ * Padding is defined as space between individual controls.
+ * The padding size is determined by the OS defaults.
+ *
+ * @param b uiBox instance.
+ * @param padded  `TRUE` to make controls padded, `FALSE` otherwise.
+ * @memberof uiBox
+ */
 _UI_EXTERN void uiBoxSetPadded(uiBox *b, int padded);
+
+/**
+ * Creates a new horizontal box.
+ *
+ * Controls within the box are placed next to each other horizontally.
+ *
+ * @returns A new uiBox instance.
+ * @memberof uiBox @static
+ */
 _UI_EXTERN uiBox *uiNewHorizontalBox(void);
+
+/**
+ * Creates a new vertical box.
+ *
+ * Controls within the box are placed next to each other vertically.
+ *
+ * @returns A new uiBox instance.
+ * @memberof uiBox @static
+ */
 _UI_EXTERN uiBox *uiNewVerticalBox(void);
 
+
+/**
+ * A control with a user checkable box accompanied by a text label.
+ *
+ * @struct uiCheckbox
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiCheckbox uiCheckbox;
 #define uiCheckbox(this) ((uiCheckbox *) (this))
+
+/**
+ * Returns the checkbox label text.
+ *
+ * @param c uiCheckbox instance.
+ * @returns The text of the label.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
+
+/**
+ * Sets the checkbox label text.
+ *
+ * @param c uiCheckbox instance.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN void uiCheckboxSetText(uiCheckbox *c, const char *text);
-_UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c, void (*f)(uiCheckbox *c, void *data), void *data);
+
+/**
+ * Registers a callback for when the checkbox is toggled by the user.
+ *
+ * @param c uiCheckbox instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that initiated the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiCheckboxSetChecked().
+ * @memberof uiCheckbox
+ */
+_UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c,
+	void (*f)(uiCheckbox *sender, void *senderData), void *data);
+
+/**
+ * Returns whether or the checkbox is checked.
+ *
+ * @param c uiCheckbox instance.
+ * @returns `TRUE` if checked, `FALSE` otherwise.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN int uiCheckboxChecked(uiCheckbox *c);
+
+/**
+ * Sets whether or not the checkbox is checked.
+ *
+ * @param c uiCheckbox instance.
+ * @param checked `TRUE` to check box, `FALSE` otherwise.
+ * @memberof uiCheckbox
+ */
 _UI_EXTERN void uiCheckboxSetChecked(uiCheckbox *c, int checked);
+
+/**
+ * Creates a new checkbox.
+ *
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiCheckbox instance.
+ * @memberof uiCheckbox @static
+ */
 _UI_EXTERN uiCheckbox *uiNewCheckbox(const char *text);
 
+
+/**
+ * A control with a single line text entry field.
+ *
+ * @struct uiEntry
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiEntry uiEntry;
 #define uiEntry(this) ((uiEntry *) (this))
+
+/**
+ * Returns the entry's text.
+ *
+ * @param e uiEntry instance.
+ * @returns The text of the entry.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiEntry
+ */
 _UI_EXTERN char *uiEntryText(uiEntry *e);
+
+/**
+ * Sets the entry's text.
+ *
+ * @param e uiEntry instance.
+ * @param text Entry text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiEntry
+ */
 _UI_EXTERN void uiEntrySetText(uiEntry *e, const char *text);
-_UI_EXTERN void uiEntryOnChanged(uiEntry *e, void (*f)(uiEntry *e, void *data), void *data);
+
+/**
+ * Registers a callback for when the user changes the entry's text.
+ *
+ * @param e uiEntry instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that initiated the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiEntrySetText().
+ * @memberof uiEntry
+ */
+_UI_EXTERN void uiEntryOnChanged(uiEntry *e,
+	void (*f)(uiEntry *sender, void *senderData), void *data);
+
+/**
+ * Returns whether or not the entry's text can be changed.
+ *
+ * @param e uiEntry instance.
+ * @returns `TRUE` if read only, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiEntry
+ */
 _UI_EXTERN int uiEntryReadOnly(uiEntry *e);
+
+/**
+ * Sets whether or not the entry's text is read only.
+ *
+ * @param e uiEntry instance.
+ * @param readonly `TRUE` to make read only, `FALSE` otherwise.
+ * @memberof uiEntry
+ */
 _UI_EXTERN void uiEntrySetReadOnly(uiEntry *e, int readonly);
+
+/**
+ * Creates a new entry.
+ *
+ * @returns A new uiEntry instance.
+ * @memberof uiEntry @static
+ */
 _UI_EXTERN uiEntry *uiNewEntry(void);
+
+/**
+ * Creates a new entry suitable for sensitive inputs like passwords.
+ *
+ * The entered text is NOT readable by the user but masked as *******.
+ *
+ * @returns A new uiEntry instance.
+ * @memberof uiEntry @static
+ */
 _UI_EXTERN uiEntry *uiNewPasswordEntry(void);
+
+/**
+ * Creates a new entry suitable for search.
+ *
+ * Some systems will deliberately delay the uiEntryOnChanged() callback for
+ * a more natural feel.
+ *
+ * @returns A new uiEntry instance.
+ * @memberof uiEntry @static
+ */
 _UI_EXTERN uiEntry *uiNewSearchEntry(void);
 
+
+/**
+ * A control that displays a non interactive line of text.
+ *
+ * @struct uiLabel
+ * @extends uiControl
+ * @ingroup static
+ */
 typedef struct uiLabel uiLabel;
 #define uiLabel(this) ((uiLabel *) (this))
+
+/**
+ * Returns the label text.
+ *
+ * @param l uiLabel instance.
+ * @returns The text of the label.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiLabel
+ */
 _UI_EXTERN char *uiLabelText(uiLabel *l);
+
+/**
+ * Sets the label text.
+ *
+ * @param l uiLabel instance.
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiLabel
+ */
 _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
+
+/**
+ * Creates a new label.
+ *
+ * @param text Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiLabel instance.
+ * @memberof uiLabel @static
+ */
 _UI_EXTERN uiLabel *uiNewLabel(const char *text);
 
+
+/**
+ * A multi page control interface that displays one page at a time.
+ *
+ * Each page/tab has an associated label that can be selected to switch
+ * between pages/tabs.
+ *
+ * @struct uiTab
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiTab uiTab;
 #define uiTab(this) ((uiTab *) (this))
+
+/**
+ * Appends a control in form of a page/tab with label.
+ *
+ * @param t uiTab instance.
+ * @param name Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param c Control to append.
+ * @memberof uiTab
+ */
 _UI_EXTERN void uiTabAppend(uiTab *t, const char *name, uiControl *c);
-_UI_EXTERN void uiTabInsertAt(uiTab *t, const char *name, int before, uiControl *c);
+
+/**
+ * Inserts a control in form of a page/tab with label at @p index.
+ *
+ * @param t uiTab instance.
+ * @param name Label text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param index Index at which to insert the control.
+ * @param c Control to insert.
+ * @memberof uiTab
+ */
+_UI_EXTERN void uiTabInsertAt(uiTab *t, const char *name, int index, uiControl *c);
+
+/**
+ * Removes the control at @p index.
+ *
+ * @param t uiTab instance.
+ * @param index Index of the control to be removed.
+ * @note The control is neither destroyed nor freed.
+ * @memberof uiTab
+ */
 _UI_EXTERN void uiTabDelete(uiTab *t, int index);
+
+/**
+ * Returns the number of pages contained.
+ *
+ * @param t uiTab instance.
+ * @returns Number of pages.
+ * @memberof uiTab
+ */
 _UI_EXTERN int uiTabNumPages(uiTab *t);
-_UI_EXTERN int uiTabMargined(uiTab *t, int page);
-_UI_EXTERN void uiTabSetMargined(uiTab *t, int page, int margined);
+
+/**
+ * Returns whether or not the page/tab at @p index has a margin.
+ *
+ * @param t uiTab instance.
+ * @param index Index to check if it has a margin.
+ * @returns `TRUE` if the tab has a margin, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiTab
+ */
+_UI_EXTERN int uiTabMargined(uiTab *t, int index);
+
+/**
+ * Sets whether or not the page/tab at @p index has a margin.
+ *
+ * The margin size is determined by the OS defaults.
+ *
+ * @param t uiTab instance.
+ * @param index Index of the tab/page to un/set margin for.
+ * @param margined `TRUE` to set a margin for tab at @p index, `FALSE` otherwise.
+ * @memberof uiTab
+ */
+_UI_EXTERN void uiTabSetMargined(uiTab *t, int index, int margined);
+
+/**
+ * Creates a new tab container.
+ *
+ * @return A new uiTab instance.
+ * @memberof uiTab @static
+ */
 _UI_EXTERN uiTab *uiNewTab(void);
 
+
+/**
+ * A control container that adds a label to the contained child control.
+ *
+ * This control is a great way of grouping related controls in combination with
+ * uiBox.
+ *
+ * A visual box will or will not be drawn around the child control dependent
+ * on the underlying OS implementation.
+ *
+ * @struct uiGroup
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiGroup uiGroup;
 #define uiGroup(this) ((uiGroup *) (this))
+
+/**
+ * Returns the group title.
+ *
+ * @param g uiGroup instance.
+ * @returns The group title text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiGroup
+ */
 _UI_EXTERN char *uiGroupTitle(uiGroup *g);
+
+/**
+ * Sets the group title.
+ *
+ * @param g uiGroup instance.
+ * @param title Group title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @memberof uiGroup
+ */
 _UI_EXTERN void uiGroupSetTitle(uiGroup *g, const char *title);
+
+/**
+ * Sets the group's child.
+ *
+ * @param g uiGroup instance.
+ * @param c uiControl child instance, or `NULL`.
+ * @memberof uiGroup
+ */
 _UI_EXTERN void uiGroupSetChild(uiGroup *g, uiControl *c);
+
+/**
+ * Returns whether or not the group has a margin.
+ *
+ * @param g uiGroup instance.
+ * @returns `TRUE` if the group has a margin, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiGroup
+ */
 _UI_EXTERN int uiGroupMargined(uiGroup *g);
+
+/**
+ * Sets whether or not the group has a margin.
+ *
+ * The margin size is determined by the OS defaults.
+ *
+ * @param g uiGroup instance.
+ * @param margined `TRUE` to set a margin, `FALSE` otherwise.
+ * @memberof uiGroup
+ */
 _UI_EXTERN void uiGroupSetMargined(uiGroup *g, int margined);
+
+/**
+ * Creates a new group.
+ *
+ * @param title Group title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @returns A new uiGroup instance.
+ * @memberof uiGroup @static
+ */
 _UI_EXTERN uiGroup *uiNewGroup(const char *title);
 
-// spinbox/slider rules:
-// setting value outside of range will automatically clamp
-// initial value is minimum
-// complaint if min >= max?
 
+/**
+ * A control to display and modify integer values via a text field or +/- buttons.
+ *
+ * This is a convenient control for having the user enter integer values.
+ * Values are guaranteed to be within the specified range.
+ *
+ * The + button increases the held value by 1.\n
+ * The - button decreased the held value by 1.
+ *
+ * Entering a value out of range will clamp to the nearest value in range.
+ *
+ * @struct uiSpinbox
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiSpinbox uiSpinbox;
 #define uiSpinbox(this) ((uiSpinbox *) (this))
+
+/**
+ * Returns the spinbox value.
+ *
+ * @param s uiSpinbox instance.
+ * @returns Spinbox value.
+ * @memberof uiSpinbox
+ */
 _UI_EXTERN int uiSpinboxValue(uiSpinbox *s);
+
+/**
+ * Sets the spinbox value.
+ *
+ * @param s uiSpinbox instance.
+ * @param value Value to set.
+ * @note Setting a value out of range will clamp to the nearest value in range.
+ * @memberof uiSpinbox
+ */
 _UI_EXTERN void uiSpinboxSetValue(uiSpinbox *s, int value);
-_UI_EXTERN void uiSpinboxOnChanged(uiSpinbox *s, void (*f)(uiSpinbox *s, void *data), void *data);
+
+/**
+ * Registers a callback for when the spinbox value is changed by the user.
+ *
+ * @param s uiSpinbox instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiSpinboxSetValue().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiSpinbox
+ */
+_UI_EXTERN void uiSpinboxOnChanged(uiSpinbox *s,
+	void (*f)(uiSpinbox *sender, void *senderData), void *data);
+
+/**
+ * Creates a new spinbox.
+ *
+ * The initial spinbox value equals the minimum value.
+ *
+ * In the current implementation @p min and @p max are swapped if `min>max`.
+ * This may change in the future though. See TODO.
+ *
+ * @param min Minimum value.
+ * @param max Maximum value.
+ * @returns A new uiSpinbox instance.
+ * @todo complain or disallow min>max?
+ * @memberof uiSpinbox @static
+ */
 _UI_EXTERN uiSpinbox *uiNewSpinbox(int min, int max);
 
+
+/**
+ * A control to display and modify integer values via a user draggable slider.
+ *
+ * Values are guaranteed to be within the specified range.
+ *
+ * Sliders by default display a tool tip showing the current value when being
+ * dragged.
+ *
+ * Sliders are horizontal only.
+ *
+ * @struct uiSlider
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiSlider uiSlider;
 #define uiSlider(this) ((uiSlider *) (this))
+
+/**
+ * Returns the slider value.
+ *
+ * @param s uiSlider instance.
+ * @returns Slider value.
+ * @memberof uiSlider
+ */
 _UI_EXTERN int uiSliderValue(uiSlider *s);
+
+/**
+ * Sets the slider value.
+ *
+ * @param s uiSlider intance.
+ * @param value Value to set.
+ * @memberof uiSlider
+ */
 _UI_EXTERN void uiSliderSetValue(uiSlider *s, int value);
+
+/**
+ * Returns whether or not the slider has a tool tip.
+ *
+ * @param s uiSlider instance.
+ * @returns `TRUE` if a tool tip is present, `FALSE` otherwise. [Default `TRUE`]
+ * @memberof uiSlider
+ */
 _UI_EXTERN int uiSliderHasToolTip(uiSlider *s);
+
+/**
+ * Sets whether or not the slider has a tool tip.
+ *
+ * @param s uiSlider instance.
+ * @param hasToolTip `TRUE` to display a tool tip, `FALSE` to display no tool tip.
+ * @memberof uiSlider
+ */
 _UI_EXTERN void uiSliderSetHasToolTip(uiSlider *s, int hasToolTip);
-_UI_EXTERN void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *s, void *data), void *data);
-_UI_EXTERN void uiSliderOnReleased(uiSlider *s, void (*f)(uiSlider *s, void *data), void *data);
+
+/**
+ * Registers a callback for when the slider value is changed by the user.
+ *
+ * @param s uiSlider instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiSliderSetValue().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiSlider
+ */
+_UI_EXTERN void uiSliderOnChanged(uiSlider *s,
+	void (*f)(uiSlider *sender, void *senderData), void *data);
+
+/**
+ * Registers a callback for when the slider is released from dragging.
+ *
+ * @param s uiSlider instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiSlider
+ */
+_UI_EXTERN void uiSliderOnReleased(uiSlider *s,
+	void (*f)(uiSlider *sender, void *senderData), void *data);
+
+/**
+ * Sets the slider range.
+ *
+ * @param s uiSlider instance.
+ * @param min Minimum value.
+ * @param max Maximum value.
+ * @todo Make sure to clamp the slider value to the nearest value in range - should
+ *       it be out of range. Call uiSliderOnChanged() in such a case.
+ * @memberof uiSlider
+ */
 _UI_EXTERN void uiSliderSetRange(uiSlider *s, int min, int max);
+
+/**
+ * Creates a new slider.
+ *
+ * The initial slider value equals the minimum value.
+ *
+ * In the current implementation @p min and @p max are swapped if `min>max`.
+ * This may change in the future though. See TODO.
+ *
+ * @param min Minimum value.
+ * @param max Maximum value.
+ * @returns A new uiSlider instance.
+ * @todo complain or disallow min>max?
+ * @memberof uiSlider @static
+ */
 _UI_EXTERN uiSlider *uiNewSlider(int min, int max);
 
+
+/**
+ * A control that visualizes the progress of a task via the fill level of a horizontal bar.
+ *
+ * Indeterminate values are supported via an animated bar.
+ *
+ * @struct uiProgressBar
+ * @extends uiControl
+ * @ingroup static
+ */
 typedef struct uiProgressBar uiProgressBar;
 #define uiProgressBar(this) ((uiProgressBar *) (this))
+
+/**
+ * Returns the progress bar value.
+ *
+ * @param p uiProgressBar instance.
+ * @memberof uiProgressBar
+ */
 _UI_EXTERN int uiProgressBarValue(uiProgressBar *p);
+
+/**
+ * Sets the progress bar value.
+ *
+ * Valid values are `[0, 100]` for displaying a solid bar imitating a percent
+ * value.
+ *
+ * Use a value of `-1` to render an animated bar to convey an indeterminate
+ * value.
+ *
+ * @param p uiProgressBar instance.
+ * @param n Value to set. Integer in the range of `[-1, 100]`.
+ * @memberof uiProgressBar
+ */
 _UI_EXTERN void uiProgressBarSetValue(uiProgressBar *p, int n);
+
+/**
+ * Creates a new progress bar.
+ *
+ * @returns A new uiProgressBar instance.
+ * @memberof uiProgressBar @static
+ */
 _UI_EXTERN uiProgressBar *uiNewProgressBar(void);
 
+
+/**
+ * A control to visually separate controls, horizontally or vertically.
+ *
+ * @struct uiSeparator
+ * @extends uiControl
+ * @ingroup static
+ */
 typedef struct uiSeparator uiSeparator;
 #define uiSeparator(this) ((uiSeparator *) (this))
+
+/**
+ * Creates a new horizontal separator.
+ *
+ * @returns A new uiSeparator instance.
+ * @memberof uiSeparator @static
+ */
 _UI_EXTERN uiSeparator *uiNewHorizontalSeparator(void);
+
+/**
+ * Creates a new vertical separator.
+ *
+ * @returns A new uiSeparator instance.
+ * @memberof uiSeparator @static
+ */
 _UI_EXTERN uiSeparator *uiNewVerticalSeparator(void);
 
+
+/**
+ * A control to select one item from a predefined list of items via a drop down menu.
+ *
+ * @see uiEditableCombobox.
+ * @struct uiCombobox
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiCombobox uiCombobox;
 #define uiCombobox(this) ((uiCombobox *) (this))
+
+/**
+ * Appends an item to the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @param text Item text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
-_UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int n, const char *text);
-_UI_EXTERN void uiComboboxDelete(uiCombobox *c, int n);
+
+/**
+ * Inserts an item at @p index to the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @param index Index at which to insert the item.
+ * @param text Item text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiCombobox
+ */
+_UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int index, const char *text);
+
+/**
+ * Deletes an item at @p index from the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @param index Index of the item to be deleted.
+ * @memberof uiCombobox
+ */
+_UI_EXTERN void uiComboboxDelete(uiCombobox *c, int index);
+
+/**
+ * Deletes all items from the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN void uiComboboxClear(uiCombobox *c);
+
+/**
+ * Returns the number of items contained within the combo box.
+ *
+ * @param c uiCombobox instance.
+ * @returns Number of items.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN int uiComboboxNumItems(uiCombobox *c);
+
+/**
+ * Returns the index of the item selected.
+ *
+ * @param c uiCombobox instance.
+ * @returns Index of the item selected, `-1` on empty selection.
+ * @memberof uiCombobox
+ */
 _UI_EXTERN int uiComboboxSelected(uiCombobox *c);
-_UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int n);
-_UI_EXTERN void uiComboboxOnSelected(uiCombobox *c, void (*f)(uiCombobox *c, void *data), void *data);
+
+/**
+ * Sets the item selected.
+ *
+ * @param c uiCombobox instance.
+ * @param index Index of the item to be selected, `-1` to clear selection.
+ * @memberof uiCombobox
+ */
+_UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int index);
+
+/**
+ * Registers a callback for when a combo box item is selected.
+ *
+ * @param c uiCombobox instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiComboboxSetSelected().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiCombobox
+ */
+_UI_EXTERN void uiComboboxOnSelected(uiCombobox *c,
+	void (*f)(uiCombobox *sender, void *senderData), void *data);
+
+/**
+ * Creates a new combo box.
+ *
+ * @returns A new uiCombobox instance.
+ * @memberof uiCombobox @static
+ */
 _UI_EXTERN uiCombobox *uiNewCombobox(void);
 
+
+/**
+ * A control to select one item from a predefined list of items or enter ones own.
+ *
+ * Predefined items can be selected from a drop down menu.
+ *
+ * A customary item can be entered by the user via an editable text field.
+ *
+ * @see uiCombobox
+ * @struct uiEditableCombobox
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiEditableCombobox uiEditableCombobox;
 #define uiEditableCombobox(this) ((uiEditableCombobox *) (this))
+
+/**
+ * Appends an item to the editable combo box.
+ *
+ * @param c uiEditableCombobox instance.
+ * @param text Item text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiEditableCombobox
+ */
 _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text);
+
+/**
+ * Returns the text of the editable combo box.
+ *
+ * This text is either the text of one of the predefined list items or the
+ * text manually entered by the user.
+ *
+ * @param c uiEditableCombobox instance.
+ * @returns The editable combo box text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiEditableCombobox
+ */
 _UI_EXTERN char *uiEditableComboboxText(uiEditableCombobox *c);
+
+/**
+ * Sets the editable combo box text.
+ *
+ * @param c uiEditableCombobox instance.
+ * @param text Text field text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiEditableCombobox
+ */
 _UI_EXTERN void uiEditableComboboxSetText(uiEditableCombobox *c, const char *text);
-// TODO what do we call a function that sets the currently selected item and fills the text field with it? editable comboboxes have no consistent concept of selected item
-_UI_EXTERN void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiEditableCombobox *c, void *data), void *data);
+
+// TODO what do we call a function that sets the currently selected item and fills the text field with it?
+// editable comboboxes have no consistent concept of selected item
+
+/**
+ * Registers a callback for when an editable combo box item is selected or user text changed.
+ *
+ * @param c uiEditableCombobox instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiEditableComboboxSetText().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiEditableCombobox
+ */
+_UI_EXTERN void uiEditableComboboxOnChanged(uiEditableCombobox *c,
+	void (*f)(uiEditableCombobox *sender, void *senderData), void *data);
+
+/**
+ * Creates a new editable combo box.
+ *
+ * @returns A new uiEditableCombobox instance.
+ * @memberof uiEditableCombobox @static
+ */
 _UI_EXTERN uiEditableCombobox *uiNewEditableCombobox(void);
 
+
+/**
+ * A multiple choice control of check buttons from which only one can be selected at a time.
+ *
+ * @struct uiRadioButtons
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiRadioButtons uiRadioButtons;
 #define uiRadioButtons(this) ((uiRadioButtons *) (this))
+
+/**
+ * Appends a radio button.
+ *
+ * @param r uiRadioButtons instance.
+ * @param text Radio button text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiRadioButtons
+ */
 _UI_EXTERN void uiRadioButtonsAppend(uiRadioButtons *r, const char *text);
+
+/**
+ * Returns the index of the item selected.
+ *
+ * @param r uiRadioButtons instance.
+ * @returns Index of the item selected, `-1` on empty selection.
+ * @memberof uiRadioButtons
+ */
 _UI_EXTERN int uiRadioButtonsSelected(uiRadioButtons *r);
-_UI_EXTERN void uiRadioButtonsSetSelected(uiRadioButtons *r, int n);
-_UI_EXTERN void uiRadioButtonsOnSelected(uiRadioButtons *r, void (*f)(uiRadioButtons *, void *), void *data);
+
+/**
+ * Sets the item selected.
+ *
+ * @param r uiRadioButtons instance.
+ * @param index Index of the item to be selected, `-1` to clear selection.
+ * @memberof uiRadioButtons
+ */
+_UI_EXTERN void uiRadioButtonsSetSelected(uiRadioButtons *r, int index);
+
+/**
+ * Registers a callback for when radio button is selected.
+ *
+ * @param r uiRadioButtons instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiRadioButtonsSetSelected().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiRadioButtons
+ */
+_UI_EXTERN void uiRadioButtonsOnSelected(uiRadioButtons *r,
+	void (*f)(uiRadioButtons *sender, void *senderData), void *data);
+
+/**
+ * Creates a new radio buttons instance.
+ *
+ * @returns A new uiRadioButtons instance.
+ * @memberof uiRadioButtons @static
+ */
 _UI_EXTERN uiRadioButtons *uiNewRadioButtons(void);
 
 struct tm;
+/**
+ * A control to enter a date and/or time.
+ *
+ * All functions operate on `struct tm` as defined in `<time.h>`.
+ *
+ * All functions assume local time and do NOT perform any time zone conversions.
+ *
+ * @warning The `struct tm` members `tm_wday` and `tm_yday` are undefined.
+ * @warning The `struct tm` member `tm_isdst` is ignored on windows and should be set to `-1`.
+ *
+ * @todo for Time: define what values are returned when a part is missing
+ *
+ * @struct uiDateTimePicker
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiDateTimePicker uiDateTimePicker;
 #define uiDateTimePicker(this) ((uiDateTimePicker *) (this))
-// TODO document that tm_wday and tm_yday are undefined, and tm_isdst should be -1
-// TODO document that for both sides
-// TODO document time zone conversions or lack thereof
-// TODO for Time: define what values are returned when a part is missing
+
+/**
+ * Returns date and time stored in the data time picker.
+ *
+ * @param d uiDateTimePicker instance.
+ * @param[out] time Date and/or time as local time.
+ * @warning The `struct tm` members `tm_wday` and `tm_yday` are undefined.
+ * @memberof uiDateTimePicker
+ */
 _UI_EXTERN void uiDateTimePickerTime(uiDateTimePicker *d, struct tm *time);
+
+/**
+ * Sets date and time of the data time picker.
+ *
+ *
+ * @param d uiDateTimePicker instance.
+ * @param time Date and/or time as local time.
+ * @warning The `struct tm` member `tm_isdst` is ignored on windows and should be set to `-1`.
+ * @memberof uiDateTimePicker
+ */
 _UI_EXTERN void uiDateTimePickerSetTime(uiDateTimePicker *d, const struct tm *time);
-_UI_EXTERN void uiDateTimePickerOnChanged(uiDateTimePicker *d, void (*f)(uiDateTimePicker *, void *), void *data);
+
+/**
+ * Registers a callback for when the date time picker value is changed by the user.
+ *
+ * @param d uiDateTimePicker instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling  uiDateTimePickerSetTime().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiDateTimePicker
+ */
+_UI_EXTERN void uiDateTimePickerOnChanged(uiDateTimePicker *d,
+	void (*f)(uiDateTimePicker *sender, void *senderData), void *data);
+
+/**
+ * Creates a new date picker.
+ *
+ * @returns A new uiDateTimePicker instance.
+ * @memberof uiDateTimePicker @static
+ */
 _UI_EXTERN uiDateTimePicker *uiNewDateTimePicker(void);
+
+/**
+ * Creates a new time picker.
+ *
+ * @returns A new uiDateTimePicker instance.
+ * @memberof uiDateTimePicker @static
+ */
 _UI_EXTERN uiDateTimePicker *uiNewDatePicker(void);
+
+/**
+ * Creates a new date and time picker.
+ *
+ * @returns A new uiDateTimePicker instance.
+ * @memberof uiDateTimePicker @static
+ */
 _UI_EXTERN uiDateTimePicker *uiNewTimePicker(void);
 
-// TODO provide a facility for entering tab stops?
+
+/**
+ * A control with a multi line text entry field.
+ *
+ * @todo provide a facility for entering tab stops?
+ * @struct uiMultilineEntry
+ * @extends uiControl
+ * @ingroup dataEntry
+ */
 typedef struct uiMultilineEntry uiMultilineEntry;
 #define uiMultilineEntry(this) ((uiMultilineEntry *) (this))
+
+/**
+ * Returns the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @returns The containing text.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN char *uiMultilineEntryText(uiMultilineEntry *e);
+
+/**
+ * Sets the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param text Single/multi line text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text);
+
+/**
+ * Appends text to the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param text Text to append.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text);
-_UI_EXTERN void uiMultilineEntryOnChanged(uiMultilineEntry *e, void (*f)(uiMultilineEntry *e, void *data), void *data);
+
+/**
+ * Registers a callback for when the user changes the multi line entry's text.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that initiated the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiMultilineEntrySetText()
+ *       or uiMultilineEntryAppend().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiMultilineEntry
+ */
+_UI_EXTERN void uiMultilineEntryOnChanged(uiMultilineEntry *e,
+	void (*f)(uiMultilineEntry *sender, void *senderData), void *data);
+
+/**
+ * Returns whether or not the multi line entry's text can be changed.
+ *
+ * @param e uiMultilineEntry instance.
+ * @returns `TRUE` if read only, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN int uiMultilineEntryReadOnly(uiMultilineEntry *e);
+
+/**
+ * Sets whether or not the multi line entry's text is read only.
+ *
+ * @param e uiMultilineEntry instance.
+ * @param readonly `TRUE` to make read only, `FALSE` otherwise.
+ * @memberof uiMultilineEntry
+ */
 _UI_EXTERN void uiMultilineEntrySetReadOnly(uiMultilineEntry *e, int readonly);
+
+/**
+ * Creates a new multi line entry that visually wraps text when lines overflow.
+ *
+ * @returns A new uiMultilineEntry instance.
+ * @memberof uiMultilineEntry @static
+ */
 _UI_EXTERN uiMultilineEntry *uiNewMultilineEntry(void);
+
+/**
+ * Creates a new multi line entry that scrolls horizontally when lines overflow.
+ *
+ * @remark Windows does not allow for this style to be changed after creation,
+ *         hence the two constructors.
+ * @returns A new uiMultilineEntry instance.
+ * @memberof uiMultilineEntry @static
+ */
 _UI_EXTERN uiMultilineEntry *uiNewNonWrappingMultilineEntry(void);
 
+
+/**
+ * A menu item used in conjunction with uiMenu.
+ *
+ * @struct uiMenuItem
+ * @ingroup static menu
+ */
 typedef struct uiMenuItem uiMenuItem;
 #define uiMenuItem(this) ((uiMenuItem *) (this))
+
+/**
+ * Enables the menu item.
+ *
+ * @param m uiMenuItem instance.
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN void uiMenuItemEnable(uiMenuItem *m);
+
+/**
+ * Disables the menu item.
+ *
+ * Menu item is grayed out and user interaction is not possible.
+ *
+ * @param m uiMenuItem instance.
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN void uiMenuItemDisable(uiMenuItem *m);
-_UI_EXTERN void uiMenuItemOnClicked(uiMenuItem *m, void (*f)(uiMenuItem *sender, uiWindow *window, void *data), void *data);
+
+/**
+ * Registers a callback for when the menu item is clicked.
+ *
+ * @param m uiMenuItem instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p window Reference to the window from which the callback got triggered.\
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiMenuItem
+ */
+_UI_EXTERN void uiMenuItemOnClicked(uiMenuItem *m,
+	void (*f)(uiMenuItem *sender, uiWindow *window, void *senderData), void *data);
+
+/**
+ * Returns whether or not the menu item's checkbox is checked.
+ *
+ * To be used only with items created via uiMenuAppendCheckItem().
+ *
+ * @param m uiMenuItem instance.
+ * @returns `TRUE` if checked, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN int uiMenuItemChecked(uiMenuItem *m);
+
+/**
+ * Sets whether or not the menu item's checkbox is checked.
+ *
+ * To be used only with items created via uiMenuAppendCheckItem().
+ *
+ * @param m uiMenuItem instance.
+ * @param checked `TRUE` to check menu item checkbox, `FALSE` otherwise.
+ * @memberof uiMenuItem
+ */
 _UI_EXTERN void uiMenuItemSetChecked(uiMenuItem *m, int checked);
 
+/**
+ * An application level menu bar.
+ *
+ * The various operating systems impose different requirements on the
+ * creation and placement of menu bar items, hence the abstraction of the
+ * items `Quit`, `Preferences` and `About`.
+ *
+ * An exemplary, cross platform menu bar:
+ *
+ * - File
+ *   * New
+ *   * Open
+ *   * Save
+ *   * Quit, _use uiMenuAppendQuitItem()_
+ * - Edit
+ *   * Undo
+ *   * Redo
+ *   * Cut
+ *   * Copy
+ *   * Paste
+ *   * Select All
+ *   * Preferences, _use uiMenuAppendPreferencesItem()_
+ * - Help
+ *   * About, _use uiMenuAppendAboutItem()_
+ *
+ * @struct uiMenu
+ * @ingroup static menu
+ */
 typedef struct uiMenu uiMenu;
 #define uiMenu(this) ((uiMenu *) (this))
+
+/**
+ * Appends a generic menu item.
+ *
+ * @param m uiMenu instance.
+ * @param name Menu item text.\n
+ *             A `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiMenuItem instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendItem(uiMenu *m, const char *name);
+
+/**
+ * Appends a generic menu item with a checkbox.
+ *
+ * @param m uiMenu instance.
+ * @param name Menu item text.\n
+ *             A `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiMenuItem instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendCheckItem(uiMenu *m, const char *name);
+
+/**
+ * Appends a new `Quit` menu item.
+ *
+ * @param m uiMenu instance.
+ * @returns A new uiMenuItem instance.
+ * @warning Only one such menu item may exist per application.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendQuitItem(uiMenu *m);
+
+/**
+ * Appends a new `Preferences` menu item.
+ *
+ * @param m uiMenu instance.
+ * @returns A new uiMenuItem instance.
+ * @warning Only one such menu item may exist per application.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendPreferencesItem(uiMenu *m);
+
+/**
+ * Appends a new `About` menu item.
+ *
+ * @param m uiMenu instance.
+ * @warning Only one such menu item may exist per application.
+ * @returns A new uiMenuItem instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN uiMenuItem *uiMenuAppendAboutItem(uiMenu *m);
+
+/**
+ * Appends a new separator.
+ *
+ * @param m uiMenu instance.
+ * @memberof uiMenu
+ */
 _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
+
+/**
+ * Creates a new menu.
+ *
+ * Typical values are `File`, `Edit`, `Help`.
+ *
+ * @param name Menu label.\n
+ *             A `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @returns A new uiMenu instance.
+ * @memberof uiMenu @static
+ */
 _UI_EXTERN uiMenu *uiNewMenu(const char *name);
 
+
+/**
+ * File chooser dialog window to select a single file.
+ *
+ * @param parent Parent window.
+ * @returns File path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
 _UI_EXTERN char *uiOpenFile(uiWindow *parent);
+
+/**
+ * Folder chooser dialog window to select a single folder.
+ *
+ * @param parent Parent window.
+ * @returns Folder path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
 _UI_EXTERN char *uiOpenFolder(uiWindow *parent);
+
+/**
+ * Save file dialog window.
+ *
+ * The user is asked to confirm overwriting existing files, should the chosen
+ * file path already exist on the system.
+ *
+ * @param parent Parent window.
+ * @returns File path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
 _UI_EXTERN char *uiSaveFile(uiWindow *parent);
+
+/**
+ * Message box dialog window.
+ *
+ * A message box displayed in a new window indicating a common message.
+ *
+ * @param parent Parent window.
+ * @param title Dialog window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @param description Dialog message text.\n
+ *                    A valid, `NUL` terminated UTF-8 string.\n
+ *                    Data is owned by the caller.
+ * @ingroup dialogWindow
+ */
 _UI_EXTERN void uiMsgBox(uiWindow *parent, const char *title, const char *description);
+
+/**
+ * Error message box dialog window.
+ *
+ * A message box displayed in a new window indicating an error. On some systems
+ * this may invoke an accompanying sound.
+ *
+ * @param parent Parent window.
+ * @param title Dialog window title text.\n
+ *              A valid, `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @param description Dialog message text.\n
+ *                    A valid, `NUL` terminated UTF-8 string.\n
+ *                    Data is owned by the caller.
+ * @ingroup dialogWindow
+ */
 _UI_EXTERN void uiMsgBoxError(uiWindow *parent, const char *title, const char *description);
 
 typedef struct uiArea uiArea;
@@ -529,6 +2155,7 @@ _UI_EXTERN void uiDrawRestore(uiDrawContext *c);
 // uiAttributes are immutable and the uiAttributedString takes
 // ownership of the uiAttribute object once assigned, copying its
 // contents as necessary.
+// TODO define whether all this, for both uiTableValue and uiAttribute, is undefined behavior or a caught error
 typedef struct uiAttribute uiAttribute;
 
 // @role uiAttribute destructor
@@ -1012,29 +2639,82 @@ _UI_EXTERN void uiDrawTextLayoutExtents(uiDrawTextLayout *tl, double *width, dou
 
 // TODO number of lines visible for clipping rect, range visible for clipping rect?
 
-// uiFontButton is a button that allows users to choose a font when they click on it.
+
+/**
+ * A button-like control that opens a font chooser when clicked.
+ *
+ * @ŧodo SetFont, mechanics
+ * @todo Have a function that sets an entire font descriptor to a range in a uiAttributedString at once, for SetFont?
+ *
+ * @struct uiFontButton
+ * @extends uiControl
+ * @ingroup button dataEntry
+ */
 typedef struct uiFontButton uiFontButton;
 #define uiFontButton(this) ((uiFontButton *) (this))
-// uiFontButtonFont() returns the font currently selected in the uiFontButton in desc.
-// uiFontButtonFont() allocates resources in desc; when you are done with the font, call uiFreeFontButtonFont() to release them.
-// uiFontButtonFont() does not allocate desc itself; you must do so.
-// TODO have a function that sets an entire font descriptor to a range in a uiAttributedString at once, for SetFont?
+
+/**
+ * Returns the selected font.
+ *
+ * @param b uiFontButton instance.
+ * @param[out] desc Font descriptor. [Default: OS-dependent].
+ * @note Make sure to call `uiFreeFontButtonFont()` to free all allocated
+ *       resources within @p desc.
+ * @memberof uiFontButton
+ */
 _UI_EXTERN void uiFontButtonFont(uiFontButton *b, uiFontDescriptor *desc);
-// TOOD SetFont, mechanics
-// uiFontButtonOnChanged() sets the function that is called when the font in the uiFontButton is changed.
-_UI_EXTERN void uiFontButtonOnChanged(uiFontButton *b, void (*f)(uiFontButton *, void *), void *data);
-// uiNewFontButton() creates a new uiFontButton. The default font selected into the uiFontButton is OS-defined.
+
+/**
+ *  Registers a callback for when the font is changed.
+ *
+ * @param b uiFontButton instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiFontButton
+ */
+_UI_EXTERN void uiFontButtonOnChanged(uiFontButton *b,
+	void (*f)(uiFontButton *sender, void *senderData), void *data);
+
+/**
+ * Creates a new font button.
+ *
+ * The default font is determined by the OS defaults.
+ *
+ * @returns A new uiFontButton instance.
+ * @memberof uiFontButton @static
+ */
 _UI_EXTERN uiFontButton *uiNewFontButton(void);
-// uiFreeFontButtonFont() frees resources allocated in desc by uiFontButtonFont().
-// After calling uiFreeFontButtonFont(), the contents of desc should be assumed to be undefined (though since you allocate desc itself, you can safely reuse desc for other font descriptors).
-// Calling uiFreeFontButtonFont() on a uiFontDescriptor not returned by uiFontButtonFont() results in undefined behavior.
+
+/**
+ * Frees a uiFontDescriptor previously filled by uiFontButtonFont().
+ *
+ * After calling this function the contents of @p desc should be assumed undefined,
+ * however you can safely reuse @p desc.
+ *
+ * Calling this function on a uiFontDescriptor not previously filled by
+ * uiFontButtonFont() results in undefined behavior.
+ *
+ * @param desc Font descriptor to free.
+ * @memberof uiFontButton
+ */
 _UI_EXTERN void uiFreeFontButtonFont(uiFontDescriptor *desc);
 
+/**
+ * Keyboard modifier keys.
+ *
+ * Usable as bitmasks.
+ *
+ * @enum uiModifiers
+ */
 _UI_ENUM(uiModifiers) {
-	uiModifierCtrl = 1 << 0,
-	uiModifierAlt = 1 << 1,
-	uiModifierShift = 1 << 2,
-	uiModifierSuper = 1 << 3,
+	uiModifierCtrl  = 1 << 0, //!< Control key.
+	uiModifierAlt   = 1 << 1, //!< Alternate/Option key.
+	uiModifierShift = 1 << 2, //!< Shift key.
+	uiModifierSuper = 1 << 3, //!< Super/Command/Windows key.
 };
 
 // TODO document drag captures
@@ -1109,113 +2789,403 @@ struct uiAreaKeyEvent {
 	int Up;
 };
 
+
+/**
+ * A control with a color indicator that opens a color chooser when clicked.
+ *
+ * The control visually represents a button with a color field representing
+ * the selected color.
+ *
+ * Clicking on the button opens up a color chooser in form of a color palette.
+ *
+ * @struct uiColorButton
+ * @extends uiControl
+ * @ingroup dataEntry button
+ */
 typedef struct uiColorButton uiColorButton;
 #define uiColorButton(this) ((uiColorButton *) (this))
+
+/**
+ * Returns the color button color.
+ *
+ * @param b uiColorButton instance.
+ * @param[out] r Red. Double in range of [0, 1.0].
+ * @param[out] g Green. Double in range of [0, 1.0].
+ * @param[out] bl Blue. Double in range of [0, 1.0].
+ * @param[out] a Alpha. Double in range of [0, 1.0].
+ * @memberof uiColorButton
+ */
 _UI_EXTERN void uiColorButtonColor(uiColorButton *b, double *r, double *g, double *bl, double *a);
+
+/**
+ * Sets the color button color.
+ *
+ * @param b uiColorButton instance.
+ * @param r Red. Double in range of [0, 1.0].
+ * @param g Green. Double in range of [0, 1.0].
+ * @param bl Blue. Double in range of [0, 1.0].
+ * @param a Alpha. Double in range of [0, 1.0].
+ * @memberof uiColorButton
+ */
 _UI_EXTERN void uiColorButtonSetColor(uiColorButton *b, double r, double g, double bl, double a);
-_UI_EXTERN void uiColorButtonOnChanged(uiColorButton *b, void (*f)(uiColorButton *, void *), void *data);
+
+/** Registers a callback for when the color is changed.
+ *
+ * @param b uiColorButton instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiColorButtonSetColor().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiColorButton
+ */
+_UI_EXTERN void uiColorButtonOnChanged(uiColorButton *b,
+	void (*f)(uiColorButton *sender, void *senderData), void *data);
+
+/**
+ * Creates a new color button.
+ *
+ * @returns A new uiColorButton instance.
+ * @memberof uiColorButton @static
+ */
 _UI_EXTERN uiColorButton *uiNewColorButton(void);
 
+
+/**
+ * A container control to organize contained controls as labeled fields.
+ *
+ * As the name suggests this container is perfect to create ascetically pleasing
+ * input forms.
+ *
+ * Each control is preceded by it's corresponding label.
+ *
+ * Labels and containers are organized into two panes, making both labels
+ * and containers align with each other.
+ *
+ * @struct uiForm
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiForm uiForm;
 #define uiForm(this) ((uiForm *) (this))
+
+/**
+ * Appends a control with a label to the form.
+ *
+ * Stretchy items expand to use the remaining space within the container.
+ * In the case of multiple stretchy items the space is shared equally.
+ *
+ * @param f uiForm instance.
+ * @param label Label text.\n
+ *              A `NUL` terminated UTF-8 string.\n
+ *              Data is owned by the caller.
+ * @param c Control to append.
+ * @param stretchy `TRUE` to stretch control, `FALSE` otherwise.
+ * @memberof uiForm
+ */
 _UI_EXTERN void uiFormAppend(uiForm *f, const char *label, uiControl *c, int stretchy);
+
+/**
+ * Returns the number of controls contained within the form.
+ *
+ * @param f uiForm instance.
+ * @memberof uiForm
+ */
 _UI_EXTERN int uiFormNumChildren(uiForm *f);
+
+/**
+ * Removes the control at @p index from the form.
+ *
+ * @param f uiForm instance.
+ * @param index Index of the control to be removed.
+ * @note The control is neither destroyed nor freed.
+ * @memberof uiForm
+ */
 _UI_EXTERN void uiFormDelete(uiForm *f, int index);
+
+/**
+ * Returns whether or not controls within the form are padded.
+ *
+ * Padding is defined as space between individual controls.
+ *
+ * @param f uiForm instance.
+ * @returns `TRUE` if controls are padded, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiForm
+ */
 _UI_EXTERN int uiFormPadded(uiForm *f);
+
+/**
+ * Sets whether or not controls within the box are padded.
+ *
+ * Padding is defined as space between individual controls.
+ * The padding size is determined by the OS defaults.
+ *
+ * @param f uiForm instance.
+ * @param padded  `TRUE` to make controls padded, `FALSE` otherwise.
+ * @memberof uiForm
+ */
 _UI_EXTERN void uiFormSetPadded(uiForm *f, int padded);
+
+/**
+ * Creates a new form.
+ *
+ * @returns A new uiForm instance.
+ * @memberof uiForm @static
+ */
 _UI_EXTERN uiForm *uiNewForm(void);
 
+
+/**
+ * Alignment specifiers to define placement within the reserved area.
+ *
+ * Used in uiGrid.
+ * @enum uiAlign
+ */
 _UI_ENUM(uiAlign) {
-	uiAlignFill,
-	uiAlignStart,
-	uiAlignCenter,
-	uiAlignEnd,
+	uiAlignFill,	//!< Fill area.
+	uiAlignStart,	//!< Place at start.
+	uiAlignCenter,	//!< Place in center.
+	uiAlignEnd,	//!< Place at end.
 };
 
+/**
+ * Placement specifier to define placement in relation to another control.
+ *
+ * Used in uiGrid.
+ * @enum uiAt
+ */
 _UI_ENUM(uiAt) {
-	uiAtLeading,
-	uiAtTop,
-	uiAtTrailing,
-	uiAtBottom,
+	uiAtLeading,	//!< Place before control.
+	uiAtTop,	//!< Place above control.
+	uiAtTrailing,	//!< Place behind control.
+	uiAtBottom,	//!< Place below control.
 };
 
+/**
+ * A control container to arrange containing controls in a grid.
+ *
+ * Contained controls are arranged on an imaginary grid of rows and columns.
+ * Controls can be placed anywhere on this grid, spanning multiple rows and/or
+ * columns.
+ *
+ * Additionally placed controls can be programmed to expand horizontally and/or
+ * vertically, sharing the remaining space among other expanded controls.
+ *
+ * Alignment options are available via @ref uiAlign attributes to determine the
+ * controls placement within the reserved area, should the area be bigger than
+ * the control itself.
+ *
+ * Controls can also be placed in relation to other controls using @ref uiAt
+ * attributes.
+ *
+ * @struct uiGrid
+ * @extends uiControl
+ * @ingroup container
+ */
 typedef struct uiGrid uiGrid;
 #define uiGrid(this) ((uiGrid *) (this))
+
+/**
+ * Appends a control to the grid.
+ *
+ * @param g uiGrid instance.
+ * @param c The control to insert.
+ * @param left Placement as number of columns from the left. Integer in range of `[INT_MIN, INT_MAX]`.
+ * @param top Placement as number of rows from the top. Integer in range of `[INT_MIN, INT_MAX]`.
+ * @param xspan Number of columns to span. Integer in range of `[0, INT_MAX]`.
+ * @param yspan Number of rows to span. Integer in range of `[0, INT_MAX]`.
+ * @param hexpand `TRUE` to expand reserved area horizontally, `FALSE` otherwise.
+ * @param halign Horizontal alignment of the control within the reserved space.
+ * @param vexpand `TRUE` to expand reserved area vertically, `FALSE` otherwise.
+ * @param valign Vertical alignment of the control within the reserved space.
+ * @memberof uiGrid
+ */
 _UI_EXTERN void uiGridAppend(uiGrid *g, uiControl *c, int left, int top, int xspan, int yspan, int hexpand, uiAlign halign, int vexpand, uiAlign valign);
+
+/**
+ * Inserts a control positioned in relation to another control within the grid.
+ *
+ * @param g uiGrid instance.
+ * @param c The control to insert.
+ * @param existing The existing control to position relatively to.
+ * @param at Placement specifier in relation to @p existing control.
+ * @param xspan Number of columns to span. Integer in range of `[0, INT_MAX]`.
+ * @param yspan Number of rows to span. Integer in range of `[0, INT_MAX]`.
+ * @param hexpand `TRUE` to expand reserved area horizontally, `FALSE` otherwise.
+ * @param halign Horizontal alignment of the control within the reserved space.
+ * @param vexpand `TRUE` to expand reserved area vertically, `FALSE` otherwise.
+ * @param valign Vertical alignment of the control within the reserved space.
+ * @memberof uiGrid
+ */
 _UI_EXTERN void uiGridInsertAt(uiGrid *g, uiControl *c, uiControl *existing, uiAt at, int xspan, int yspan, int hexpand, uiAlign halign, int vexpand, uiAlign valign);
+
+/**
+ * Returns whether or not controls within the grid are padded.
+ *
+ * Padding is defined as space between individual controls.
+ *
+ * @param g uiGrid instance.
+ * @returns `TRUE` if controls are padded, `FALSE` otherwise. [Default: `TODO`]
+ * @memberof uiGrid
+ */
 _UI_EXTERN int uiGridPadded(uiGrid *g);
+
+/**
+ * Sets whether or not controls within the grid are padded.
+ *
+ * Padding is defined as space between individual controls.
+ * The padding size is determined by the OS defaults.
+ *
+ * @param g uiGrid instance.
+ * @param padded  `TRUE` to make controls padded, `FALSE` otherwise.
+ * @memberof uiGrid
+ */
 _UI_EXTERN void uiGridSetPadded(uiGrid *g, int padded);
+
+/**
+ * Creates a new grid.
+ *
+ * @returns A new uiGrid instance.
+ * @memberof uiGrid @static
+ */
 _UI_EXTERN uiGrid *uiNewGrid(void);
 
-// uiImage stores an image for display on screen.
-// 
-// Images are built from one or more representations, each with the
-// same aspect ratio but a different pixel size. libui automatically
-// selects the most appropriate representation for drawing the image
-// when it comes time to draw the image; what this means depends
-// on the pixel density of the target context. Therefore, one can use
-// uiImage to draw higher-detailed images on higher-density
-// displays. The typical use cases are either:
-// 
-// 	- have just a single representation, at which point all screens
-// 	  use the same image, and thus uiImage acts like a simple
-// 	  bitmap image, or
-// 	- have two images, one at normal resolution and one at 2x
-// 	  resolution; this matches the current expectations of some
-// 	  desktop systems at the time of writing (mid-2018)
-// 
-// uiImage is very simple: it only supports premultiplied 32-bit
-// RGBA images, and libui does not provide any image file loading
-// or image format conversion utilities on top of that.
+
+/**
+ * A container for an image to be displayed on screen.
+ *
+ * The container can hold multiple representations of the same image with the
+ * _same_ aspect ratio but in different resolutions to support high-density
+ * displays.
+ *
+ * Common image dimension scale factors are `1x` and `2x`. Providing higher
+ * density representations is entirely optional.
+ *
+ * The system will automatically determine the correct image to render depending
+ * on the screen's pixel density.
+ *
+ * uiImage only supports premultiplied 32-bit RGBA images.
+ *
+ * No image file loading or image format conversion utilities are provided.
+ *
+ * @struct uiImage
+ * @ingroup static
+ */
 typedef struct uiImage uiImage;
 
-// @role uiImage constructor
-// uiNewImage creates a new uiImage with the given width and
-// height. This width and height should be the size in points of the
-// image in the device-independent case; typically this is the 1x size.
-// TODO for all uiImage functions: use const void * for const correctness
+/**
+ * Creates a new image container.
+ *
+ * Dimensions are measured in points. This is most commonly the pixel size
+ * of the `1x` scaled image.
+ *
+ * @param width Width in points.
+ * @param height Height in points.
+ * @returns A new uiImage instance.
+ * @memberof uiImage @static
+ */
 _UI_EXTERN uiImage *uiNewImage(double width, double height);
 
-// @role uiImage destructor
-// uiFreeImage frees the given image and all associated resources.
+/**
+ * Frees the image container and all associated resources.
+ *
+ * @param i uiImage instance.
+ * @memberof uiImage
+ */
 _UI_EXTERN void uiFreeImage(uiImage *i);
 
-// uiImageAppend adds a representation to the uiImage.
-// pixels should point to a byte array of premultiplied pixels
-// stored in [R G B A] order (so ((uint8_t *) pixels)[0] is the R of the
-// first pixel and [3] is the A of the first pixel). pixelWidth and
-// pixelHeight is the size *in pixels* of the image, and pixelStride is
-// the number *of bytes* per row of the pixels array. Therefore,
-// pixels itself must be at least byteStride * pixelHeight bytes long.
-// TODO see if we either need the stride or can provide a way to get the OS-preferred stride (in cairo we do)
+/**
+ * Appends a new image representation.
+ *
+ * @param i uiImage instance.
+ * @param pixels Byte array of premultiplied pixels in [R G B A] order.\n
+ *               `((uint8_t *) pixels)[0]` equals the **R** of the first pixel,
+ *               `[3]` the **A** of the first pixel.\n
+ *               `pixels` must be at least `byteStride * pixelHeight` bytes long.\n
+ *               Data is owned by the caller.
+ * @param pixelWidth Width in pixels.
+ * @param pixelHeight Height in pixels.
+ * @param byteStride Number of bytes per row of the pixel array.
+ * @todo see if we either need the stride or can provide a way to get the OS-preferred stride (in cairo we do)
+ * @todo use const void * for const correctness
+ * @memberof uiImage
+ */
 _UI_EXTERN void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride);
 
-// uiTableValue stores a value to be passed along uiTable and
-// uiTableModel.
-//
-// You do not create uiTableValues directly; instead, you create a
-// uiTableValue of a given type using the specialized constructor
-// functions.
-//
-// uiTableValues are immutable and the uiTableModel and uiTable
-// take ownership of the uiTableValue object once returned, copying
-// its contents as necessary.
+/**
+ * @addtogroup table
+ * @{
+ *
+ * Types and methods for organizing and displaying tabular data.
+ *
+ * Tables follow the concept of separation of concerns, similar to common
+ * patterns like model-view-controller or model-view-adapter.
+ *
+ * They consist of three main components:
+ *
+ * - uiTableModel acts as a delegate for the underlying data store. Its purpose
+ *   is to provide the data for views and inform about any updates.
+ * - uiTable represents the view. Its purpose is to display the data provided
+ *   by the model as well as provide an interface to the user to modify data.
+ * - uiTableModelHandler takes on the role of controller and model. It provides
+ *   the actual data while also handling data edits.
+ *
+ * To get started:
+ *
+ * 1. Implement all of the methods defined in uiTableModelHandler.
+ *    This involves defining columns, their data types as well as getters and
+ *    setters for each table cell.
+ * 2. Wrap the uiTableModelHandler from step 1 in a uiTableModel object.
+ * 3. Create a new uiTable using the model created in step 2.
+ *    Start adding columns to your table. Each table column is backed by
+ *    one or more model columns.
+ *
+ * You can create multiple differing views (uiTable) using the same
+ * uiTableModel.
+ *
+ * @}
+ */
+
+/**
+ * Container to store values used in container related methods.
+ *
+ * uiTableValue objects are immutable.
+ *
+ * uiTable and uiTableModel methods take ownership of the uiTableValue objects
+ * when passed as parameter. Exception: uiNewTableValueImage().
+ *
+ * uiTable and uiTableModel methods retain ownership when returning uiTableValue
+ * objects. Exception: uiTableValueImage().
+ *
+ * @struct uiTableValue
+ * @ingroup table
+ */
 typedef struct uiTableValue uiTableValue;
 
-// @role uiTableValue destructor
-// uiFreeTableValue() frees a uiTableValue. You generally do not
-// need to call this yourself, as uiTable and uiTableModel do this
-// for you. In fact, it is an error to call this function on a uiTableValue
-// that has been given to a uiTable or uiTableModel. You can call this,
-// however, if you created a uiTableValue that you aren't going to
-// use later, or if you called a uiTableModelHandler method directly
-// and thus never transferred ownership of the uiTableValue.
+/**
+ * Frees the uiTableValue.
+ *
+ * @param v Table value to free.
+ *
+ * @warning This function is to be used only on uiTableValue objects that
+ *          have NOT been passed to uiTable or uiTableModel - as these
+ *          take ownership of the object.\n
+ *          Use this for freeing erroneously created values or when directly
+ *          calling uiTableModelHandler without transferring ownership to
+ *          uiTable or uiTableModel.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN void uiFreeTableValue(uiTableValue *v);
 
-// uiTableValueType holds the possible uiTableValue types that may
-// be returned by uiTableValueGetType(). Refer to the documentation
-// for each type's constructor function for details on each type.
-// TODO actually validate these
+/**
+ * uiTableValue types.
+ *
+ * @todo Define whether calling any of the getters on the wrong type is
+ *       undefined behavior or caught error.
+ * @enum uiTableValueType
+ */
 _UI_ENUM(uiTableValueType) {
 	uiTableValueTypeString,
 	uiTableValueTypeImage,
@@ -1223,222 +3193,416 @@ _UI_ENUM(uiTableValueType) {
 	uiTableValueTypeColor,
 };
 
-// uiTableValueGetType() returns the type of v.
-// TODO I don't like this name
+/**
+ * Gets the uiTableValue type.
+ *
+ * @param v Table value.
+ * @returns Table value type.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN uiTableValueType uiTableValueGetType(const uiTableValue *v);
 
-// uiNewTableValueString() returns a new uiTableValue that contains
-// str. str is copied; you do not need to keep it alive after
-// uiNewTableValueString() returns.
+/**
+ * Creates a new table value to store a text string.
+ *
+ * @param str String value.\n
+ *            A valid, `NUL` terminated UTF-8 string.\n
+ *            Data is owned by the caller.
+ * @returns A new uiTableValue instance.
+ * @memberof uiTableValue @static
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueString(const char *str);
 
-// uiTableValueString() returns the string stored in v. The returned
-// string is owned by v. It is an error to call this on a uiTableValue
-// that does not hold a string.
+/**
+ * Returns the string value held internally.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeString.
+ *
+ * @param v Table value.
+ * @returns String value.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data remains owned by @p v, do **NOT** call `uiFreeText()`.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN const char *uiTableValueString(const uiTableValue *v);
 
-// uiNewTableValueImage() returns a new uiTableValue that contains
-// the given uiImage.
-// 
-// Unlike other similar constructors, uiNewTableValueImage() does
-// NOT copy the image. This is because images are comparatively
-// larger than the other objects in question. Therefore, you MUST
-// keep the image alive as long as the returned uiTableValue is alive.
-// As a general rule, if libui calls a uiTableModelHandler method, the
-// uiImage is safe to free once any of your code is once again
-// executed.
+/**
+ * Creates a new table value to store an image.
+ *
+ * @param img Image.\n
+ *            Data is NOT copied and needs to kept alive.
+ * @returns A new uiTableValue instance.
+ * @warning Unlike other uiTableValue constructors, uiNewTableValueImage() does
+ *          NOT copy the image to save time and space. Make sure the image
+ *          data stays valid while in use by the library.
+ *          As a general rule: if the constructor is called via the
+ *          uiTableModelHandler, the image is safe to free once execution
+ *          returns to ANY of your code.
+ * @memberof uiTableValue @static
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueImage(uiImage *img);
 
-// uiTableValueImage() returns the uiImage stored in v. As these
-// images are not owned by v, you should not assume anything
-// about the lifetime of the image (unless you created the image,
-// and thus control its lifetime). It is an error to call this on a
-// uiTableValue that does not hold an image.
+/**
+ * Returns a reference to the image contained.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeImage.
+ *
+ * @param v Table value.
+ * @returns Image.\n
+ *          Data is owned by the caller of uiNewTableValueImage().
+ * @warning The image returned is not owned by the object @p v,
+ *          hence no lifetime guarantees can be made.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN uiImage *uiTableValueImage(const uiTableValue *v);
 
-// uiNewTableValueInt() returns a uiTableValue that stores the given
-// int. This can be used both for boolean values (nonzero is true, as
-// in C) or progresses (in which case the valid range is -1..100
-// inclusive).
+/**
+ * Creates a new table value to store an integer.
+ *
+ * This value type can be used in conjunction with properties like
+ * column editable [`TRUE`, `FALSE`] or controls like progress bars and
+ * checkboxes. For these, consult uiProgressBar and uiCheckbox for the allowed
+ * integer ranges.
+ *
+ * @param i Integer value.
+ * @returns A new uiTableValue instance.
+ * @memberof uiTableValue @static
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueInt(int i);
 
-// uiTableValueInt() returns the int stored in v. It is an error to call
-// this on a uiTableValue that does not store an int.
+/**
+ * Returns the integer value held internally.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeInt.
+ *
+ * @param v Table value.
+ * @returns Integer value.
+ * @memberof uiTableValue
+ */
 _UI_EXTERN int uiTableValueInt(const uiTableValue *v);
 
-// uiNewTableValueColor() returns a uiTableValue that stores the
-// given color.
+/**
+ * Creates a new table value to store a color in.
+ *
+ * @param r Red. Double in range of [0, 1.0].
+ * @param g Green. Double in range of [0, 1.0].
+ * @param b Blue. Double in range of [0, 1.0].
+ * @param a Alpha. Double in range of [0, 1.0].
+ * @returns A new uiTableValue instance.
+ * @memberof uiTableValue @static
+ */
 _UI_EXTERN uiTableValue *uiNewTableValueColor(double r, double g, double b, double a);
 
-// uiTableValueColor() returns the color stored in v. It is an error to
-// call this on a uiTableValue that does not store a color.
-// TODO define whether all this, for both uiTableValue and uiAttribute, is undefined behavior or a caught error
+/**
+ * Returns the color value held internally.
+ *
+ * To be used only on uiTableValue objects of type uiTableValueTypeColor.
+ *
+ * @param v Table value.
+ * @param[out] r Red. Double in range of [0, 1.0].
+ * @param[out] g Green. Double in range of [0, 1.0].
+ * @param[out] b Blue. Double in range of [0, 1.0].
+ * @param[out] a Alpha. Double in range of [0, 1.0].
+ * @memberof uiTableValue
+ */
 _UI_EXTERN void uiTableValueColor(const uiTableValue *v, double *r, double *g, double *b, double *a);
 
+
+/**
+ * Sort indicators.
+ *
+ * Generic sort indicators to display sorting direction.
+ *
+ * @enum uiSortIndicator
+ * @ingroup table
+ */
 _UI_ENUM(uiSortIndicator) {
 	uiSortIndicatorNone,
 	uiSortIndicatorAscending,
 	uiSortIndicatorDescending
 };
 
-// uiTableModel is an object that provides the data for a uiTable.
-// This data is returned via methods you provide in the
-// uiTableModelHandler struct.
-//
-// uiTableModel represents data using a table, but this table does
-// not map directly to uiTable itself. Instead, you can have data
-// columns which provide instructions for how to render a given
-// uiTable's column — for instance, one model column can be used
-// to give certain rows of a uiTable a different background color.
-// Row numbers DO match with uiTable row numbers.
-//
-// Once created, the number and data types of columns of a
-// uiTableModel cannot change.
-//
-// Row and column numbers start at 0. A uiTableModel can be
-// associated with more than one uiTable at a time.
+/**
+ * Table model delegate to retrieve data and inform about model changes.
+ *
+ * This is a wrapper around uiTableModelHandler where the actual data is
+ * held.
+ *
+ * The main purpose it to provide methods to the developer to signal that
+ * underlying data has changed.
+ *
+ * Row indexes match both the row indexes in uiTable and uiTableModelHandler.
+ *
+ * A uiTableModel can be used as the backing store for multiple uiTable views.
+ *
+ * Once created, the number of columns and their data types are not allowed
+ * to change.
+ *
+ * @warning Not informing the uiTableModel about out-of-band data changes is
+ *          an error. User edits via uiTable do *not* fall in this category.
+ * @struct uiTableModel
+ * @ingroup table
+ */
 typedef struct uiTableModel uiTableModel;
 
-// uiTableModelHandler defines the methods that uiTableModel
-// calls when it needs data. Once a uiTableModel is created, these
-// methods cannot change.
+/**
+ * Developer defined methods for data retrieval and setting.
+ *
+ * These methods get called whenever the associated uiTableModel needs to
+ * retrieve data or a uiTable wants to set data.
+ *
+ * @warning These methods are NOT allowed to change as soon as the
+ *          uiTableModelHandler is associated with a uiTableModel.
+ * @todo Validate ranges
+ * @todo Validate types on each getter/setter call (? table columns only?)
+ * @struct uiTableModelHandler
+ * @ingroup table
+ */
 typedef struct uiTableModelHandler uiTableModelHandler;
-
-// TODO validate ranges; validate types on each getter/setter call (? table columns only?)
 struct uiTableModelHandler {
-	// NumColumns returns the number of model columns in the
-	// uiTableModel. This value must remain constant through the
-	// lifetime of the uiTableModel. This method is not guaranteed
-	// to be called depending on the system.
-	// TODO strongly check column numbers and types on all platforms so these clauses can go away
+	/**
+	 * Returns the number of columns in the uiTableModel.
+	 *
+	 * @warning This value MUST remain constant throughout the lifetime of the uiTableModel.
+	 * @warning This method is not guaranteed to be called depending on the system.
+	 * @todo strongly check column numbers and types on all platforms so
+	 *       these clauses can go away
+	 */
 	int (*NumColumns)(uiTableModelHandler *, uiTableModel *);
-	// ColumnType returns the value type of the data stored in
-	// the given model column of the uiTableModel. The returned
-	// values must remain constant through the lifetime of the
-	// uiTableModel. This method is not guaranteed to be called
-	// depending on the system.
-	uiTableValueType (*ColumnType)(uiTableModelHandler *, uiTableModel *, int);
-	// NumRows returns the number or rows in the uiTableModel.
-	// This value must be non-negative.
+
+	/**
+	 * Returns the column type in for of a #uiTableValueType.
+	 *
+	 * @warning This value MUST remain constant throughout the lifetime of the uiTableModel.
+	 * @warning This method is not guaranteed to be called depending on the system.
+	 */
+	uiTableValueType (*ColumnType)(uiTableModelHandler *, uiTableModel *, int column);
+
+	/**
+	 * Returns the number of rows in the uiTableModel.
+	 */
 	int (*NumRows)(uiTableModelHandler *, uiTableModel *);
-	// CellValue returns a uiTableValue corresponding to the model
-	// cell at (row, column). The type of the returned uiTableValue
-	// must match column's value type. Under some circumstances,
-	// NULL may be returned; refer to the various methods that add
-	// columns to uiTable for details. Once returned, the uiTable
-	// that calls CellValue will free the uiTableValue returned.
+
+	/**
+	 * Returns the cell value for (row, column).
+	 *
+	 * Make sure to use the uiTableValue constructors. The returned value
+	 * must match the #uiTableValueType defined in ColumnType().
+	 *
+	 * Some columns may return `NULL` as a special value. Refer to the
+	 * appropriate `uiTableAppend*Column()` documentation.
+	 *
+	 * @note uiTableValue objects are automatically freed when requested by
+	 *       a uiTable.
+	 */
 	uiTableValue *(*CellValue)(uiTableModelHandler *mh, uiTableModel *m, int row, int column);
-	// SetCellValue changes the model cell value at (row, column)
-	// in the uiTableModel. Within this function, either do nothing
-	// to keep the current cell value or save the new cell value as
-	// appropriate. After SetCellValue is called, the uiTable will
-	// itself reload the table cell. Under certain conditions, the
-	// uiTableValue passed in can be NULL; refer to the various
-	// methods that add columns to uiTable for details. Once
-	// returned, the uiTable that called SetCellValue will free the
-	// uiTableValue passed in.
+
+	/**
+	 * Sets the cell value for (row, column).
+	 *
+	 * It is up to the handler to decide what to do with the value: change
+	 * the model or reject the change, keeping the old value.
+	 *
+	 * Some columns may call this function with `NULL` as a special value.
+	 * Refer to the appropriate `uiTableAppend*Column()` documentation.
+	 *
+	 * @note uiTableValue objects are automatically freed upon return when
+	 * set by a uiTable.
+	 */
 	void (*SetCellValue)(uiTableModelHandler *, uiTableModel *, int, int, const uiTableValue *);
 };
 
-// @role uiTableModel constructor
-// uiNewTableModel() creates a new uiTableModel with the given
-// handler methods.
+/**
+ * Creates a new table model.
+ *
+ * @param mh Table model handler.
+ * @returns A new uiTableModel instance.
+ * @memberof uiTableModel @static
+ */
 _UI_EXTERN uiTableModel *uiNewTableModel(uiTableModelHandler *mh);
 
-// @role uiTableModel destructor
-// uiFreeTableModel() frees the given table model. It is an error to
-// free table models currently associated with a uiTable.
+/**
+ * Frees the table model.
+ *
+ * @param m Table model to free.
+ * @warning It is an error to free table models currently associated with a
+ *          uiTable.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiFreeTableModel(uiTableModel *m);
 
-// uiTableModelRowInserted() tell all uiTables associated with
-// the uiTableModel m that a new row has been added to m at
-// index newIndex.
-// You must insert the row data in your model before calling this
-// function.
-// NumRows() must represent the new row count before you call
-// this function.
+/**
+ * Informs all associated uiTable views that a new row has been added.
+ *
+ * You must insert the row data in your model before calling this function.
+ *
+ * NumRows() must represent the new row count before you call this function.
+ *
+ * @param m Table model that has changed.
+ * @param newIndex Index of the row that has been added.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiTableModelRowInserted(uiTableModel *m, int newIndex);
 
-// uiTableModelRowChanged() tells any uiTable associated with m
-// that the data in the row at index has changed. You do not need to
-// call this in your SetCellValue() handlers, but you do need to call
-// this if your data changes at some other point.
+/**
+ * Informs all associated uiTable views that a row has been changed.
+ *
+ * You do NOT need to call this in your SetCellValue() handlers, but NEED
+ * to call this if your data changes at any other point.
+ *
+ * @param m Table model that has changed.
+ * @param index Index of the row that has changed.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiTableModelRowChanged(uiTableModel *m, int index);
 
-// uiTableModelRowDeleted() tells all uiTables associated with
-// the uiTableModel m that the row at index oldIndex has been
-// deleted.
-// You must delete the row from your model before you call this
-// function.
-// NumRows() must represent the new row count before you call
-// this function.
+/**
+ * Informs all associated uiTable views that a row has been deleted.
+ *
+ * You must delete the row from your model before you call this function.
+ *
+ * NumRows() must represent the new row count before you call this function.
+ *
+ * @param m Table model that has changed.
+ * @param oldIndex Index of the row that has been deleted.
+ * @memberof uiTableModel
+ */
 _UI_EXTERN void uiTableModelRowDeleted(uiTableModel *m, int oldIndex);
 // TODO reordering/moving
 
-// uiTableModelColumnNeverEditable and
-// uiTableModelColumnAlwaysEditable are the value of an editable
-// model column parameter to one of the uiTable create column
-// functions; if used, that jparticular uiTable colum is not editable
-// by the user and always editable by the user, respectively.
+/** Parameter to editable model columns to signify all rows are never editable. */
 #define uiTableModelColumnNeverEditable (-1)
+/** Parameter to editable model columns to signify all rows are always editable. */
 #define uiTableModelColumnAlwaysEditable (-2)
 
-// uiTableTextColumnOptionalParams are the optional parameters
-// that control the appearance of the text column of a uiTable.
+/**
+ * Optional parameters to control the appearance of text columns.
+ *
+ * @struct uiTableTextColumnOptionalParams
+ * @ingroup table
+ */
 typedef struct uiTableTextColumnOptionalParams uiTableTextColumnOptionalParams;
-
-// uiTableParams defines the parameters passed to uiNewTable().
-typedef struct uiTableParams uiTableParams;
-
 struct uiTableTextColumnOptionalParams {
-	// ColorModelColumn is the model column containing the
-	// text color of this uiTable column's text, or -1 to use the
-	// default color.
-	//
-	// If CellValue() for this column for any cell returns NULL, that
-	// cell will also use the default text color.
+	/**
+	 * uiTableModel column that defines the text color for each cell.
+	 *
+	 * #uiTableValueTypeColor Text color, `NULL` to use the default color
+	 * for that cell.
+	 *
+	 * `-1` to use the default color for all cells.
+	 */
 	int ColorModelColumn;
 };
 
+/**
+ * Table parameters passed to uiNewTable().
+ *
+ * @struct uiTableParams
+ * @ingroup table
+ */
+typedef struct uiTableParams uiTableParams;
 struct uiTableParams {
-	// Model is the uiTableModel to use for this uiTable.
-	// This parameter cannot be NULL.
+	/**
+	 * Model holding the data to be displayed. This can NOT be `NULL`.
+	 */
 	uiTableModel *Model;
-	// RowBackgroundColorModelColumn is a model column
-	// number that defines the background color used for the
-	// entire row in the uiTable, or -1 to use the default color for
-	// all rows.
-	//
-	// If CellValue() for this column for any row returns NULL, that
-	// row will also use the default background color.
+	/**
+	 * uiTableModel column that defines background color for each row,
+	 *
+	 * #uiTableValueTypeColor Background color, `NULL` to use the default
+	 * background color for that row.
+	 *
+	 * `-1` to use the default background color for all rows.
+	 */
 	int RowBackgroundColorModelColumn;
 };
 
-// uiTable is a uiControl that shows tabular data, allowing users to
-// manipulate rows of such data at a time.
+/**
+ * A control to display data in a tabular fashion.
+ *
+ * The view of the architecture.
+ *
+ * Data is retrieved from a uiTableModel via methods that you need to define
+ * in a uiTableModelHandler.
+ *
+ * Make sure the uiTableModel columns return the right type, as specified in
+ * the `uiTableAppend*Column()` parameters.
+ *
+ * The `*EditableModelColumn` parameters typically point to a uiTableModel
+ * column index, that specifies the property on a per row basis.\n
+ * They can however also be passed two special values defining the property
+ * for all rows: `uiTableModelColumnNeverEditable` and
+ * `uiTableModelColumnAlwaysEditable`.
+ *
+ * @struct uiTable
+ * @extends uiControl
+ * @ingroup dataEntry table
+ */
 typedef struct uiTable uiTable;
 #define uiTable(this) ((uiTable *) (this))
 
-// uiTableAppendTextColumn() appends a text column to t.
-// name is displayed in the table header.
-// textModelColumn is where the text comes from.
-// If a row is editable according to textEditableModelColumn,
-// SetCellValue() is called with textModelColumn as the column.
+/**
+ * Appends a text column to the table.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param textModelColumn Column that holds the text to be displayed.\n
+ *                        #uiTableValueTypeString
+ * @param textEditableModelColumn Column that defines whether or not the text is editable.\n
+ *                                #uiTableValueTypeInt `TRUE` to make text editable, `FALSE`
+ *                                otherwise.\n
+ *                                `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textParams Text display settings, `NULL` to use defaults.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendTextColumn(uiTable *t,
 	const char *name,
 	int textModelColumn,
 	int textEditableModelColumn,
 	uiTableTextColumnOptionalParams *textParams);
 
-// uiTableAppendImageColumn() appends an image column to t.
-// Images are drawn at icon size, appropriate to the pixel density
-// of the screen showing the uiTable.
+/**
+ * Appends an image column to the table.
+ *
+ * Images are drawn at icon size, using the representation that best fits the
+ * pixel density of the screen.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param imageModelColumn Column that holds the images to be displayed.\n
+ *                         #uiTableValueTypeImage
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendImageColumn(uiTable *t,
 	const char *name,
 	int imageModelColumn);
 
-// uiTableAppendImageTextColumn() appends a column to t that
-// shows both an image and text.
+/**
+ * Appends a column to the table that displays both an image and text.
+ *
+ * Images are drawn at icon size, using the representation that best fits the
+ * pixel density of the screen.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param imageModelColumn Column that holds the images to be displayed.\n
+ *                         #uiTableValueTypeImage
+ * @param textModelColumn Column that holds the text to be displayed.\n
+ *                        #uiTableValueTypeString
+ * @param textEditableModelColumn Column that defines whether or not the text is editable.\n
+ *                                #uiTableValueTypeInt `TRUE` to make text editable, `FALSE` otherwise.\n
+ *                                `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textParams Text display settings, `NULL` to use defaults.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendImageTextColumn(uiTable *t,
 	const char *name,
 	int imageModelColumn,
@@ -1446,17 +3610,49 @@ _UI_EXTERN void uiTableAppendImageTextColumn(uiTable *t,
 	int textEditableModelColumn,
 	uiTableTextColumnOptionalParams *textParams);
 
-// uiTableAppendCheckboxColumn appends a column to t that
-// contains a checkbox that the user can interact with (assuming the
-// checkbox is editable). SetCellValue() will be called with
-// checkboxModelColumn as the column in this case.
+/**
+ * Appends a column to the table containing a checkbox.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param checkboxModelColumn Column that holds the data to be displayed.\n
+ *                            #uiTableValueTypeInt `TRUE` for a checked checkbox, `FALSE` otherwise.
+ * @param checkboxEditableModelColumn Column that defines whether or not the checkbox is editable.\n
+ *                                    #uiTableValueTypeInt `TRUE` to make checkbox editable, `FALSE` otherwise.\n
+ *                                    `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                    `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendCheckboxColumn(uiTable *t,
 	const char *name,
 	int checkboxModelColumn,
 	int checkboxEditableModelColumn);
 
-// uiTableAppendCheckboxTextColumn() appends a column to t
-// that contains both a checkbox and text.
+/**
+ * Appends a column to the table containing a checkbox and text.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param checkboxModelColumn Column that holds the data to be displayed.\n
+ *                            #uiTableValueTypeInt
+ *                            `TRUE` for a checked checkbox, `FALSE` otherwise.
+ * @param checkboxEditableModelColumn Column that defines whether or not the checkbox is editable.\n
+ *                                    #uiTableValueTypeInt `TRUE` to make checkbox editable, `FALSE` otherwise.\n
+ *                                    `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                    `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textModelColumn Column that holds the text to be displayed.\n
+ *                        #uiTableValueTypeString
+ * @param textEditableModelColumn Column that defines whether or not the text is editable.\n
+ *                                #uiTableValueTypeInt `TRUE` to make text editable, `FALSE` otherwise.\n
+ *                                `uiTableModelColumnNeverEditable` to make all rows never editable.\n
+ *                                `uiTableModelColumnAlwaysEditable` to make all rows always editable.
+ * @param textParams Text display settings, `NULL` to use defaults.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendCheckboxTextColumn(uiTable *t,
 	const char *name,
 	int checkboxModelColumn,
@@ -1465,58 +3661,142 @@ _UI_EXTERN void uiTableAppendCheckboxTextColumn(uiTable *t,
 	int textEditableModelColumn,
 	uiTableTextColumnOptionalParams *textParams);
 
-// uiTableAppendProgressBarColumn() appends a column to t
-// that displays a progress bar. These columns work like
-// uiProgressBar: a cell value of 0..100 displays that percentage, and
-// a cell value of -1 displays an indeterminate progress bar.
+/**
+ * Appends a column to the table containing a progress bar.
+ *
+ * The workings and valid range are exactly the same as that of uiProgressBar.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param progressModelColumn Column that holds the data to be displayed.\n
+ *                            #uiTableValueTypeInt Integer in range of `[-1, 100]`, see uiProgressBar
+ *                            for details.
+ * @see uiProgressBar
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendProgressBarColumn(uiTable *t,
 	const char *name,
 	int progressModelColumn);
 
-// uiTableAppendButtonColumn() appends a column to t
-// that shows a button that the user can click on. When the user
-// does click on the button, SetCellValue() is called with a NULL
-// value and buttonModelColumn as the column.
-// CellValue() on buttonModelColumn should return the text to show
-// in the button.
+/**
+ * Appends a column to the table containing a button.
+ *
+ * Button clicks are signaled to the uiTableModelHandler via a call to
+ * SetCellValue() with a value of `NULL` for the @p buttonModelColumn.
+ *
+ * CellValue() must return the button text to display.
+ *
+ * @param t uiTable instance.
+ * @param name Column title text.\n
+ *             A valid, `NUL` terminated UTF-8 string.\n
+ *             Data is owned by the caller.
+ * @param buttonModelColumn Column that holds the button text to be displayed.\n
+ *                          #uiTableValueTypeString
+ * @param buttonClickableModelColumn Column that defines whether or not the button is clickable.\n
+ *                                   #uiTableValueTypeInt `TRUE` to make button clickable, `FALSE` otherwise.\n
+ *                                   `uiTableModelColumnNeverEditable` to make all rows never clickable.\n
+ *                                   `uiTableModelColumnAlwaysEditable` to make all rows always clickable.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableAppendButtonColumn(uiTable *t,
 	const char *name,
 	int buttonModelColumn,
 	int buttonClickableModelColumn);
 
-// uiTableHeaderVisible() returns whether the table header is visible
-// or not.
+/**
+ * Returns whether or not the table header is visible.
+ *
+ * @param t uiTable instance.
+ * @returns `TRUE` if visible, `FALSE` otherwise. [Default `TRUE`]
+ * @memberof uiTable
+ */
 _UI_EXTERN int uiTableHeaderVisible(uiTable *t);
 
-// uiTableHeaderSetVisible() sets the visibility of the table header.
+/**
+ * Sets whether or not the table header is visible.
+ *
+ * @param t uiTable instance.
+ * @param visible `TRUE` to show header, `FALSE` to hide header.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableHeaderSetVisible(uiTable *t, int visible);
 
-// uiNewTable() creates a new uiTable with the specified parameters.
+/**
+ * Creates a new table.
+ *
+ * @param params Table parameters.
+ * @returns A new uiTable instance.
+ * @memberof uiTable @static
+ */
 _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
 
-// uiTableHeaderSetSortIndicator() sets the sort indicator of the table
-// header to display an appropriate arrow on the column header
+/**
+ * Sets the column's sort indicator displayed in the table header.
+ *
+ * Use this to display appropriate arrows in the table header to indicate a
+ * sort direction.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @param indicator Sort indicator.
+ * @note Setting the indicator is purely visual and does not perform any sorting.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableHeaderSetSortIndicator(uiTable *t,
 	int column,
 	uiSortIndicator indicator);
 
-// uiTableHeaderSortIndicator returns the sort indicator of the specified
-// column
+/**
+ * Returns the column's sort indicator displayed in the table header.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @returns The current sort indicator. [Default: `uiSortIndicatorNone`]
+ * @memberof uiTable
+ */
 _UI_EXTERN uiSortIndicator uiTableHeaderSortIndicator(uiTable *t, int column);
 
-// uiTableHeaderOnClicked() sets a callback function to be called
-// when a table column header is clicked
+/**
+ * Registers a callback for when a table column header is clicked.
+ *
+ * @param t uiTable instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p column Column index that was clicked.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableHeaderOnClicked(uiTable *t,
-	void (*f)(uiTable *table, int column, void *data),
-	void *data);
+	void (*f)(uiTable *sender, int column, void *senderData), void *data);
 
-// uiTableColumnWidth() return current table column width
+/**
+ * Returns the table column width.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @returns Column width in pixels.
+ * @memberof uiTable
+ */
 _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
 
-// uiTableColumnSetWidth() set table column width
-// Setting width to -1 will restore automatic column sizing matching either
-// the width of the content or header title (which ever one is bigger)
-// Note: darwin currently only resizes to header title width on -1
+/**
+ * Sets the table column width.
+ *
+ * Setting the width to `-1` will restore automatic column sizing matching
+ * either the width of the content or column header (which ever one is bigger).
+ * @note Darwin currently only resizes to the column header width on `-1`.
+ *
+ * @param t uiTable instance.
+ * @param column Column index.
+ * @param width Column width to set in pixels, `-1` to restore automatic
+ *              column sizing.
+ * @memberof uiTable
+ */
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
 
 #ifdef __cplusplus
