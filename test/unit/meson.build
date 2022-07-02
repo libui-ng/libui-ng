@@ -1,4 +1,4 @@
-cmocka_deps = dependency('cmocka', version : '>=1.0.0')
+cmocka_deps = dependency('cmocka', version : '>=1.0.0', default_options: ['default_library=static'])
 
 libui_unit_sources = [
 	'main.c',
