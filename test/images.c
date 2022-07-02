@@ -655,7 +655,7 @@ static const uint8_t dat3[] = {
 
 static const struct {
 	const char *name;
-	void *data;
+	const uint8_t *data;
 	int width;
 	int height;
 	int stride;
@@ -673,7 +673,7 @@ void appendImageNamed(uiImage *img, const char *name)
 	i = 0;
 	for (;;) {
 		if (strcmp(name, files[i].name) == 0) {
-			uiImageAppend(img, files[i].data, files[i].width, files[i].height, files[i].stride);
+			uiImageAppend(img, (void *)files[i].data, files[i].width, files[i].height, files[i].stride);
 			return;
 		}
 		i++;

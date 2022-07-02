@@ -101,3 +101,4 @@ void uiFreeFontDescriptor(uiFontDescriptor *desc)
 	// TODO ensure this is synchronized with fontmatch.c
 	uiFreeText((char *) (desc->Family));
 }
+

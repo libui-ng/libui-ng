@@ -22,6 +22,7 @@ struct uiTable {
 	void *headerOnClickedData;
 };
 
+/*
 // use the same size as GtkFileChooserWidget's treeview
 // TODO refresh when icon theme changes
 // TODO doesn't work when scaled?
@@ -40,6 +41,7 @@ static void setImageSize(GtkCellRenderer *r)
 		2 * xpad + size,
 		2 * ypad + size);
 }
+*/
 
 static void applyColor(GtkTreeModel *m, GtkTreeIter *iter, int modelColumn, GtkCellRenderer *r, const char *prop, const char *propSet)
 {
