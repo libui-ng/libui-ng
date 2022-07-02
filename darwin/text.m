@@ -18,6 +18,7 @@ void uiFreeText(char *s)
 	free(s);
 }
 
+// TODO Not UTF-8 aware, ASCII only!
 int uiprivStricmp(const char *a, const char *b)
 {
 	return strcasecmp(a, b);
