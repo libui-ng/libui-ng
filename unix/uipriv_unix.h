@@ -3,16 +3,7 @@
 #define GLIB_VERSION_MAX_ALLOWED GLIB_VERSION_2_40
 #define GDK_VERSION_MIN_REQUIRED GDK_VERSION_3_10
 #define GDK_VERSION_MAX_ALLOWED GDK_VERSION_3_10
-// Workaround for upstream bug when using latest Clang with GTK3
-// See https://stackoverflow.com/questions/70848614/getting-static-assert-is-a-c11-specific-feature-with-std-c99-on-freebsd
-#ifdef __clang__
-_Pragma("clang diagnostic push")
-_Pragma("clang diagnostic ignored \"-Wc11-extensions\"")
-#endif
 #include <gtk/gtk.h>
-#ifdef __clang__
-_Pragma("clang diagnostic pop")
-#endif
 #include <math.h>
 #include <dlfcn.h>		// see future.c
 #include <langinfo.h>
