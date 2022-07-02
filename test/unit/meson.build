@@ -1,4 +1,7 @@
-cmocka_deps = dependency('cmocka', version : '>=1.0.0', default_options: ['default_library=static'])
+# cmocka will get force built via meson wrap dependencies as specified in the
+# root meson.build via force_fallback_for=cmocka
+cmocka_deps = dependency('cmocka', version: '>=1.1.5',
+	required: get_option('tests'), default_options: ['default_library=static'])
 
 libui_unit_sources = [
 	'main.c',

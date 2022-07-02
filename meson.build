@@ -4,7 +4,7 @@
 
 # TODO remove cpp from this list once https://github.com/mesonbuild/meson/issues/5181 is settled; move it to the OS checks and under cpp-multithread
 project('libui', ['c', 'cpp'],
-	meson_version: '>=0.48.0',
+	meson_version: '>=0.58.0',
 	default_options: [
 		'buildtype=debug',				# build debug by default
 		'default_library=shared',			# build shared libraries by default
@@ -19,6 +19,7 @@ project('libui', ['c', 'cpp'],
 		'cpp_std=c++11',				# strict C++11
 		'cpp_eh=sc',					# shut the compiler up in some cases
 		'cpp_winlibs=',					# likewise as with c_winlibs
+		'force_fallback_for=cmocka',			# always build cmocka locally
 	],
 	license: 'MIT')
 
