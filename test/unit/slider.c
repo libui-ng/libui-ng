@@ -39,9 +39,11 @@ static void sliderSetValue(void **state)
 {
 	uiSlider **s = uiSliderPtrFromState(state);
 
-	*s = uiNewSlider(0, 1);
+	*s = uiNewSlider(0, 2);
 	uiSliderSetValue(*s, 1);
 	assert_int_equal(uiSliderValue(*s), 1);
+	uiSliderSetValue(*s, 2);
+	assert_int_equal(uiSliderValue(*s), 2);
 	uiSliderSetValue(*s, 0);
 	assert_int_equal(uiSliderValue(*s), 0);
 }
