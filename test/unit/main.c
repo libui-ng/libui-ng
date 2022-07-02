@@ -1,19 +1,9 @@
-#include <stdarg.h>
-#include <stddef.h>
-#include <setjmp.h>
-#include <cmocka.h>
+#include <stdio.h>
 
-#include <stdlib.h>
-
-#include "../../ui.h"
+#include "unit.h"
 
 #define UNIT_TEST_WIDTH 300
 #define UNIT_TEST_HEIGHT 200
-
-struct state {
-	uiWindow *w;
-	uiSlider *s;
-};
 
 static int onClosing(uiWindow *w, void *data)
 {
@@ -29,20 +19,20 @@ int close(void *data)
 }
 */
 
-static int unitTestsSetup(void **state)
+int unitTestsSetup(void **state)
 {
 	*state = malloc(sizeof(struct state));
 	assert_non_null(*state);
 	return 0;
 }
 
-static int unitTestsTeardown(void **state)
+int unitTestsTeardown(void **state)
 {
 	free(*state);
 	return 0;
 }
 
-static int unitTestSetup(void **_state)
+int unitTestSetup(void **_state)
 {
 	struct state *state = *_state;
 	uiInitOptions o = {0};
@@ -53,11 +43,11 @@ static int unitTestSetup(void **_state)
 	return 0;
 }
 
-static int unitTestTeardown(void **_state)
+int unitTestTeardown(void **_state)
 {
 	struct state *state = *_state;
 
-	uiWindowSetChild(state->w, uiControl(state->s));
+	uiWindowSetChild(state->w, uiControl(state->c));
 	uiControlShow(uiControl(state->w));
 	//uiMain();
 	uiMainSteps();
@@ -67,140 +57,33 @@ static int unitTestTeardown(void **_state)
 	return 0;
 }
 
-static int sliderUnitTestSetup(void **state)
-{
-	return unitTestSetup(state);
-}
-
-static int sliderUnitTestTeardown(void **state)
-{
-	return unitTestTeardown(state);
-}
-
-static void sliderNew(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-}
-
-static void sliderValueDefaultMin0(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	assert_int_equal(uiSliderValue(*s), 0);
-}
-
-static void sliderValueDefaultMin1(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(1, 2);
-	assert_int_equal(uiSliderValue(*s), 1);
-}
-
-static void sliderSetValue(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	uiSliderSetValue(*s, 1);
-	assert_int_equal(uiSliderValue(*s), 1);
-	uiSliderSetValue(*s, 0);
-	assert_int_equal(uiSliderValue(*s), 0);
-}
-
-static void sliderSetValueOutOfRangeClampLow(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	uiSliderSetValue(*s, -1);
-	assert_int_equal(uiSliderValue(*s), 0);
-}
-
-static void sliderSetValueOutOfRangeClampHigh(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	uiSliderSetValue(*s, 2);
-	assert_int_equal(uiSliderValue(*s), 1);
-}
-
-static void sliderHasToolTipDefaultTrue(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	assert_int_equal(uiSliderHasToolTip(*s), 1);
-}
-
-static void sliderSetHasToolTip(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	uiSliderSetHasToolTip(*s, 0);
-	assert_int_equal(uiSliderHasToolTip(*s), 0);
-	uiSliderSetHasToolTip(*s, 1);
-	assert_int_equal(uiSliderHasToolTip(*s), 1);
-}
-
-static void sliderSetRangeLessThanValue(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	uiSliderSetRange(*s, -2, -1);
-	assert_int_equal(uiSliderValue(*s), -1);
-}
-
-static void sliderSetRangeGreaterThanValue(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	uiSliderSetRange(*s, 1, 2);
-	assert_int_equal(uiSliderValue(*s), 1);
-}
-
-static void onChangedNoCall(uiSlider *s, void *data)
-{
-	function_called();
-}
-
-static void sliderSetValueNoCallback(void **state)
-{
-	uiSlider **s = &(((struct state *)*state)->s);
-
-	*s = uiNewSlider(0, 1);
-	uiSliderOnChanged(*s, onChangedNoCall, NULL);
-	//expect_function_calls(onChangedNoCall, 0);
-	uiSliderSetValue(*s, 1);
-	uiSliderSetValue(*s, 0);
-}
-
-#define sliderUnitTest(f) cmocka_unit_test_setup_teardown((f), \
-		sliderUnitTestSetup, sliderUnitTestTeardown)
+struct unitTest {
+	int (*fn)(void);
+};
 
 int main(void)
 {
-	const struct CMUnitTest tests[] = {
-		sliderUnitTest(sliderNew),
-		sliderUnitTest(sliderValueDefaultMin0),
-		sliderUnitTest(sliderValueDefaultMin1),
-		sliderUnitTest(sliderSetValue),
-		sliderUnitTest(sliderSetValueOutOfRangeClampLow),
-		sliderUnitTest(sliderSetValueOutOfRangeClampHigh),
-		sliderUnitTest(sliderHasToolTipDefaultTrue),
-		sliderUnitTest(sliderSetHasToolTip),
-		sliderUnitTest(sliderSetRangeLessThanValue),
-		sliderUnitTest(sliderSetRangeGreaterThanValue),
-		sliderUnitTest(sliderSetValueNoCallback),
+	size_t i;
+	int failedTests = 0;
+	int failedComponents = 0;
+	struct unitTest unitTests[] = {
+		{ sliderRunUnitTests },
 	};
 
-	return cmocka_run_group_tests_name("uiSlider", tests, unitTestsSetup, unitTestsTeardown);
+	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {
+		int fails = (unitTests[i].fn)();
+		failedTests += fails;
+		if (fails > 0)
+			failedComponents++;
+	}
+
+	puts("[==========]");
+	if (failedTests == 0)
+		puts("[  PASSED  ] All test(s) in all component(s).");
+	else
+		printf("[  FAILED  ] %d test(s) in %d component(s), see above.\n",
+			       failedTests, failedComponents);
+
+	return failedTests;
 }
 
