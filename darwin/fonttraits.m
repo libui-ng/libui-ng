@@ -171,7 +171,7 @@ void uiprivProcessFontTraits(uiprivFontStyleData *d, uiFontDescriptor *out)
 	weight = [d weight];
 	width = [d width];
 
-	if (!hasWeight)
+	if (!hasWeight) {
 		// TODO this scale is a bit lopsided
 		if (weight <= -0.7)
 			out->Weight = uiTextWeightThin;
@@ -197,8 +197,9 @@ void uiprivProcessFontTraits(uiprivFontStyleData *d, uiFontDescriptor *out)
 			out->Weight = uiTextWeightHeavy;
 		else
 			out->Weight = uiTextWeightUltraHeavy;
+	}
 
-	if (!hasWidth)
+	if (!hasWidth) {
 		// TODO this scale is a bit lopsided
 		if (width <= -0.7) {
 			out->Stretch = uiTextStretchUltraCondensed;
@@ -220,4 +221,5 @@ void uiprivProcessFontTraits(uiprivFontStyleData *d, uiFontDescriptor *out)
 			out->Stretch = uiTextStretchExtraExpanded;
 		else
 			out->Stretch = uiTextStretchUltraExpanded;
+	}
 }

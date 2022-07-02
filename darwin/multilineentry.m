@@ -125,7 +125,9 @@ static uiMultilineEntry *finishMultilineEntry(BOOL hscroll)
 	uiDarwinNewControl(uiMultilineEntry, e);
 
 	e->tv = [[intrinsicSizeTextView alloc] initWithFrame:NSZeroRect e:e];
+if (@available(macOS 10.14, *)) {
 	[e->tv setUsesAdaptiveColorMappingForDarkAppearance:YES];
+}
 
 	// verified against Interface Builder for a sufficiently customized text view
 

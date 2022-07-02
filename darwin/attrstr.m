@@ -258,12 +258,12 @@ static void addFontAttributeToRange(struct foreachParams *p, size_t start, size_
 			cfa = [cfa copy];
 		[cfa addAttribute:attr];
 		// clamp range within [start, end)
-		if (range.location < start) {
+		if ((size_t)range.location < start) {
 			diff = start - range.location;
 			range.location = start;
 			range.length -= diff;
 		}
-		if ((range.location + range.length) > end)
+		if ((size_t)(range.location + range.length) > end)
 			range.length = end - range.location;
 		CFAttributedStringSetAttribute(p->mas, range, combinedFontAttrName, cfa);
 		[cfa release];
