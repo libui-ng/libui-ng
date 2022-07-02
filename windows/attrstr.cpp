@@ -335,7 +335,8 @@ static uiForEach processAttribute(const uiAttributedString *s, const uiAttribute
 		hr = p->layout->SetUnderline(hasUnderline, range);
 		if (hr != S_OK)
 			logHRESULT(L"error applying underline attribute", hr);
-		// and fall through to set the underline style through the drawing effect
+		// fall through to set the underline style through the drawing effect
+		// fall through
 	case uiAttributeTypeColor:
 	case uiAttributeTypeUnderlineColor:
 		// TODO const-correct this properly

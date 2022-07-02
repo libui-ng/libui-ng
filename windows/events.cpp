@@ -144,8 +144,6 @@ void uiWindowsUnregisterReceiveWM_WININICHANGE(HWND hwnd)
 
 void issueWM_WININICHANGE(WPARAM wParam, LPARAM lParam)
 {
-	struct wininichange *ch;
-
 	for (const auto &iter : wininichanges)
 		SendMessageW(iter.first, WM_WININICHANGE, wParam, lParam);
 }

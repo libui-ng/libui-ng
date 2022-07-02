@@ -475,14 +475,15 @@ public:
 // TODO this ignores clipping?
 void uiDrawText(uiDrawContext *c, uiDrawTextLayout *tl, double x, double y)
 {
-	D2D1_POINT_2F pt;
 	ID2D1SolidColorBrush *black;
 	textRenderer *renderer;
 	HRESULT hr;
 
+	/*
 	for (auto p : *(tl->backgroundParams)) {
 		// TODO
 	}
+	*/
 
 	// TODO document that fully opaque black is the default text color; figure out whether this is upheld in various scenarios on other platforms
 	// TODO figure out if this needs to be cleaned out

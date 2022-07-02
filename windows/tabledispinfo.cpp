@@ -11,7 +11,6 @@ static HRESULT handleLVIF_TEXT(uiTable *t, NMLVDISPINFOW *nm, uiprivTableColumnP
 	uiTableValue *value;
 	WCHAR *wstr;
 	int progress;
-	HRESULT hr;
 
 	if ((nm->item.mask & LVIF_TEXT) == 0)
 		return S_OK;
@@ -59,9 +58,6 @@ static HRESULT handleLVIF_TEXT(uiTable *t, NMLVDISPINFOW *nm, uiprivTableColumnP
 
 static HRESULT handleLVIF_IMAGE(uiTable *t, NMLVDISPINFOW *nm, uiprivTableColumnParams *p)
 {
-	uiTableValue *value;
-	HRESULT hr;
-
 	if (nm->item.iSubItem == 0 && p->imageModelColumn == -1 && p->checkboxModelColumn == -1) {
 		// Having an image list always leaves space for an image
 		// on the main item :|

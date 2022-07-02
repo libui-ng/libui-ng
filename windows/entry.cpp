@@ -129,9 +129,11 @@ uiEntry *uiNewSearchEntry(void)
 	HRESULT hr;
 
 	e = finishNewEntry(0);
-	// TODO this is from ThemeExplorer; is it documented anywhere?
-	// TODO SearchBoxEditComposited has no border
-	hr = SetWindowTheme(e->hwnd, L"SearchBoxEdit", NULL);
-	// TODO will hr be S_OK if themes are disabled?
+
+	hr = SetWindowTheme(e->hwnd, L"SearchBoxEditComposited", NULL);
+	if (hr != S_OK || !IsAppThemed()) {
+		//TODO log: Failed to apply search box theme.
+	}
+
 	return e;
 }

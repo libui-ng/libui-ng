@@ -195,7 +195,7 @@ HRESULT uiprivTableHandleNM_CLICK(uiTable *t, NMITEMACTIVATE *nm, LRESULT *lResu
 	int modelColumn, editableColumn;
 	bool text, checkbox;
 	uiTableValue *value;
-	int checked, editable;
+	int checked;
 	HRESULT hr;
 
 	ZeroMemory(&ht, sizeof (LVHITTESTINFO));
