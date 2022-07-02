@@ -2,16 +2,6 @@
 
 #define uiSliderPtrFromState(s) uiControlPtrFromState(uiSlider, s)
 
-static int sliderUnitTestSetup(void **state)
-{
-	return unitTestSetup(state);
-}
-
-static int sliderUnitTestTeardown(void **state)
-{
-	return unitTestTeardown(state);
-}
-
 static void sliderNew(void **state)
 {
 	uiSlider **s = uiSliderPtrFromState(state);
@@ -120,7 +110,7 @@ static void sliderSetValueNoCallback(void **state)
 }
 
 #define sliderUnitTest(f) cmocka_unit_test_setup_teardown((f), \
-		sliderUnitTestSetup, sliderUnitTestTeardown)
+		unitTestSetup, unitTestTeardown)
 
 int sliderRunUnitTests(void)
 {
