@@ -68,6 +68,7 @@ int main(void)
 	int failedComponents = 0;
 	struct unitTest unitTests[] = {
 		{ sliderRunUnitTests },
+		{ spinboxRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {

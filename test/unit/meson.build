@@ -6,6 +6,7 @@ cmocka_deps = dependency('cmocka', version: '>=1.1.5',
 libui_unit_sources = [
 	'main.c',
 	'slider.c',
+        'spinbox.c',
 ]
 
 if libui_OS == 'windows'
