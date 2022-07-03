@@ -80,11 +80,8 @@ jobs:
         run: meson setup builddir --buildtype=${{ matrix.buildtype }} --default-library=${{ matrix.libtype }}
       - name: Ninja Build
         run: ninja -C builddir --verbose
-
-      # TODO: Add test
-      # - name: Run test
-      #   run: meson test -C builddir --verbose
-
+      - name: Run Tests
+        run: meson test -C builddir --verbose
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
