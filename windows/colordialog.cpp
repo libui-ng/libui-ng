@@ -855,7 +855,7 @@ static LRESULT CALLBACK opacitySliderSubProc(HWND hwnd, UINT uMsg, WPARAM wParam
 }
 
 // TODO extract into d2dscratch.cpp, use in font dialog
-HWND replaceWithD2DScratch(HWND parent, int id, SUBCLASSPROC subproc, void *data)
+HWND replaceWithD2DScratch(HWND parent, uintptr_t id, SUBCLASSPROC subproc, void *data)
 {
 	HWND replace;
 	RECT r;
