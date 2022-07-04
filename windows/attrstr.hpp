@@ -32,7 +32,7 @@ struct drawTextBackgroundParams;
 extern void uiprivAttributedStringApplyAttributesToDWriteTextLayout(uiDrawTextLayoutParams *p, IDWriteTextLayout *layout, std::vector<struct drawTextBackgroundParams *> **backgroundFuncs);
 
 // drawtext.cpp
-class drawingEffectsAttr : public IUnknown {
+class drawingEffectsAttr final : public IUnknown {
 	ULONG refcount;
 
 	bool hasColor;

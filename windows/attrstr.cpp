@@ -30,7 +30,7 @@ static std::hash<double> doubleHash;
 // we can at least try to goad it into doing so if we can deduplicate effects once they're all computed
 // so what we do is use this class to store in-progress effects, much like uiprivCombinedFontAttr on the OS X code
 // we then deduplicate them later while converting them into a form suitable for drawing with; see applyEffectsAttributes() below
-class combinedEffectsAttr : public IUnknown {
+class combinedEffectsAttr final : public IUnknown {
 	ULONG refcount;
 	uiAttribute *colorAttr;
 	uiAttribute *underlineAttr;
