@@ -126,6 +126,7 @@ static void hsv2RGB(double h, double s, double v, double *r, double *g, double *
 		return;
 	}
 	// TODO
+	*r = *g = *b = 0;
 }
 
 #define hexd L"0123456789ABCDEF"
