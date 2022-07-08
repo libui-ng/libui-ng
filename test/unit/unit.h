@@ -13,6 +13,7 @@
 /**
  * Unit test run functions.
  */
+int initRunUnitTests(void);
 int sliderRunUnitTests(void);
 int spinboxRunUnitTests(void);
 
