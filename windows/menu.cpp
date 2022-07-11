@@ -14,7 +14,6 @@ static BOOL hasAbout = FALSE;
 
 struct uiMenu {
 	WCHAR *name;
-	HMENU handle;
 	uiMenuItem **items;
 	BOOL ischild;
 	size_t len;
@@ -24,7 +23,7 @@ struct uiMenu {
 struct uiMenuItem {
 	WCHAR *name;
 	int type;
-	WORD id;
+	UINT_PTR id;
 	void (*onClicked)(uiMenuItem *, uiWindow *, void *);
 	void *onClickedData;
 	BOOL disabled;				// template for new instances; kept in sync with everything else
@@ -51,6 +50,7 @@ static void sync(uiMenuItem *item)
 {
 	size_t i;
 	MENUITEMINFOW mi;
+	UINT_PTR id = item->id;
 
 	ZeroMemory(&mi, sizeof (MENUITEMINFOW));
 	mi.cbSize = sizeof (MENUITEMINFOW);
@@ -60,9 +60,12 @@ static void sync(uiMenuItem *item)
 	if (item->checked)
 		mi.fState |= MFS_CHECKED;
 
-	for (i = 0; i < item->len; i++)
-		if (SetMenuItemInfo(item->hmenus[i], item->id, FALSE, &mi) == 0)
+	for (i = 0; i < item->len; i++) {
+		if (item->type == typeSubmenu)
+			id = (UINT_PTR) item->popupchild->items[0]->hmenus[i]; // TODO: is it same to assume a non-empty menu?
+		if (SetMenuItemInfo(item->hmenus[i], id, FALSE, &mi) == 0)
 			logLastError(L"error synchronizing menu items");
+	}
 }
 
 static void defaultOnClicked(uiMenuItem *item, uiWindow *w, void *data)
@@ -270,7 +273,7 @@ static void appendMenuItem(HMENU menu, uiMenuItem *item)
 			uFlags |= MF_CHECKED;
 		if (item->popupchild) {
 			uFlags |= MF_POPUP;
-			id = (UINT_PTR)makeMenu(item->popupchild);
+			id = (UINT_PTR) makeMenu(item->popupchild);
 		}
 	}
 	if (AppendMenuW(menu, uFlags, id, item->name) == 0)
@@ -292,7 +295,6 @@ static HMENU makeMenu(uiMenu *m)
 	menu = CreatePopupMenu();
 	if (menu == NULL)
 		logLastError(L"error creating menu");
-	m->handle = menu;
 	for (i = 0; i < m->len; i++)
 		appendMenuItem(menu, m->items[i]);
 	return menu;
@@ -347,44 +349,36 @@ found:
 	(*(item->onClicked))(item, w, item->onClickedData);
 }
 
-static void freeMenu(uiMenu *m, HMENU submenu)
-{
-	size_t i;
-	uiMenuItem *item;
-	size_t j;
-
-	for (i = 0; i < m->len; i++) {
-		item = m->items[i];
-		for (j = 0; j < item->len; j++)
-			if (item->hmenus[j] == submenu)
-				break;
-		if (j >= item->len)
-			uiprivImplBug("submenu handle %p not found in freeMenu()", submenu);
-		for (; j < item->len - 1; j++)
-			item->hmenus[j] = item->hmenus[j + 1];
-		item->hmenus[j] = NULL;
-		item->len--;
-
-		if (item->popupchild)
-			freeMenu(item->popupchild, item->popupchild->handle);
-	}
-}
-
 void freeMenubar(HMENU menubar)
 {
-	size_t i;
-	size_t j = 0;
+	size_t i, j, windowIndex;
 	MENUITEMINFOW mi;
+	uiMenuItem *item;
+
+	ZeroMemory(&mi, sizeof (MENUITEMINFOW));
+	mi.cbSize = sizeof (MENUITEMINFOW);
+	mi.fMask = MIIM_SUBMENU;
+	if (GetMenuItemInfoW(menubar, 0, TRUE, &mi) == 0)
+		logLastError(L"error getting menu to delete item references from");
 
 	for (i = 0; i < len; i++) {
 		if (menus[i]->ischild) continue;
-		ZeroMemory(&mi, sizeof (MENUITEMINFOW));
-		mi.cbSize = sizeof (MENUITEMINFOW);
-		mi.fMask = MIIM_SUBMENU;
-		if (GetMenuItemInfoW(menubar, j, TRUE, &mi) == 0)
-			logLastError(L"error getting menu to delete item references from");
-		freeMenu(menus[i], mi.hSubMenu);
-		j++;
+		for (j = 0; j < menus[i]->items[0]->len; j++)
+			if (menus[i]->items[0]->hmenus[j] == mi.hSubMenu) 
+				goto found;
+	}
+
+  uiprivImplBug("submenu handle %p not found in freeMenubar()", mi.hSubMenu);
+
+found:
+	windowIndex = j;
+
+	for (i = 0; i < len; i++) {
+		for (j = 0; j < menus[i]->len; j++) {
+			item = menus[i]->items[j];
+			item->hmenus[windowIndex] = item->hmenus[item->len - 1]; // TODO: is it same to assume a non-empty menu?
+      item->len--;
+		}
 	}
 	// no need to worry about destroying any menus; destruction of the window they're in will do it for us
 }

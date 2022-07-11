@@ -21,11 +21,12 @@ struct uiMenuItem {
 	GType gtype;					// template for new instances; kept in sync with everything else
 	gboolean disabled;
 	gboolean checked;
-	GHashTable *windows;			// map[GtkMenuItem]*menuItemWindow
+	GArray *menuItems;			// []*menuItemWindow
 	uiMenu *popupchild;
 };
 
 struct menuItemWindow {
+	GtkMenuItem *item;
 	uiWindow *w;
 	gulong signal;
 };
@@ -50,16 +51,13 @@ static void singleSetChecked(GtkCheckMenuItem *menuitem, gboolean checked, gulon
 
 static void setChecked(uiMenuItem *item, gboolean checked)
 {
-	GHashTableIter iter;
-	gpointer widget;
-	gpointer ww;
 	struct menuItemWindow *w;
+	guint i;
 
 	item->checked = checked;
-	g_hash_table_iter_init(&iter, item->windows);
-	while (g_hash_table_iter_next(&iter, &widget, &ww)) {
-		w = (struct menuItemWindow *) ww;
-		singleSetChecked(GTK_CHECK_MENU_ITEM(widget), item->checked, w->signal);
+	for (i = 0; i < item->menuItems->len; i++) {
+		w = g_array_index(item->menuItems, struct menuItemWindow *, i);
+		singleSetChecked(GTK_CHECK_MENU_ITEM(w->item), item->checked, w->signal);
 	}
 }
 
@@ -67,13 +65,19 @@ static void onClicked(GtkMenuItem *menuitem, gpointer data)
 {
 	uiMenuItem *item = uiMenuItem(data);
 	struct menuItemWindow *w;
+	guint i;
 
 	// we need to manually update the checked states of all menu items if one changes
 	// notice that this is getting the checked state of the menu item that this signal is sent from
 	if (item->type == typeCheckbox)
 		setChecked(item, gtk_check_menu_item_get_active(GTK_CHECK_MENU_ITEM(menuitem)));
 
-	w = (struct menuItemWindow *) g_hash_table_lookup(item->windows, menuitem);
+	for (i = 0; i < item->menuItems->len; i++) {
+		w = g_array_index(item->menuItems, struct menuItemWindow *, i);
+		if (w->item == menuitem)
+			break;
+	}
+
 	(*(item->onClicked))(item, w->w, item->onClickedData);
 }
 
@@ -90,13 +94,15 @@ static void onQuitClicked(uiMenuItem *item, uiWindow *w, void *data)
 
 static void menuItemEnableDisable(uiMenuItem *item, gboolean enabled)
 {
-	GHashTableIter iter;
-	gpointer widget;
+	struct menuItemWindow* w;
+	guint i;
 
 	item->disabled = !enabled;
-	g_hash_table_iter_init(&iter, item->windows);
-	while (g_hash_table_iter_next(&iter, &widget, NULL))
-		gtk_widget_set_sensitive(GTK_WIDGET(widget), enabled);
+
+	for (i = 0; i<item->menuItems->len; i++) {
+		w = g_array_index(item->menuItems, struct menuItemWindow *, i);
+		gtk_widget_set_sensitive(GTK_WIDGET(w->item), enabled);
+	}
 }
 
 void uiMenuItemEnable(uiMenuItem *item)
@@ -113,6 +119,8 @@ void uiMenuItemOnClicked(uiMenuItem *item, void (*f)(uiMenuItem *, uiWindow *, v
 {
 	if (item->type == typeQuit)
 		uiprivUserBug("You cannot call uiMenuItemOnClicked() on a Quit item; use uiOnShouldQuit() instead.");
+	if (item->type == typeSubmenu)
+		uiprivUserBug("You cannot call uiMenuItemOnClicked() on an item with a subMenu.");
 	item->onClicked = f;
 	item->onClickedData = data;
 }
@@ -181,7 +189,7 @@ static uiMenuItem *newItem(uiMenu *m, int type, const char *name)
 		break;
 	}
 
-	item->windows = g_hash_table_new(g_direct_hash, g_direct_equal);
+	item->menuItems = g_array_new(FALSE, TRUE, sizeof (struct menuItemWindow *));
 	item->popupchild = NULL;
 
 	return item;
@@ -199,13 +207,9 @@ uiMenuItem *uiMenuAppendSubmenu(uiMenu *m, uiMenu* child)
 	g_array_append_val(m->items, item);
 
 	item->type = typeSubmenu;
-	item->name = child->name;
-
-	uiMenuItemOnClicked(item, defaultOnClicked, NULL);
-
+	item->name = g_strdup(child->name);
 	item->gtype = GTK_TYPE_MENU_ITEM;
-
-	item->windows = g_hash_table_new(g_direct_hash, g_direct_equal);
+	item->menuItems = g_array_new(FALSE, TRUE, sizeof (struct menuItemWindow *));
 	item->popupchild = child;
 	child->ischild = TRUE;
 
@@ -280,11 +284,15 @@ static void appendMenuItem(GtkMenuShell *submenu, uiMenuItem *item, uiWindow *w)
 	gulong signal;
 	struct menuItemWindow *ww;
 
+	uiMenu *child;
+	guint j;
+	GtkWidget *childSubmenu;
+
 	menuitem = g_object_new(item->gtype, NULL);
 	signal = 0;
 	if (item->name != NULL)
 		gtk_menu_item_set_label(GTK_MENU_ITEM(menuitem), item->name);
-	if (item->type != typeSeparator) {
+	if (item->type != typeSeparator && item->type != typeSubmenu) {
 		signal = g_signal_connect(menuitem, "activate", G_CALLBACK(onClicked), item);
 		gtk_widget_set_sensitive(menuitem, !item->disabled);
 		if (item->type == typeCheckbox)
@@ -292,20 +300,17 @@ static void appendMenuItem(GtkMenuShell *submenu, uiMenuItem *item, uiWindow *w)
 	}
 	gtk_menu_shell_append(submenu, menuitem);
 	ww = uiprivNew(struct menuItemWindow);
+	ww->item = GTK_MENU_ITEM(menuitem);
 	ww->w = w;
 	ww->signal = signal;
-	g_hash_table_insert(item->windows, menuitem, ww);
+	g_array_append_val(item->menuItems, ww);
 
 	if (item->popupchild != NULL) {
-		guint j;
-		uiMenu* m;
-		GtkWidget *submenu;
-
-		m = item->popupchild;
-		submenu = gtk_menu_new();
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
-		for (j = 0; j < m->items->len; j++)
-			appendMenuItem(GTK_MENU_SHELL(submenu), g_array_index(m->items, uiMenuItem *, j), w);
+		child = item->popupchild;
+		childSubmenu = gtk_menu_new();
+		gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), childSubmenu);
+		for (j = 0; j < child->items->len; j++)
+			appendMenuItem(GTK_MENU_SHELL(childSubmenu), g_array_index(child->items, uiMenuItem *, j), w);
 	}
 }
 
@@ -316,18 +321,15 @@ GtkWidget *uiprivMakeMenubar(uiWindow *w)
 	uiMenu *m;
 	GtkWidget *menuitem;
 	GtkWidget *submenu;
-	GArray *topMenus;
 
 	menusFinalized = TRUE;
 
 	menubar = gtk_menu_bar_new();
-	topMenus = g_array_new(FALSE, TRUE, sizeof (uiMenu *));
 
 	if (menus != NULL)
 		for (i = 0; i < menus->len; i++) {
 			m = g_array_index(menus, uiMenu *, i);
 			if (m->ischild) continue;
-			g_array_append_val(topMenus, m);
 			menuitem = gtk_menu_item_new_with_label(m->name);
 			submenu = gtk_menu_new();
 			gtk_menu_item_set_submenu(GTK_MENU_ITEM(menuitem), submenu);
@@ -336,92 +338,67 @@ GtkWidget *uiprivMakeMenubar(uiWindow *w)
 			gtk_menu_shell_append(GTK_MENU_SHELL(menubar), menuitem);
 		}
 
-	g_array_free(menus, TRUE);
-	menus = topMenus;
 	gtk_widget_set_hexpand(menubar, TRUE);
 	gtk_widget_set_halign(menubar, GTK_ALIGN_FILL);
 	return menubar;
 }
 
-struct freeMenuItemData {
-	GArray *items;
-	guint i;
-};
-
-static void freeMenu(GtkWidget *widget, uiMenu *m);
-
-static void freeMenuItem(GtkWidget *widget, gpointer data)
+void uiprivFreeMenubar(uiWindow *w)
 {
-	struct freeMenuItemData *fmi = (struct freeMenuItemData *) data;
+	guint i, j, windowIndex;
+	uiMenu *m;
 	uiMenuItem *item;
-	struct menuItemWindow *w;
+	struct menuItemWindow *ww;
 
-	item = g_array_index(fmi->items, uiMenuItem *, fmi->i);
-	if (item->popupchild != NULL)
-	    freeMenu(widget, item->popupchild);
-	w = (struct menuItemWindow *) g_hash_table_lookup(item->windows, widget);
-	if (g_hash_table_remove(item->windows, widget) == FALSE)
-		uiprivImplBug("GtkMenuItem %p not in menu item's item/window map", widget);
-	uiprivFree(w);
-	fmi->i++;
-}
+	if (menus == NULL)
+		return;
 
-static void freeMenu(GtkWidget *widget, uiMenu *m)
-{
-	GtkMenuItem *item;
-	GtkWidget *submenu;
-	struct freeMenuItemData fmi;
-
-	item = GTK_MENU_ITEM(widget);
-	submenu = gtk_menu_item_get_submenu(item);
-	fmi.items = m->items;
-	fmi.i = 0;
-	gtk_container_foreach(GTK_CONTAINER(submenu), freeMenuItem, &fmi);
-}
-
-void uiprivFreeMenubar(GtkWidget *mb)
-{
-	GList *topMenus = gtk_container_get_children(GTK_CONTAINER(mb));
-	int i = 0;
-	for (GList *c = topMenus; c != NULL; c = c->next, i++) {
-		freeMenu(c->data, g_array_index(menus, uiMenu *, i));
+	// get the index of the uiWindow to free, assume that the first uiMenu has a uiMenuItem
+	// TODO: is it safe to assume that? should we add a userBug if a uiMenu is empty?
+	m = g_array_index(menus, uiMenu *, 0);
+	item = g_array_index(m->items, uiMenuItem *, 0);
+	for (i = 0; i < item->menuItems->len; i++)	{
+		ww = g_array_index(item->menuItems, struct menuItemWindow *, i);
+		if (ww->w == w) {
+			windowIndex = i;
+			break;
+		}
 	}
-	g_list_free(topMenus);
+
+	for (i = 0; i < menus->len; i++) {
+		m = g_array_index(menus, uiMenu *, i);
+		for (j = 0; j < m->items->len; j++) {
+			item = g_array_index(m->items, uiMenuItem *, j);
+			ww = g_array_index(item->menuItems, struct menuItemWindow *, windowIndex);
+			uiprivFree(ww);
+			g_array_remove_index_fast(item->menuItems, windowIndex);
+		}
+	}
 	// no need to worry about destroying any widgets; destruction of the window they're in will do it for us
-}
-
-void uiMenuFree(uiMenu* m)
-{
-	uiMenuItem *item;
-	guint j;
-
-	g_free(m->name);
-	for (j = 0; j < m->items->len; j++) {
-		item = g_array_index(m->items, uiMenuItem *, j);
-		if (item->popupchild != NULL)
-			uiMenuFree(item->popupchild);
-		if (g_hash_table_size(item->windows) != 0)
-			// TODO is this really a userbug()?
-			uiprivImplBug("menu item %p (%s) still has uiWindows attached; did you forget to destroy some windows?", item, item->name);
-		if (item->type != typeSubmenu) g_free(item->name);
-		g_hash_table_destroy(item->windows);
-		uiprivFree(item);
-	}
-	g_array_free(m->items, TRUE);
-	uiprivFree(m);
 }
 
 void uiprivUninitMenus(void)
 {
 	uiMenu *m;
-	guint i;
+	uiMenuItem *item;
+	guint i, j;
 
 	if (menus == NULL)
 		return;
 	for (i = 0; i < menus->len; i++) {
 		m = g_array_index(menus, uiMenu *, i);
-		if (m->ischild) continue;
-		uiMenuFree(m);
+		g_free(m->name);
+		for (j = 0; j < m->items->len; j++) {
+			item = g_array_index(m->items, uiMenuItem *, j);
+			if (item->menuItems->len != 0)
+				// TODO is this really a userbug()?
+				uiprivImplBug("menu item %p (%s) still has uiWindows attached; did you forget to destroy some windows?", item, item->name);
+			g_free(item->name);
+			g_array_free(item->menuItems, TRUE);
+			uiprivFree(item);
+		}
+		g_array_free(m->items, TRUE);
+		uiprivFree(m);
 	}
 	g_array_free(menus, TRUE);
 }
