@@ -48,29 +48,26 @@ int uiWindowsWindowTextHeight(HWND hwnd)
 	int lineCount = 1;
 
 	text = windowTextAndLen(hwnd, &len);
-	for (start = text; start != text + len; start++) {
-		if (*start == '\n')
+	for (start = text; start != text + len; start++)
+		if (*start == L'\n')
 			lineCount++;
-	}
 
+	uiprivFree(text);
 	return lineCount * labelHeight;
 }
 
 int uiWindowsWindowTextWidth(HWND hwnd)
 {
 	LRESULT len;
-	WCHAR *text;
+	WCHAR *text, *start, *end;
 	HDC dc;
 	HFONT prevfont;
 	SIZE size;
 
-	size.cx = 0;
-	size.cy = 0;
-	//save the max width of multiline text
-	auto maxWidth = size.cx;
+	// save the max width of multiline text
+	int maxWidth = 0;
 
 	text = windowTextAndLen(hwnd, &len);
-	WCHAR *start = text, *end = text;
 	if (len == 0)		// no text; nothing to do
 		goto noTextOrError;
 
@@ -89,26 +86,19 @@ int uiWindowsWindowTextWidth(HWND hwnd)
 	}
 
 	// calculate width of each line
-	while(start != text + len) {
-		while(*start == '\n' && start != text + len) {
+	start = end = text;
+	while (start != text + len) {
+		while (*start == L'\n' && start != text + len)
 			start++;
-		}
-		if(start == text + len) {
+		if (start == text + len)
 			break;
-		}
 		end = start + 1;
-		while(*end != '\n' && end != text + len){
+		while (*end != L'\n' && end != text + len)
 			end++;
-		}
-		if (GetTextExtentPoint32W(dc, start, end - start, &size) == 0) {
+		if (GetTextExtentPoint32W(dc, start, end - start, &size) == 0)
 			logLastError(L"error getting text extent point");
-			// continue anyway, assuming size is 0
-			size.cx = 0;
-			size.cy = 0;
-		}
-		if(size.cx > maxWidth) {
+		else if (size.cx > maxWidth)
 			maxWidth = size.cx;
-		}
 		start = end;
 	}
 
