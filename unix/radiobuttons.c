@@ -58,8 +58,7 @@ void uiRadioButtonsAppend(uiRadioButtons *r, const char *text)
 	rb = gtk_radio_button_new_with_label_from_widget(previous, text);
 	g_signal_connect(rb, "toggled", G_CALLBACK(onToggled), r);
 	gtk_container_add(r->container, rb);
-	// keep our hidden button at the end
-	g_ptr_array_insert(r->buttons, r->buttons->len - 1, rb);
+	g_ptr_array_add(r->buttons, rb);
 	gtk_widget_show(rb);
 }
 
@@ -68,25 +67,17 @@ int uiRadioButtonsSelected(uiRadioButtons *r)
 	GtkToggleButton *tb;
 	guint i;
 
-	for (i = 0; i < r->buttons->len - 1; i++) {
+	for (i = 0; i < r->buttons->len; i++) {
 		tb = GTK_TOGGLE_BUTTON(g_ptr_array_index(r->buttons, i));
 		if (gtk_toggle_button_get_active(tb))
-			return i;
+			return i - 1;
 	}
 	return -1;
 }
 
 void uiRadioButtonsSetSelected(uiRadioButtons *r, int n)
 {
-	GtkToggleButton *tb;
-
-	if (n < -1 || n > (int) r->buttons->len - 2)
-		uiprivUserBug("Index %d is out of bounds for uiRadioButtons with size %d.", n, r->buttons->len - 1);
-
-	if (n == -1)
-		tb = GTK_TOGGLE_BUTTON(g_ptr_array_index(r->buttons, r->buttons->len - 1));
-	else
-		tb = GTK_TOGGLE_BUTTON(g_ptr_array_index(r->buttons, n));
+	GtkToggleButton *tb = GTK_TOGGLE_BUTTON(g_ptr_array_index(r->buttons, n + 1));
 	// this is easier than remembering all the signals
 	r->changing = TRUE;
 	gtk_toggle_button_set_active(tb, TRUE);
@@ -103,7 +94,7 @@ uiRadioButtons *uiNewRadioButtons(void)
 {
 	uiRadioButtons *r;
 	// hacky workaround, gtk doesn't allow a radio button group without a selected button,
-	// so we create a hidden button in the group, store at the end of the array, select it when calling setSelected(-1).
+	// so we first create a hidden button, which will be selected when calling setSelected(-1).
 	GtkWidget *hiddenBtn;
 
 	uiUnixNewControl(uiRadioButtons, r);

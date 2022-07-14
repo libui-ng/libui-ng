@@ -172,9 +172,6 @@ void uiRadioButtonsSetSelected(uiRadioButtons *r, int n)
 	NSButton *b;
 	NSInteger state;
 
-	if (n < -1 || n > [r->buttons count] - 1)
-		uiprivUserBug("Index %d is out of bounds for uiRadioButtons with size %d.", n, [r->buttons count]);
-
 	state = NSOnState;
 	if (n == -1) {
 		n = uiRadioButtonsSelected(r);

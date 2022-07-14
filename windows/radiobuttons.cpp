@@ -162,9 +162,6 @@ void uiRadioButtonsSetSelected(uiRadioButtons *r, int n)
 {
 	int m;
 
-	if (n < -1 || n > (int) r->hwnds->size() - 1)
-		uiprivUserBug("Index %d is out of bounds for uiRadioButtons with size %d.", n, r->hwnds->size());
-
 	m = uiRadioButtonsSelected(r);
 	if (m != -1)
 		SendMessage((*(r->hwnds))[m], BM_SETCHECK, BST_UNCHECKED, 0);
