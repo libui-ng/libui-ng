@@ -70,6 +70,7 @@ int main(void)
 		{ initRunUnitTests },
 		{ sliderRunUnitTests },
 		{ spinboxRunUnitTests },
+		{ labelRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {
