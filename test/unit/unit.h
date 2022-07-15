@@ -17,6 +17,7 @@ int initRunUnitTests(void);
 int sliderRunUnitTests(void);
 int spinboxRunUnitTests(void);
 int labelRunUnitTests(void);
+int buttonRunUnitTests(void);
 
 /**
  * Helper for general setup/teardown of controls embedded in a window.

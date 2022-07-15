@@ -7,6 +7,7 @@ libui_unit_sources = [
 	'slider.c',
         'spinbox.c',
         'label.c',
+        'button.c',
 ]
 
 if libui_OS == 'windows'
