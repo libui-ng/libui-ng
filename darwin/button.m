@@ -8,54 +8,39 @@ struct uiButton {
 	void *onClickedData;
 };
 
-@interface buttonDelegateClass : NSObject {
-	uiprivMap *buttons;
+@interface uiprivButton : NSButton {
+	uiButton *button;
 }
+- (id)initWithFrame:(NSRect)frame uiButton:(uiButton *)b;
 - (IBAction)onClicked:(id)sender;
-- (void)registerButton:(uiButton *)b;
-- (void)unregisterButton:(uiButton *)b;
 @end
 
-@implementation buttonDelegateClass
+@implementation uiprivButton
 
-- (id)init
+- (id)initWithFrame:(NSRect)frame uiButton:(uiButton *)b
 {
-	self = [super init];
-	if (self)
-		self->buttons = uiprivNewMap();
+	self = [super initWithFrame:frame];
+	if (self) {
+		self->button = b;
+
+		[self setButtonType:NSMomentaryPushInButton];
+		[self setBordered:YES];
+		[self setBezelStyle:NSRoundedBezelStyle];
+
+		[self setTarget:self];
+		[self setAction:@selector(onClicked:)];
+	}
 	return self;
-}
-
-- (void)dealloc
-{
-	uiprivMapDestroy(self->buttons);
-	[super dealloc];
 }
 
 - (IBAction)onClicked:(id)sender
 {
-	uiButton *b;
+	uiButton *b = self->button;
 
-	b = (uiButton *) uiprivMapGet(self->buttons, sender);
 	(*(b->onClicked))(b, b->onClickedData);
 }
 
-- (void)registerButton:(uiButton *)b
-{
-	uiprivMapSet(self->buttons, b->button, b);
-	[b->button setTarget:self];
-	[b->button setAction:@selector(onClicked:)];
-}
-
-- (void)unregisterButton:(uiButton *)b
-{
-	[b->button setTarget:nil];
-	uiprivMapDelete(self->buttons, b->button);
-}
-
 @end
-
-static buttonDelegateClass *buttonDelegate = nil;
 
 uiDarwinControlAllDefaultsExceptDestroy(uiButton, button)
 
@@ -63,7 +48,6 @@ static void uiButtonDestroy(uiControl *c)
 {
 	uiButton *b = uiButton(c);
 
-	[buttonDelegate unregisterButton:b];
 	[b->button release];
 	uiFreeControl(uiControl(b));
 }
@@ -95,18 +79,10 @@ uiButton *uiNewButton(const char *text)
 
 	uiDarwinNewControl(uiButton, b);
 
-	b->button = [[NSButton alloc] initWithFrame:NSZeroRect];
-	[b->button setTitle:uiprivToNSString(text)];
-	[b->button setButtonType:NSMomentaryPushInButton];
-	[b->button setBordered:YES];
-	[b->button setBezelStyle:NSRoundedBezelStyle];
+	b->button = [[uiprivButton alloc] initWithFrame:NSZeroRect uiButton:b];
+	uiButtonSetText(b, text);
 	uiDarwinSetControlFont(b->button, NSRegularControlSize);
 
-	if (buttonDelegate == nil) {
-		buttonDelegate = [[buttonDelegateClass new] autorelease];
-		[uiprivDelegates addObject:[NSValue valueWithPointer:&buttonDelegate]];
-	}
-	[buttonDelegate registerButton:b];
 	uiButtonOnClicked(b, defaultOnClicked, NULL);
 
 	return b;
