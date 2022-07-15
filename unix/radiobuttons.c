@@ -93,8 +93,7 @@ void uiRadioButtonsOnSelected(uiRadioButtons *r, void (*f)(uiRadioButtons *, voi
 uiRadioButtons *uiNewRadioButtons(void)
 {
 	uiRadioButtons *r;
-	// hacky workaround, gtk doesn't allow a radio button group without a selected button,
-	// so we first create a hidden button, which will be selected when calling setSelected(-1).
+	// Add a hidden button to indicate an empty selection (-1) as GTK does not support this natively
 	GtkWidget *hiddenBtn;
 
 	uiUnixNewControl(uiRadioButtons, r);
