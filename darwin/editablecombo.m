@@ -177,7 +177,7 @@ uiEditableCombobox *uiNewEditableCombobox(void)
 
 	if (comboboxDelegate == nil) {
 		comboboxDelegate = [[editableComboboxDelegateClass new] autorelease];
-		[uiprivDelegates addObject:comboboxDelegate];
+		[uiprivDelegates addObject:[NSValue valueWithPointer:&comboboxDelegate]];
 	}
 	[comboboxDelegate registerCombobox:c];
 	uiEditableComboboxOnChanged(c, defaultOnChanged, NULL);

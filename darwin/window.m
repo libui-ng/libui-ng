@@ -443,7 +443,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	if (windowDelegate == nil) {
 		windowDelegate = [[windowDelegateClass new] autorelease];
-		[uiprivDelegates addObject:windowDelegate];
+		[uiprivDelegates addObject:[NSValue valueWithPointer:&windowDelegate]];
 	}
 	[windowDelegate registerWindow:w];
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
