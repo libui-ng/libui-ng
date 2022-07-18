@@ -802,7 +802,7 @@ _UI_EXTERN uiEntry *uiNewSearchEntry(void);
 
 
 /**
- * A control that displays a non interactive line of text.
+ * A control that displays non interactive text.
  *
  * @struct uiLabel
  * @extends uiControl

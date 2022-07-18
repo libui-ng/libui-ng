@@ -8,9 +8,6 @@ struct uiLabel {
 
 uiWindowsControlAllDefaults(uiLabel)
 
-// via http://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
-#define labelHeight 8
-
 static void uiLabelMinimumSize(uiWindowsControl *c, int *width, int *height)
 {
 	uiLabel *l = uiLabel(c);
@@ -18,7 +15,7 @@ static void uiLabelMinimumSize(uiWindowsControl *c, int *width, int *height)
 	int y;
 
 	*width = uiWindowsWindowTextWidth(l->hwnd);
-	y = labelHeight;
+	y = uiWindowsWindowTextHeight(l->hwnd);
 	uiWindowsGetSizing(l->hwnd, &sizing);
 	uiWindowsSizingDlgUnitsToPixels(&sizing, NULL, &y);
 	*height = y;

@@ -39,7 +39,7 @@ static uiControl *makeBasicControlsPage(void)
 		0);
 
 	uiBoxAppend(vbox,
-		uiControl(uiNewLabel("This is a label. Right now, labels can only span one line.")),
+		uiControl(uiNewLabel("This is a label.\nLabels can span multiple lines.")),
 		0);
 
 	uiBoxAppend(vbox,

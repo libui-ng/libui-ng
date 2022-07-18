@@ -38,16 +38,34 @@ void uiFreeText(char *text)
 	uiprivFree(text);
 }
 
+// via http://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
+#define labelHeight 8
+
+int uiWindowsWindowTextHeight(HWND hwnd)
+{
+	LRESULT len;
+	WCHAR* text, *start;
+	int lineCount = 1;
+
+	text = windowTextAndLen(hwnd, &len);
+	for (start = text; start != text + len; start++)
+		if (*start == L'\n')
+			lineCount++;
+
+	uiprivFree(text);
+	return lineCount * labelHeight;
+}
+
 int uiWindowsWindowTextWidth(HWND hwnd)
 {
 	LRESULT len;
-	WCHAR *text;
+	WCHAR *text, *start, *end;
 	HDC dc;
 	HFONT prevfont;
 	SIZE size;
 
-	size.cx = 0;
-	size.cy = 0;
+	// save the max width of multiline text
+	int maxWidth = 0;
 
 	text = windowTextAndLen(hwnd, &len);
 	if (len == 0)		// no text; nothing to do
@@ -66,12 +84,24 @@ int uiWindowsWindowTextWidth(HWND hwnd)
 		ReleaseDC(hwnd, dc);
 		goto noTextOrError;
 	}
-	if (GetTextExtentPoint32W(dc, text, len, &size) == 0) {
-		logLastError(L"error getting text extent point");
-		// continue anyway, assuming size is 0
-		size.cx = 0;
-		size.cy = 0;
+
+	// calculate width of each line
+	start = end = text;
+	while (start != text + len) {
+		while (*start == L'\n' && start != text + len)
+			start++;
+		if (start == text + len)
+			break;
+		end = start + 1;
+		while (*end != L'\n' && end != text + len)
+			end++;
+		if (GetTextExtentPoint32W(dc, start, end - start, &size) == 0)
+			logLastError(L"error getting text extent point");
+		else if (size.cx > maxWidth)
+			maxWidth = size.cx;
+		start = end;
 	}
+
 	// continue on errors; we got what we want
 	if (SelectObject(dc, prevfont) != hMessageFont)
 		logLastError(L"error restoring previous font into device context");
@@ -79,7 +109,7 @@ int uiWindowsWindowTextWidth(HWND hwnd)
 		logLastError(L"error releasing DC");
 
 	uiprivFree(text);
-	return size.cx;
+	return maxWidth;
 
 noTextOrError:
 	uiprivFree(text);
