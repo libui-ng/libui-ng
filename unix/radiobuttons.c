@@ -54,9 +54,7 @@ void uiRadioButtonsAppend(uiRadioButtons *r, const char *text)
 	GtkWidget *rb;
 	GtkRadioButton *previous;
 
-	previous = NULL;
-	if (r->buttons->len > 0)
-		previous = GTK_RADIO_BUTTON(g_ptr_array_index(r->buttons, 0));
+	previous = GTK_RADIO_BUTTON(g_ptr_array_index(r->buttons, 0));
 	rb = gtk_radio_button_new_with_label_from_widget(previous, text);
 	g_signal_connect(rb, "toggled", G_CALLBACK(onToggled), r);
 	gtk_container_add(r->container, rb);
@@ -72,28 +70,17 @@ int uiRadioButtonsSelected(uiRadioButtons *r)
 	for (i = 0; i < r->buttons->len; i++) {
 		tb = GTK_TOGGLE_BUTTON(g_ptr_array_index(r->buttons, i));
 		if (gtk_toggle_button_get_active(tb))
-			return i;
+			return i - 1;
 	}
 	return -1;
 }
 
 void uiRadioButtonsSetSelected(uiRadioButtons *r, int n)
 {
-	GtkToggleButton *tb;
-	gboolean active;
-
-	active = TRUE;
-	// TODO this doesn't work
-	if (n == -1) {
-		n = uiRadioButtonsSelected(r);
-		if (n == -1)		// no selection; keep it that way
-			return;
-		active = FALSE;
-	}
-	tb = GTK_TOGGLE_BUTTON(g_ptr_array_index(r->buttons, n));
+	GtkToggleButton *tb = GTK_TOGGLE_BUTTON(g_ptr_array_index(r->buttons, n + 1));
 	// this is easier than remembering all the signals
 	r->changing = TRUE;
-	gtk_toggle_button_set_active(tb, active);
+	gtk_toggle_button_set_active(tb, TRUE);
 	r->changing = FALSE;
 }
 
@@ -106,6 +93,8 @@ void uiRadioButtonsOnSelected(uiRadioButtons *r, void (*f)(uiRadioButtons *, voi
 uiRadioButtons *uiNewRadioButtons(void)
 {
 	uiRadioButtons *r;
+	// Add a hidden button to indicate an empty selection (-1) as GTK does not support this natively
+	GtkWidget *hiddenBtn;
 
 	uiUnixNewControl(uiRadioButtons, r);
 
@@ -114,6 +103,11 @@ uiRadioButtons *uiNewRadioButtons(void)
 	r->box = GTK_BOX(r->widget);
 
 	r->buttons = g_ptr_array_new();
+
+	hiddenBtn = gtk_radio_button_new(NULL);
+	gtk_container_add(r->container, hiddenBtn);
+	g_ptr_array_add(r->buttons, hiddenBtn);
+	gtk_widget_hide(hiddenBtn);
 
 	uiRadioButtonsOnSelected(r, defaultOnSelected, NULL);
 
