@@ -58,6 +58,7 @@ Most important Meson options:
 * `--default-library=(shared|static)` controls whether libui is built as a shared library or a static library; the default is `shared`. You currently cannot specify `both`, as the build process changes depending on the target type (though I am willing to look into changing things if at all possible).
 * `-Db_sanitize=which` allows enabling the chosen [sanitizer](https://github.com/google/sanitizers) on a system that supports sanitizers. The list of supported values is in [the Meson documentation](https://mesonbuild.com/Builtin-options.html#base-options).
 * `--backend=backend` allows using the specified `backend` for builds instead of `ninja` (the default). A list of supported values is in [the Meson documentation](https://mesonbuild.com/Builtin-options.html#universal-options).
+* `--wrap-mode=(nofallback|nodownload|...)` controls which cmocka library version to use in test enabled builds. The default is `forcefallback` to pull and build a local copy. Package maintainers may wish to choose `nofallback` to use the system's library and declare `cmocka` a build time dependency or `nodownload`, see [the Meson documentation](https://mesonbuild.com/Subprojects.html#commandline-options) for more details.
 
 Most other built-in options will work, though keep in mind there are a handful of options that cannot be overridden because libui depends on them holding a specific value; if you do override these, though, libui will warn you when you run `meson`.
 
