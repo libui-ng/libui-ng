@@ -216,7 +216,7 @@ static uiEntry *finishNewEntry(Class class)
 
 	if (entryDelegate == nil) {
 		entryDelegate = [[entryDelegateClass new] autorelease];
-		[uiprivDelegates addObject:entryDelegate];
+		[uiprivDelegates addObject:[NSValue valueWithPointer:&entryDelegate]];
 	}
 	[entryDelegate registerEntry:e];
 	uiEntryOnChanged(e, defaultOnChanged, NULL);

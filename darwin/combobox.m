@@ -160,7 +160,7 @@ uiCombobox *uiNewCombobox(void)
 
 	if (comboboxDelegate == nil) {
 		comboboxDelegate = [[comboboxDelegateClass new] autorelease];
-		[uiprivDelegates addObject:comboboxDelegate];
+		[uiprivDelegates addObject:[NSValue valueWithPointer:&comboboxDelegate]];
 	}
 	[comboboxDelegate registerCombobox:c];
 	uiComboboxOnSelected(c, defaultOnSelected, NULL);

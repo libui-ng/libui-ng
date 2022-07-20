@@ -120,7 +120,7 @@ uiCheckbox *uiNewCheckbox(const char *text)
 
 	if (checkboxDelegate == nil) {
 		checkboxDelegate = [[checkboxDelegateClass new] autorelease];
-		[uiprivDelegates addObject:checkboxDelegate];
+		[uiprivDelegates addObject:[NSValue valueWithPointer:&checkboxDelegate]];
 	}
 	[checkboxDelegate registerCheckbox:c];
 	uiCheckboxOnToggled(c, defaultOnToggled, NULL);

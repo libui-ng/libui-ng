@@ -148,7 +148,7 @@ static uiDateTimePicker *finishNewDateTimePicker(NSDatePickerElementFlags elemen
 
 	if (datePickerDelegate == nil) {
 		datePickerDelegate = [[uiprivDatePickerDelegateClass new] autorelease];
-		[uiprivDelegates addObject:datePickerDelegate];
+		[uiprivDelegates addObject:[NSValue valueWithPointer:&datePickerDelegate]];
 	}
 	[datePickerDelegate registerPicker:d];
 	uiDateTimePickerOnChanged(d, defaultOnChanged, NULL);

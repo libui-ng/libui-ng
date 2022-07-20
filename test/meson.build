@@ -47,3 +47,5 @@ executable('tester', libui_test_sources,
 	link_with: libui_libui,
 	gui_app: false,
 	install: false)
+
+subdir('unit')

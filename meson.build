@@ -4,7 +4,7 @@
 
 # TODO remove cpp from this list once https://github.com/mesonbuild/meson/issues/5181 is settled; move it to the OS checks and under cpp-multithread
 project('libui', ['c', 'cpp'],
-	meson_version: '>=0.48.0',
+	meson_version: '>=0.58.0',
 	default_options: [
 		'buildtype=debug',				# build debug by default
 		'default_library=shared',			# build shared libraries by default
@@ -19,6 +19,7 @@ project('libui', ['c', 'cpp'],
 		'cpp_std=c++11',				# strict C++11
 		'cpp_eh=sc',					# shut the compiler up in some cases
 		'cpp_winlibs=',					# likewise as with c_winlibs
+		'wrap_mode=forcefallback'			# build cmocka locally
 	],
 	license: 'MIT')
 
@@ -66,12 +67,15 @@ libui_project_compile_args = []
 libui_project_link_args = []
 
 if libui_OS == 'darwin'
-	libui_macosx_version_min = '-mmacosx-version-min=10.8'
-	libui_project_compile_args += [libui_macosx_version_min]
-	libui_project_link_args += [libui_macosx_version_min]
+	libui_darwin_langs = ['c', 'objc']
 
-	libui_project_compile_args += ['-arch', 'arm64', '-arch', 'x86_64']
-	libui_project_link_args += ['-arch', 'arm64', '-arch', 'x86_64']
+	libui_macosx_version_min = '-mmacosx-version-min=10.8'
+	add_global_arguments(libui_macosx_version_min, language: libui_darwin_langs)
+	add_global_link_arguments(libui_macosx_version_min, language: libui_darwin_langs)
+
+	libui_arch = ['-arch', 'x86_64', '-arch', 'arm64']
+	add_global_arguments(libui_arch, language: libui_darwin_langs)
+	add_global_link_arguments(libui_arch, language: libui_darwin_langs)
 endif
 
 if libui_MSVC
@@ -175,5 +179,11 @@ libui_binary_deps = []
 if libui_mode == 'static'
 	libui_binary_deps = libui_deps
 endif
-subdir('test')
-subdir('examples')
+
+if get_option('tests')
+	subdir('test')
+endif
+
+if get_option('examples')
+	subdir('examples')
+endif

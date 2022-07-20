@@ -26,7 +26,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 ## Build Requirements
 
 * All platforms:
-	* [Meson](https://mesonbuild.com/) 0.48.0 or newer
+	* [Meson](https://mesonbuild.com/) 0.58.0 or newer
 	* Any of Meson's backends; this section assumes you are using [Ninja](https://ninja-build.org/), but there is no reason the other backends shouldn't work.
 * Windows: either
 	* Microsoft Visual Studio 2013 or newer (2013 is needed for `va_copy()`) — you can build either a static or a shared library
@@ -37,22 +37,28 @@ See [CHANGELOG.md](CHANGELOG.md)
 
 ## Building
 
-libui uses only [the standard Meson build options](https://mesonbuild.com/Builtin-options.html), so a libui build can be set up just like any other:
+libui-ng mainly uses [the standard Meson build options](https://mesonbuild.com/Builtin-options.html).
 
 ```
-$ # you must be in the top-level libui directory, otherwise this won't work
+$ # in the top-level libui-ng directory run:
 $ meson setup build [options]
 $ ninja -C build
 ```
 
-Once this completes, everything will be under `build/meson-out/`. (Note that unlike the previous build processes, everything is built by default, including tests and examples.)
+Once this completes, everything will be under `build/meson-out/`.
 
-The most important options are:
+libui-ng specific options:
+
+- `-Dtests=(true|false)` controls whether tests are built; defaults to `true`
+- `-Dexamples=(true|false)` controls whether examples are built; defaults to `true`
+
+Most important Meson options:
 
 * `--buildtype=(debug|release|...)` controls the type of build made; the default is `debug`. For a full list of valid values, consult [the Meson documentation](https://mesonbuild.com/Running-Meson.html).
 * `--default-library=(shared|static)` controls whether libui is built as a shared library or a static library; the default is `shared`. You currently cannot specify `both`, as the build process changes depending on the target type (though I am willing to look into changing things if at all possible).
 * `-Db_sanitize=which` allows enabling the chosen [sanitizer](https://github.com/google/sanitizers) on a system that supports sanitizers. The list of supported values is in [the Meson documentation](https://mesonbuild.com/Builtin-options.html#base-options).
 * `--backend=backend` allows using the specified `backend` for builds instead of `ninja` (the default). A list of supported values is in [the Meson documentation](https://mesonbuild.com/Builtin-options.html#universal-options).
+* `--wrap-mode=(forcefallback|nofallback|nodownload|...)` controls which cmocka library version to use in test enabled builds. The default is `forcefallback` to pull and build a local copy. Package maintainers may wish to choose `nofallback` to use the system's library and declare `cmocka` a build time dependency or `nodownload`, see [the Meson documentation](https://mesonbuild.com/Subprojects.html#commandline-options) for more details.
 
 Most other built-in options will work, though keep in mind there are a handful of options that cannot be overridden because libui depends on them holding a specific value; if you do override these, though, libui will warn you when you run `meson`.
 
