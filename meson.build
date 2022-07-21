@@ -95,6 +95,20 @@ if libui_MSVC
 		'/MANIFEST:NO',
 	]
 
+	if libui_mode == 'shared'
+		if libui_is_debug
+			libui_project_compile_args += ['/MDd']
+		else
+			libui_project_compile_args += ['/MD']
+		endif
+	elif libui_mode == 'static'
+		if libui_is_debug
+			libui_project_compile_args += ['/MTd']
+		else
+			libui_project_compile_args += ['/MT']
+		endif
+	endif
+
 	# TODO autogenerate a .def file?
 else
 	libui_project_compile_args += [
