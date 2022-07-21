@@ -3799,6 +3799,41 @@ _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
  */
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
 
+// uiTableAllowMultipleSelection() return if table allows for
+// multiple items being selected or not
+_UI_EXTERN int uiTableAllowMultipleSelection(uiTable *t);
+
+// uiTableSetAllowMultipleSelection() set if table allows for
+// multiple items being selected or not
+_UI_EXTERN void uiTableSetAllowMultipleSelection(uiTable *t, int multipleSelection);
+
+// uiTableOnSelectionChanged() set a callback function to be called when
+// the table selection changes
+_UI_EXTERN void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *t, void *data), void *data);
+
+// uiTableSelection holds an array of selected row indices for a table.
+typedef struct uiTableSelection uiTableSelection;
+struct uiTableSelection
+{
+	int NumRows; //! Number of selected rows.
+	int *Rows; //! Array containing selected row indices, NULL on empty selection.
+};
+
+// uiTableCurrentSelection() return the currently selected number of rows and
+// corresponding row indexes.
+// Note: For empty selections the `Rows` pointer will be NULL.
+// Note: Make sure to free the result with uiFreeTableSelection()
+_UI_EXTERN uiTableSelection* uiTableCurrentSelection(uiTable *t);
+
+// uiTableSetCurrentSelection() set selected row(s), clearing any existing selection
+// Note: Make sure not to select multiple rows in single select mode
+// Note: For empty selections the Rows pointer is never accessed
+// Note: Data is owned by the caller
+_UI_EXTERN void uiTableSetCurrentSelection(uiTable *t, uiTableSelection *sel);
+
+// uiFreeTableSelection frees the given uiTableSelection* and all resources.
+_UI_EXTERN void uiFreeTableSelection(uiTableSelection* s);
+
 #ifdef __cplusplus
 }
 #endif

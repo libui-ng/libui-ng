@@ -263,6 +263,53 @@ static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
 	// do nothing
 }
 
+void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *t, void *data), void *data)
+{
+	t->onSelectionChanged = f;
+	t->onSelectionChangedData = data;
+}
+
+static void defaultOnSelectionChanged(uiTable *table, void *data)
+{
+	// do nothing
+}
+
+uiTableSelection* uiTableCurrentSelection(uiTable *t)
+{
+	int iPos = -1;
+	unsigned cap = 10;
+	uiTableSelection *s = uiprivNew(uiTableSelection);
+
+	s->NumRows = 0;
+	s->Rows = NULL;
+
+	while ((iPos = ListView_GetNextItem(t->hwnd, iPos, LVNI_SELECTED)) != -1) {
+		if (s->NumRows >= cap || s->Rows == NULL) {
+			cap *= 1.5f;
+			s->Rows = (int*) uiprivRealloc(s->Rows, cap * sizeof(*s->Rows), "uiTableSelection->Rows");
+		}
+		s->Rows[s->NumRows++] = iPos;
+	}
+
+	return s;
+}
+
+void uiTableSetCurrentSelection(uiTable *t, uiTableSelection *sel)
+{
+	int i;
+
+	if (!uiTableAllowMultipleSelection(t) && sel->NumRows > 1) {
+		uiprivUserBug("Can not select multiple rows in single selection mode");
+		return;
+	}
+
+	/* clear selection */
+	ListView_SetItemState(t->hwnd, -1, 0, LVIS_SELECTED);
+
+	for (i = 0; i < sel->NumRows; ++i)
+		ListView_SetItemState(t->hwnd, sel->Rows[i], LVIS_SELECTED, LVIS_SELECTED);
+}
+
 // TODO properly integrate compound statements
 static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 {
@@ -314,15 +361,26 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 	case LVN_ITEMCHANGED:
 		{
 			NMLISTVIEW *nm = (NMLISTVIEW *) nmhdr;
+			UINT oldFocused, newFocused;
 			UINT oldSelected, newSelected;
 			HRESULT hr;
+
+
+			oldSelected = nm->uOldState & LVIS_SELECTED;
+			newSelected = nm->uNewState & LVIS_SELECTED;
+
+			// Signal on selection change. Ignore deselection of all items (-1) as this
+			// is always followed by a new selection. Signal then.
+			if ((oldSelected && !newSelected && nm->iItem != -1) || (!oldSelected && newSelected))
+				t->onSelectionChanged(t, t->onSelectionChangedData);
 
 			// TODO clean up these if cases
 			if (!t->inLButtonDown && t->edit == NULL)
 				return FALSE;
-			oldSelected = nm->uOldState & LVIS_SELECTED;
-			newSelected = nm->uNewState & LVIS_SELECTED;
-			if (t->inLButtonDown && oldSelected == 0 && newSelected != 0) {
+
+			oldFocused = nm->uOldState & LVIS_FOCUSED;
+			newFocused = nm->uNewState & LVIS_FOCUSED;
+			if (t->inLButtonDown && !oldFocused && newFocused) {
 				t->inDoubleClickTimer = TRUE;
 				// TODO check error
 				SetTimer(t->hwnd, (UINT_PTR) (&(t->inDoubleClickTimer)),
@@ -331,7 +389,7 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 				return TRUE;
 			}
 			// the nm->iItem == -1 case is because that is used if "the change has been applied to all items in the list view"
-			if (t->edit != NULL && oldSelected != 0 && newSelected == 0 && (t->editedItem == nm->iItem || nm->iItem == -1)) {
+			if (t->edit != NULL && oldFocused && !newFocused && (t->editedItem == nm->iItem || nm->iItem == -1)) {
 				// TODO see if the real list view accepts or rejects changes here; Windows Explorer accepts
 				hr = uiprivTableFinishEditingText(t);
 				if (hr != S_OK) {
@@ -342,6 +400,11 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 				return TRUE;
 			}
 			return FALSE;
+		}
+	case LVN_ODSTATECHANGED:
+		{
+			t->onSelectionChanged(t, t->onSelectionChangedData);
+			return TRUE;
 		}
 	case LVN_COLUMNCLICK:
 		{
@@ -543,6 +606,21 @@ void uiTableHeaderSetVisible(uiTable *t, int visible)
 		SetWindowLong(t->hwnd, GWL_STYLE, style | LVS_NOCOLUMNHEADER);
 }
 
+int uiTableAllowMultipleSelection(uiTable *t)
+{
+	LONG style = GetWindowLong(t->hwnd, GWL_STYLE);
+	return !(style & LVS_SINGLESEL);
+}
+
+void uiTableSetAllowMultipleSelection(uiTable *t, int multipleSelection)
+{
+	LONG style = GetWindowLong(t->hwnd, GWL_STYLE);
+	if (multipleSelection)
+		SetWindowLong(t->hwnd, GWL_STYLE, style & ~LVS_SINGLESEL);
+	else
+		SetWindowLong(t->hwnd, GWL_STYLE, style | LVS_SINGLESEL);
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
@@ -555,11 +633,12 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->model = p->Model;
 	t->backgroundColumn = p->RowBackgroundColorModelColumn;
 	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
+	uiTableOnSelectionChanged(t, defaultOnSelectionChanged, NULL);
 
 	// WS_CLIPCHILDREN is here to prevent drawing over the edit box used for editing text
 	t->hwnd = uiWindowsEnsureCreateControlHWND(WS_EX_CLIENTEDGE,
 		WC_LISTVIEW, L"",
-		LVS_REPORT | LVS_OWNERDATA | LVS_SINGLESEL | WS_CLIPCHILDREN | WS_TABSTOP | WS_HSCROLL | WS_VSCROLL,
+		LVS_REPORT | LVS_OWNERDATA | WS_CLIPCHILDREN | WS_TABSTOP | WS_HSCROLL | WS_VSCROLL,
 		hInstance, NULL,
 		TRUE);
 	t->model->tables->push_back(t);
@@ -582,6 +661,8 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->indeterminatePositions = new std::map<std::pair<int, int>, LONG>;
 	if (SetWindowSubclass(t->hwnd, tableSubProc, 0, (DWORD_PTR) t) == FALSE)
 		logLastError(L"SetWindowSubclass()");
+
+	uiTableSetAllowMultipleSelection(t, 0);
 
 	return t;
 }

@@ -108,6 +108,12 @@ static void setBackgroundColor(uiprivTableView *t, NSTableRowView *rv, NSInteger
 	t->headerOnClicked(t, [[tc identifier] intValue], t->headerOnClickedData);
 }
 
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+	uiTable *t = [(uiprivTableView*)[notification object] uiTable];
+	t->onSelectionChanged(t, t->onSelectionChangedData);
+}
+
 @end
 
 uiTableModel *uiNewTableModel(uiTableModelHandler *mh)
@@ -214,6 +220,62 @@ static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
 	// do nothing
 }
 
+int uiTableAllowMultipleSelection(uiTable *t)
+{
+	return [t->tv allowsMultipleSelection];
+}
+
+void uiTableSetAllowMultipleSelection(uiTable *t, int multipleSelection)
+{
+	[t->tv setAllowsMultipleSelection: (BOOL)multipleSelection];
+}
+
+void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *, void *), void *data)
+{
+	t->onSelectionChanged = f;
+	t->onSelectionChangedData = data;
+}
+
+static void defaultOnSelectionChanged(uiTable *t, void *data)
+{
+	// do nothing
+}
+
+uiTableSelection* uiTableCurrentSelection(uiTable *t)
+{
+	__block int i = 0;
+	NSIndexSet *set = [t->tv selectedRowIndexes];
+	uiTableSelection *s = uiprivNew(uiTableSelection);
+
+	s->NumRows = [set count];
+	if (s->NumRows == 0)
+		s->Rows = NULL;
+	else
+		s->Rows = uiprivAlloc(s->NumRows * sizeof(*s->Rows), "uiTableSelection->Rows");
+
+	[set enumerateIndexesUsingBlock:^(NSUInteger row, BOOL *stop) {
+		s->Rows[i++] = row;
+	}];
+
+	return s;
+}
+
+void uiTableSetCurrentSelection(uiTable *t, uiTableSelection *sel)
+{
+	int i;
+	NSMutableIndexSet *set;
+
+	if (!uiTableAllowMultipleSelection(t) && sel->NumRows > 1) {
+		uiprivUserBug("Can not select multiple rows in single selection mode");
+		return;
+	}
+
+	set = [NSMutableIndexSet new];
+	for (i = 0; i < sel->NumRows; ++i)
+		[set addIndex: sel->Rows[i]];
+	[t->tv selectRowIndexes: set byExtendingSelection: FALSE];
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
@@ -254,6 +316,7 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->sv = uiprivMkScrollView(&sp, &(t->d));
 
 	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
+	uiTableOnSelectionChanged(t, defaultOnSelectionChanged, NULL);
 
 	// TODO WHY DOES THIS REMOVE ALL GRAPHICAL GLITCHES?
 	// I got the idea from http://jwilling.com/blog/optimized-nstableview-scrolling/ but that was on an unrelated problem I didn't seem to have (although I have small-ish tables to start with)

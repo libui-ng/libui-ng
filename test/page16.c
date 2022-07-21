@@ -105,6 +105,13 @@ void headerVisibleToggled(uiCheckbox *c, void *data)
 	uiCheckboxSetChecked(c, uiTableHeaderVisible(t));
 }
 
+void multiSelectToggled(uiCheckbox *c, void *data)
+{
+	uiTable *t = data;
+	uiTableSetAllowMultipleSelection(t, uiCheckboxChecked(c));
+	uiCheckboxSetChecked(c, uiTableAllowMultipleSelection(t));
+}
+
 uiSpinbox *columnID;
 uiSpinbox *columnWidth;
 static void changedColumnID(uiSpinbox *s, void *data)
@@ -136,14 +143,54 @@ static void headerOnClicked(uiTable *t, int col, void *data)
 	prev = col;
 }
 
+uiLabel *lblNumSelectedRows;
+uiLabel *lblSumSelectedRows;
+static void onSelectionChanged(uiTable *t, void *data)
+{
+	int i;
+	int sum = 0;
+	char strNumRows[128];
+	char strSumRows[128];
+	uiTableSelection *s = uiTableCurrentSelection(t);
+
+	sprintf(strNumRows, "# Selected Rows: %d", s->NumRows);
+	uiLabelSetText(lblNumSelectedRows, strNumRows);
+
+	for (i = 0; i < s->NumRows; ++i)
+		sum += s->Rows[i];
+
+	sprintf(strSumRows, "Sum Selected Rows: %d", sum);
+	uiLabelSetText(lblSumSelectedRows, strSumRows);
+
+	uiFreeTableSelection(s);
+}
+
+static void selectChecked(uiButton *b, void *data)
+{
+	unsigned i;
+	int rows[sizeof(checkStates)/sizeof(*checkStates)];
+	int numChecked = 0;
+	uiTable *t = data;
+
+	for (i = 0; i < sizeof(checkStates)/sizeof(*checkStates); ++i)
+		if (checkStates[i])
+			rows[numChecked++] = i;
+
+	uiTableSelection sel = {.NumRows = numChecked, .Rows = rows};
+	uiTableSetCurrentSelection(t, &sel);
+}
+
 uiBox *makePage16(void)
 {
 	uiBox *page16;
 	uiBox *controls;
+	uiBox *stats;
 	uiCheckbox *headerVisible;
+	uiCheckbox *multiSelect;
 	uiTable *t;
 	uiTableParams p;
 	uiTableTextColumnOptionalParams tp;
+	uiButton *buttonSelectChecked;
 
 	img[0] = uiNewImage(16, 16);
 	appendImageNamed(img[0], "andlabs_16x16test_24june2016.png");
@@ -194,11 +241,19 @@ uiBox *makePage16(void)
 		8);
 
 	uiTableHeaderOnClicked(t, headerOnClicked, NULL);
+	uiTableOnSelectionChanged(t, onSelectionChanged, NULL);
 
 	headerVisible = uiNewCheckbox("Header Visible");
 	uiCheckboxSetChecked(headerVisible, uiTableHeaderVisible(t));
 	uiCheckboxOnToggled(headerVisible, headerVisibleToggled, t);
 	uiBoxAppend(controls, uiControl(headerVisible), 0);
+
+	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
+
+	multiSelect = uiNewCheckbox("Multiple Selection");
+	uiCheckboxSetChecked(multiSelect, uiTableAllowMultipleSelection(t));
+	uiCheckboxOnToggled(multiSelect, multiSelectToggled, t);
+	uiBoxAppend(controls, uiControl(multiSelect), 0);
 
 	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
 
@@ -208,9 +263,24 @@ uiBox *makePage16(void)
 	uiBoxAppend(controls, uiControl(uiNewLabel("Width")), 0);
 	columnWidth = uiNewSpinbox(-1, INT_MAX);
 	uiBoxAppend(controls, uiControl(columnWidth), 0);
-
 	uiSpinboxOnChanged(columnID, changedColumnID, t);
 	uiSpinboxOnChanged(columnWidth, changedColumnWidth, t);
+
+	uiBoxAppend(controls, uiControl(uiNewVerticalSeparator()), 0);
+
+	buttonSelectChecked = uiNewButton("Select Checked");
+	uiButtonOnClicked(buttonSelectChecked, selectChecked, t);
+	uiBoxAppend(controls, uiControl(buttonSelectChecked), 0);
+
+	stats = newHorizontalBox();
+	uiBoxSetPadded(stats, 1);
+	uiBoxAppend(page16, uiControl(stats), 0);
+
+	lblNumSelectedRows = uiNewLabel("");
+	uiBoxAppend(stats, uiControl(lblNumSelectedRows), 0);
+
+	lblSumSelectedRows = uiNewLabel("");
+	uiBoxAppend(stats, uiControl(lblSumSelectedRows), 0);
 
 	return page16;
 }

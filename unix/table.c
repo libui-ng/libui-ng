@@ -20,6 +20,8 @@ struct uiTable {
 	guint indeterminateTimer;
 	void (*headerOnClicked)(uiTable *, int, void *);
 	void *headerOnClickedData;
+	void (*onSelectionChanged)(uiTable *, void *);
+	void *onSelectionChangedData;
 };
 
 /*
@@ -384,6 +386,71 @@ static void headerOnClicked(GtkTreeViewColumn *c, gpointer data)
 			t->headerOnClicked(t, i, t->headerOnClickedData);
 }
 
+void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *t, void *data), void *data)
+{
+	t->onSelectionChanged = f;
+	t->onSelectionChangedData = data;
+}
+
+static void defaultOnSelectionChanged(uiTable *table, void *data)
+{
+	// do nothing
+}
+
+static void onSelectionChanged(GtkTreeSelection *s, gpointer data)
+{
+	uiTable *t = uiTable(data);
+	t->onSelectionChanged(t, t->onSelectionChangedData);
+}
+
+uiTableSelection* uiTableCurrentSelection(uiTable *t)
+{
+	int i = 0;
+	GList *e;
+	GList *list;
+	GtkTreeSelection *sel;
+	GtkTreeModel *m = GTK_TREE_MODEL(t->model);
+	uiTableSelection *s = uiprivNew(uiTableSelection);
+
+	sel = gtk_tree_view_get_selection(t->tv);
+	list = gtk_tree_selection_get_selected_rows(sel, &m);
+
+	s->NumRows = g_list_length(list);
+	if (s->NumRows == 0)
+		s->Rows = NULL;
+	else
+		s->Rows = uiprivAlloc(s->NumRows * sizeof(*s->Rows), "uiTableSelection->Rows");
+
+	for (e = list; e != NULL; e = e->next) {
+		GtkTreePath *path = e->data;
+		s->Rows[i++] = gtk_tree_path_get_indices(path)[0];
+	}
+
+	g_list_free_full(list, (GDestroyNotify) gtk_tree_path_free);
+
+	return s;
+}
+
+void uiTableSetCurrentSelection(uiTable *t, uiTableSelection *sel)
+{
+	int i;
+	GtkTreeSelection *ts;
+
+	if (!uiTableAllowMultipleSelection(t) && sel->NumRows > 1) {
+		uiprivUserBug("Can not select multiple rows in single selection mode");
+		return;
+	}
+
+	ts = gtk_tree_view_get_selection(t->tv);
+	gtk_tree_selection_unselect_all(ts);
+
+	for (i = 0; i < sel->NumRows; ++i) {
+		GtkTreePath *path = gtk_tree_path_new_from_indices(sel->Rows[i], -1);
+		gtk_tree_selection_select_path(ts, path);
+		gtk_tree_path_free(path);
+	}
+}
+
 static GtkTreeViewColumn *addColumn(uiTable *t, const char *name)
 {
 	GtkTreeViewColumn *c;
@@ -590,6 +657,10 @@ uiTable *uiNewTable(uiTableParams *p)
 		uiprivFree, uiprivFree);
 
 	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
+	uiTableOnSelectionChanged(t, defaultOnSelectionChanged, NULL);
+
+	g_signal_connect(G_OBJECT(gtk_tree_view_get_selection(t->tv)), "changed",
+		G_CALLBACK(onSelectionChanged), t);
 
 	return t;
 }
@@ -604,4 +675,30 @@ void uiTableColumnSetWidth(uiTable *t, int column, int width)
 {
 	GtkTreeViewColumn *c = gtk_tree_view_get_column(t->tv, column);
 	gtk_tree_view_column_set_fixed_width(c, width);
+}
+
+int uiTableAllowMultipleSelection(uiTable *t)
+{
+	GtkTreeSelection *select = gtk_tree_view_get_selection(t->tv);
+
+	switch (gtk_tree_selection_get_mode(select)) {
+		case GTK_SELECTION_MULTIPLE:
+			return 1;
+		case GTK_SELECTION_SINGLE:
+		case GTK_SELECTION_BROWSE:
+			return 0;
+		default:
+			uiprivImplBug("unrecognized table selection mode");
+			return 0;
+	}
+}
+
+void uiTableSetAllowMultipleSelection(uiTable *t, int multipleSelection)
+{
+	GtkTreeSelection *select = gtk_tree_view_get_selection(t->tv);
+
+	if (multipleSelection)
+		gtk_tree_selection_set_mode (select, GTK_SELECTION_MULTIPLE);
+	else
+		gtk_tree_selection_set_mode (select, GTK_SELECTION_SINGLE);
 }
