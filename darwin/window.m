@@ -201,6 +201,8 @@ static void uiWindowShow(uiControl *c)
 	uiWindow *w = (uiWindow *) c;
 
 	[w->window makeKeyAndOrderFront:w->window];
+	[w->window center];
+	[[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
 }
 
 static void uiWindowHide(uiControl *c)
