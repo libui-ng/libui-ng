@@ -1,6 +1,7 @@
 # 23 march 2019
 
 libui_sources += [
+	'unix/a11y.c',
 	'unix/alloc.c',
 	'unix/area.c',
 	'unix/attrstr.c',

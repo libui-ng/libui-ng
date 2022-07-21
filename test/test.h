@@ -98,5 +98,8 @@ extern void freePage16(void);
 extern uiBox *makePage17(void);
 extern void freePage17(void);
 
+// page18.c
+extern uiBox *makePage18(uiWindow *);
+
 // images.c
 extern void appendImageNamed(uiImage *img, const char *name);
