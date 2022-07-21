@@ -2,6 +2,7 @@
 #include "uipriv_unix.h"
 
 uiInitOptions uiprivOptions;
+static gboolean uiprivInitSuccess = FALSE;
 
 static GHashTable *timers;
 
@@ -9,6 +10,9 @@ const char *uiInit(uiInitOptions *o)
 {
 	GError *err = NULL;
 	const char *msg;
+
+	if (uiprivInitSuccess)
+		return NULL;
 
 	uiprivOptions = *o;
 	if (gtk_init_with_args(NULL, NULL, NULL, NULL, NULL, &err) == FALSE) {
@@ -19,6 +23,7 @@ const char *uiInit(uiInitOptions *o)
 	uiprivInitAlloc();
 	uiprivLoadFutures();
 	timers = g_hash_table_new(g_direct_hash, g_direct_equal);
+	uiprivInitSuccess = TRUE;
 	return NULL;
 }
 
