@@ -32,6 +32,16 @@
 	return nil;			// appease compiler
 }
 
+// Fallback for macOS < 10.10
+static void setTitle(uiprivTableColumn *col, NSString *str)
+{
+	if ([col respondsToSelector:@selector(setTitle:)]) {
+		[col setTitle:str];
+	} else {
+		[[col headerCell] setStringValue:str];
+	}
+}
+
 @end
 
 struct textColumnCreateParams {
@@ -596,7 +606,7 @@ void uiTableAppendTextColumn(uiTable *t, const char *name, int textModelColumn, 
 	ident = [@([[t->tv tableColumns] count]) stringValue];
 	col = [[uiprivTextImageCheckboxTableColumn alloc] initWithIdentifier:ident params:&p];
 	str = [NSString stringWithUTF8String:name];
-	[col setTitle:str];
+	setTitle(col, str);
 	[t->tv addTableColumn:col];
 }
 
@@ -617,7 +627,7 @@ void uiTableAppendImageColumn(uiTable *t, const char *name, int imageModelColumn
 	ident = [@([[t->tv tableColumns] count]) stringValue];
 	col = [[uiprivTextImageCheckboxTableColumn alloc] initWithIdentifier:ident params:&p];
 	str = [NSString stringWithUTF8String:name];
-	[col setTitle:str];
+	setTitle(col, str);
 	[t->tv addTableColumn:col];
 }
 
@@ -646,7 +656,7 @@ void uiTableAppendImageTextColumn(uiTable *t, const char *name, int imageModelCo
 	ident = [@([[t->tv tableColumns] count]) stringValue];
 	col = [[uiprivTextImageCheckboxTableColumn alloc] initWithIdentifier:ident params:&p];
 	str = [NSString stringWithUTF8String:name];
-	[col setTitle:str];
+	setTitle(col, str);
 	[t->tv addTableColumn:col];
 }
 
@@ -668,7 +678,7 @@ void uiTableAppendCheckboxColumn(uiTable *t, const char *name, int checkboxModel
 	ident = [@([[t->tv tableColumns] count]) stringValue];
 	col = [[uiprivTextImageCheckboxTableColumn alloc] initWithIdentifier:ident params:&p];
 	str = [NSString stringWithUTF8String:name];
-	[col setTitle:str];
+	setTitle(col, str);
 	[t->tv addTableColumn:col];
 }
 
@@ -698,7 +708,7 @@ void uiTableAppendCheckboxTextColumn(uiTable *t, const char *name, int checkboxM
 	ident = [@([[t->tv tableColumns] count]) stringValue];
 	col = [[uiprivTextImageCheckboxTableColumn alloc] initWithIdentifier:ident params:&p];
 	str = [NSString stringWithUTF8String:name];
-	[col setTitle:str];
+	setTitle(col, str);
 	[t->tv addTableColumn:col];
 }
 
@@ -711,7 +721,7 @@ void uiTableAppendProgressBarColumn(uiTable *t, const char *name, int progressMo
 	ident = [@([[t->tv tableColumns] count]) stringValue];
 	col = [[uiprivProgressBarTableColumn alloc] initWithIdentifier:ident table:t model:t->m modelColumn:progressModelColumn];
 	str = [NSString stringWithUTF8String:name];
-	[col setTitle:str];
+	setTitle(col, str);
 	[t->tv addTableColumn:col];
 }
 
@@ -724,6 +734,6 @@ void uiTableAppendButtonColumn(uiTable *t, const char *name, int buttonModelColu
 	ident = [@([[t->tv tableColumns] count]) stringValue];
 	col = [[uiprivButtonTableColumn alloc] initWithIdentifier:ident table:t model:t->m modelColumn:buttonModelColumn editableColumn:buttonClickableModelColumn];
 	str = [NSString stringWithUTF8String:name];
-	[col setTitle:str];
+	setTitle(col, str);
 	[t->tv addTableColumn:col];
 }
