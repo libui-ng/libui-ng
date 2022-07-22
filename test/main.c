@@ -52,6 +52,7 @@ int main(int argc, char *argv[])
 	uiBox *page15;
 	uiBox *page16;
 	uiBox *page17;
+	uiBox *page18;
 	uiTab *outerTab;
 	uiTab *innerTab;
 	int nomenus = 0;
@@ -165,6 +166,9 @@ int main(int argc, char *argv[])
 
 	page17 = makePage17();
 	uiTabAppend(innerTab, "Page 17", uiControl(page17));
+
+	page18 = makePage18(w);
+	uiTabAppend(innerTab, "Page 18", uiControl(page18));
 
 	if (startspaced)
 		setSpaced(1);

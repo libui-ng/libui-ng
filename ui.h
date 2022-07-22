@@ -15,6 +15,7 @@
  * @defgroup dialogWindow Dialog windows
  * @defgroup menu Menus
  * @defgroup table Tables
+ * @defgroup a11y Accessibility
  */
 
 #ifndef __LIBUI_UI_H__
@@ -3798,6 +3799,23 @@ _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
  * @memberof uiTable
  */
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
+
+/**
+ * Common methods for using accessibility automation.
+ *
+ * @struct uiA11y
+ * @ingroup a11y
+ */
+
+/**
+ * Automates the clicking of a button.
+ *
+ * @param b uiButton The button to click.
+ * @returns `TRUE` if successful, `FALSE` otherwise.
+ * @see uiButton
+ * @memberof uiA11y @static
+ */
+_UI_EXTERN int uiA11yDoButtonClick(uiButton *b);
 
 #ifdef __cplusplus
 }
