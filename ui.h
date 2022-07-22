@@ -1842,6 +1842,18 @@ _UI_EXTERN uiMenuItem *uiMenuAppendPreferencesItem(uiMenu *m);
 _UI_EXTERN uiMenuItem *uiMenuAppendAboutItem(uiMenu *m);
 
 /**
+ * Appends an item with a menu as a submenu.
+ *
+ * The menu item text will match the appended menu label.
+ *
+ * @param m uiMenu instance.
+ * @param child the menu to be appended as a submenu for the item.
+ * @returns A new uiMenuItem instance.
+ * @memberof uiMenu
+ */
+_UI_EXTERN uiMenuItem *uiMenuAppendSubmenu(uiMenu *m, uiMenu *child);
+
+/**
  * Appends a new separator.
  *
  * @param m uiMenu instance.

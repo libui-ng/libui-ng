@@ -95,7 +95,7 @@ static void uiWindowDestroy(uiControl *c)
 	}
 	// now destroy the menus, if any
 	if (w->menubar != NULL)
-		uiprivFreeMenubar(w->menubar);
+		uiprivFreeMenubar(w);
 	gtk_widget_destroy(w->childHolderWidget);
 	gtk_widget_destroy(w->vboxWidget);
 	// and finally free ourselves

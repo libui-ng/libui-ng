@@ -25,6 +25,7 @@ enum {
 	typePreferences,
 	typeAbout,
 	typeSeparator,
+	typeSubmenu
 };
 
 static void mapItemReleaser(void *key, void *value)
@@ -336,6 +337,17 @@ uiMenu *uiNewMenu(const char *name)
 	return m;
 
 	} // @autoreleasepool
+}
+
+uiMenuItem *uiMenuAppendSubmenu(uiMenu *m, uiMenu *child)
+{
+	uiMenuItem *item;
+
+	item = newItem(m, typeSubmenu, uiprivFromNSString([child->item title]));
+	[[uiprivNSApp() mainMenu] removeItem:child->item];
+	[item->item setSubmenu:child->menu];
+
+	return item;
 }
 
 void uiprivFinalizeMenus(void)
