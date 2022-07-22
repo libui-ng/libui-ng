@@ -48,6 +48,12 @@ libui_examples = {
 	'datetime': {
 		'sources':		['datetime/main.c'],
 	},
+	'hello-world': {
+		'sources':		['hello-world/main.c'],
+	},
+	'window': {
+		'sources':		['window/main.c'],
+	},
 }
 foreach name, args : libui_examples
 	# TODO once we upgrade to 0.49.0, add pie: true
