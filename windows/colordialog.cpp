@@ -126,6 +126,7 @@ static void hsv2RGB(double h, double s, double v, double *r, double *g, double *
 		return;
 	}
 	// TODO
+	*r = *g = *b = 0;
 }
 
 #define hexd L"0123456789ABCDEF"
@@ -309,7 +310,7 @@ static void drawGrid(ID2D1RenderTarget *rt, D2D1_RECT_F *fillRect)
 	size.width = 100 / 10;
 	size.height = 100 / 10;
 	// yay more ABI bugs
-#ifdef _MSC_VER
+#if defined(_MSC_VER) || defined(__clang__)
 	pformat = rt->GetPixelFormat();
 #else
 	{
@@ -855,7 +856,7 @@ static LRESULT CALLBACK opacitySliderSubProc(HWND hwnd, UINT uMsg, WPARAM wParam
 }
 
 // TODO extract into d2dscratch.cpp, use in font dialog
-HWND replaceWithD2DScratch(HWND parent, int id, SUBCLASSPROC subproc, void *data)
+HWND replaceWithD2DScratch(HWND parent, uintptr_t id, SUBCLASSPROC subproc, void *data)
 {
 	HWND replace;
 	RECT r;

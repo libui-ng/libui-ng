@@ -229,7 +229,7 @@ HRESULT drawingEffectsAttr::mkUnderlineBrush(ID2D1RenderTarget *rt, ID2D1SolidCo
 }
 
 // this is based on http://www.charlespetzold.com/blog/2014/01/Character-Formatting-Extensions-with-DirectWrite.html
-class textRenderer : public IDWriteTextRenderer {
+class textRenderer final : public IDWriteTextRenderer {
 	ULONG refcount;
 	ID2D1RenderTarget *rt;
 	BOOL snap;

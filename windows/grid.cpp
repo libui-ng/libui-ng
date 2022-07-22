@@ -238,7 +238,7 @@ static void gridRelayout(uiGrid *g)
 
 	// 2) figure out which rows/columns expand but not span
 	// we need to know which expanding rows/columns don't span before we can handle the ones that do
-	for (i = 0; i < g->children->size(); i++) {
+	for (i = 0; i < int(g->children->size()); i++) {
 		gc = (*(g->children))[i];
 		if (!uiControlVisible(gc->c))
 			continue;
@@ -250,7 +250,7 @@ static void gridRelayout(uiGrid *g)
 
 	// 3) figure out which rows/columns expand that do span
 	// the way we handle this is simple: if none of the spanned rows/columns expand, make all rows/columns expand
-	for (i = 0; i < g->children->size(); i++) {
+	for (i = 0; i < int(g->children->size()); i++) {
 		gc = (*(g->children))[i];
 		if (!uiControlVisible(gc->c))
 			continue;
@@ -301,7 +301,7 @@ static void gridRelayout(uiGrid *g)
 			ld->rowheights[i] = height / nvexpand;
 
 	// 5) reset the final coordinates for the next step
-	for (i = 0; i < g->children->size(); i++) {
+	for (i = 0; i < int(g->children->size()); i++) {
 		gc = (*(g->children))[i];
 		if (!uiControlVisible(gc->c))
 			continue;
@@ -363,7 +363,7 @@ static void gridRelayout(uiGrid *g)
 
 	// 7) everything as it stands now is set for xalign == Fill yalign == Fill; set the correct alignments
 	// this is why we saved minwidth/minheight above
-	for (i = 0; i < g->children->size(); i++) {
+	for (i = 0; i < int(g->children->size()); i++) {
 		gc = (*(g->children))[i];
 		if (!uiControlVisible(gc->c))
 			continue;
