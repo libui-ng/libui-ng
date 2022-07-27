@@ -15,6 +15,7 @@
  * @defgroup dialogWindow Dialog windows
  * @defgroup menu Menus
  * @defgroup table Tables
+ * @defgroup formattedText Formatted text
  */
 
 #ifndef __LIBUI_UI_H__
@@ -2144,81 +2145,155 @@ _UI_EXTERN void uiDrawClip(uiDrawContext *c, uiDrawPath *path);
 _UI_EXTERN void uiDrawSave(uiDrawContext *c);
 _UI_EXTERN void uiDrawRestore(uiDrawContext *c);
 
-// uiAttribute stores information about an attribute in a
-// uiAttributedString.
-//
-// You do not create uiAttributes directly; instead, you create a
-// uiAttribute of a given type using the specialized constructor
-// functions. For every Unicode codepoint in the uiAttributedString,
-// at most one value of each attribute type can be applied.
-//
-// uiAttributes are immutable and the uiAttributedString takes
-// ownership of the uiAttribute object once assigned, copying its
-// contents as necessary.
-// TODO define whether all this, for both uiTableValue and uiAttribute, is undefined behavior or a caught error
+/**
+ * @addtogroup formattedText
+ * @{
+ *
+ * Types and methods for displaying formatted text, also know as styled text
+ * or rich text.
+ *
+ * The main structure for formatted text is the uiAttributedString. It is where
+ * you store your plain text, which you then format by applying uiAttribute
+ * objects to it.
+ *
+ * Since a uiAttributedString does not contain all required information about
+ * how to be drawn on screen, it is used in conjunction with uiArea which
+ * provides the draw context and possible user interaction methods.
+ *
+ * To get started:
+ *
+ * 1. Create an uiAttributedString that contains your text.
+ * 2. Create uiAttribute objects (like font weight, size, etc.) and apply those
+ *    to (sections of) your attributed string.
+ * 3. Create a uiFontDescriptor to specify your default font.
+ * 4. Wrap your uiAttributedString and uiFontDescriptor in a
+ *    uiDrawTextLayoutParams and fill in the other missing fields.
+ * 5. Create a uiDrawTextLayout.
+ * 6. Implement a uiAreaHandler and create a uiArea. Make the `.Draw` method
+ *    uiDrawText() your uiDrawTextLayout.
+ *
+ * @}
+ */
+
+/**
+ * Container that stores text attribute information used in uiAttributedString objects.
+ *
+ * uiAttribute objects are immutable.
+ *
+ * uiAttributedString methods take ownership of the uiAttribute objects
+ * when passed as parameter.
+ *
+ * @struct uiAttribute
+ * @ingroup formattedText
+ */
 typedef struct uiAttribute uiAttribute;
 
-// @role uiAttribute destructor
-// uiFreeAttribute() frees a uiAttribute. You generally do not need to
-// call this yourself, as uiAttributedString does this for you. In fact,
-// it is an error to call this function on a uiAttribute that has been
-// given to a uiAttributedString. You can call this, however, if you
-// created a uiAttribute that you aren't going to use later.
+/**
+ * Frees a uiAttribute.
+ *
+ * @param a Atrribute to free.
+ *
+ * @warning This function is to be used only on uiAttribute objects that
+ *          have not been passed to a uiAttributedString - as this takes
+ *          ownership of the object.\n
+ *          Use this for freeing erroneously created atrributes that you do
+ *          not end up using.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN void uiFreeAttribute(uiAttribute *a);
 
-// uiAttributeType holds the possible uiAttribute types that may be
-// returned by uiAttributeGetType(). Refer to the documentation for
-// each type's constructor function for details on each type.
+/**
+ * uiAttributeType types.
+ *
+ * @todo Define whether calling any of the getters on the wrong type is
+ *       undefined behavior or caught error.
+ * @enum uiAttributeType
+ * @ingroup formattedText
+ */
 _UI_ENUM(uiAttributeType) {
-	uiAttributeTypeFamily,
-	uiAttributeTypeSize,
-	uiAttributeTypeWeight,
-	uiAttributeTypeItalic,
-	uiAttributeTypeStretch,
-	uiAttributeTypeColor,
-	uiAttributeTypeBackground,
-	uiAttributeTypeUnderline,
-	uiAttributeTypeUnderlineColor,
+	uiAttributeTypeFamily,         //!< Font family.
+	uiAttributeTypeSize,           //!< Font size.
+	uiAttributeTypeWeight,         //!< Font weight.
+	uiAttributeTypeItalic,         //!< Italics mode.
+	uiAttributeTypeStretch,        //!< Font stretch.
+	uiAttributeTypeColor,          //!< Text color.
+	uiAttributeTypeBackground,     //!< Background color.
+	uiAttributeTypeUnderline,      //!< Underline style.
+	uiAttributeTypeUnderlineColor, //!< Underline color.
 	uiAttributeTypeFeatures,
 };
 
-// uiAttributeGetType() returns the type of a.
-// TODO I don't like this name
+/**
+ * Returns the attribute type.
+ *
+ * @param a uiAttribute instance.
+ * @returns The attribute type.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN uiAttributeType uiAttributeGetType(const uiAttribute *a);
 
-// uiNewFamilyAttribute() creates a new uiAttribute that changes the
-// font family of the text it is applied to. family is copied; you do not
-// need to keep it alive after uiNewFamilyAttribute() returns. Font
-// family names are case-insensitive.
+/**
+ * Creates a new attribute to specify the font family of a text section.
+ *
+ * @param family Font family name, case-insensitive.\n
+ *               A valid, `NUL` terminated UTF-8 string.\n
+ *               Data is owned by the caller.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewFamilyAttribute(const char *family);
 
-// uiAttributeFamily() returns the font family stored in a. The
-// returned string is owned by a. It is an error to call this on a
-// uiAttribute that does not hold a font family.
+/**
+ * Returns the font family name held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeFamily.
+ *
+ * @param a uiAttribute instance.
+ * @returns The font family name.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data remains owned by @p a, do **NOT** call `uiFreeText()`.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN const char *uiAttributeFamily(const uiAttribute *a);
 
-// uiNewSizeAttribute() creates a new uiAttribute that changes the
-// size of the text it is applied to, in typographical points.
+/**
+ * Creates a new attribute to specify the font size of a text section.
+ *
+ * @param size Font size measured in typographical points.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewSizeAttribute(double size);
 
-// uiAttributeSize() returns the font size stored in a. It is an error to
-// call this on a uiAttribute that does not hold a font size.
+/**
+ * Returns the font size held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeSize.
+ *
+ * @param a uiAttribute instance.
+ * @returns The font size measured in typographical points.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN double uiAttributeSize(const uiAttribute *a);
 
-// uiTextWeight represents possible text weights. These roughly
-// map to the OS/2 text weight field of TrueType and OpenType
-// fonts, or to CSS weight numbers. The named constants are
-// nominal values; the actual values may vary by font and by OS,
-// though this isn't particularly likely. Any value between
-// uiTextWeightMinimum and uiTextWeightMaximum, inclusive,
-// is allowed.
-//
-// Note that due to restrictions in early versions of Windows, some
-// fonts have "special" weights be exposed in many programs as
-// separate font families. This is perhaps most notable with
-// Arial Black. libui does not do this, even on Windows (because the
-// DirectWrite API libui uses on Windows does not do this); to
-// specify Arial Black, use family Arial and weight uiTextWeightBlack.
+/**
+ * Font weights.
+ *
+ * Font weights roughly map to OS/2 text weight field of TrueType and OpenType
+ * fonts, or to CSS weight numbers.
+ *
+ * The named constants are nominal values, actual values _may_ vary by font
+ * and OS, although this is rather uncommon.
+ *
+ * The valid range of values is `[uiTextWeightMinimum, uiTextWeightMaximum]`.
+ *
+ * @note Due to restrictions in early versions of Windows, some programs expose
+ *       "special" font weights via separate font families. The most notable
+ *       probably being Arial Black. This is not the case in the library here.
+ *       To use Arial Black, use family `Arial` and weight `uiTextWeightHeavy`.
+ * @enum uiTextWeight
+ * @ingroup formattedText
+ */
 _UI_ENUM(uiTextWeight) {
 	uiTextWeightMinimum = 0,
 	uiTextWeightThin = 100,
@@ -2235,404 +2310,690 @@ _UI_ENUM(uiTextWeight) {
 	uiTextWeightMaximum = 1000,
 };
 
-// uiNewWeightAttribute() creates a new uiAttribute that changes the
-// weight of the text it is applied to. It is an error to specify a weight
-// outside the range [uiTextWeightMinimum,
-// uiTextWeightMaximum].
+/**
+ * Creates a new attribute to specify the font weight of a text section.
+ *
+ * @param weight Font weight in range of `[uiTextWeightMinimum, uiTextWeightMaximum]`.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewWeightAttribute(uiTextWeight weight);
 
-// uiAttributeWeight() returns the font weight stored in a. It is an error
-// to call this on a uiAttribute that does not hold a font weight.
+/**
+ * Returns the font weight held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeWeight.
+ *
+ * @param a uiAttribute instance.
+ * @returns Font weight.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN uiTextWeight uiAttributeWeight(const uiAttribute *a);
 
-// uiTextItalic represents possible italic modes for a font. Italic
-// represents "true" italics where the slanted glyphs have custom
-// shapes, whereas oblique represents italics that are merely slanted
-// versions of the normal glyphs. Most fonts usually have one or the
-// other.
+/**
+ * Italic font modes.
+ *
+ * @note Most fonts provide italics either through `uiTextItalicOblique` or
+ *       `uiTextItalicItalic`.
+ * @enum uiTextItalic
+ * @ingroup formattedText
+ */
 _UI_ENUM(uiTextItalic) {
-	uiTextItalicNormal,
-	uiTextItalicOblique,
-	uiTextItalicItalic,
+	uiTextItalicNormal,  //!< No italics.
+	uiTextItalicOblique, //!< True italics through custom glyph shapes.
+	uiTextItalicItalic,  //!< Italics through slanting of the normal glyphs.
 };
 
-// uiNewItalicAttribute() creates a new uiAttribute that changes the
-// italic mode of the text it is applied to. It is an error to specify an
-// italic mode not specified in uiTextItalic.
+/**
+ * Creates a new attribute to specify the font italic mode of a text section.
+ *
+ * @param italic Italic mode.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewItalicAttribute(uiTextItalic italic);
 
-// uiAttributeItalic() returns the font italic mode stored in a. It is an
-// error to call this on a uiAttribute that does not hold a font italic
-// mode.
+/**
+ * Returns the font italic mode held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeItalic.
+ *
+ * @param a uiAttribute instance.
+ * @returns Font weight.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN uiTextItalic uiAttributeItalic(const uiAttribute *a);
 
-// uiTextStretch represents possible stretches (also called "widths")
-// of a font.
-//
-// Note that due to restrictions in early versions of Windows, some
-// fonts have "special" stretches be exposed in many programs as
-// separate font families. This is perhaps most notable with
-// Arial Condensed. libui does not do this, even on Windows (because
-// the DirectWrite API libui uses on Windows does not do this); to
-// specify Arial Condensed, use family Arial and stretch
-// uiTextStretchCondensed.
+/**
+ * Font stretch or _width_.
+ *
+ * @enum uiTextStretch
+ * @ingroup formattedText
+ */
 _UI_ENUM(uiTextStretch) {
-	uiTextStretchUltraCondensed,
-	uiTextStretchExtraCondensed,
-	uiTextStretchCondensed,
-	uiTextStretchSemiCondensed,
-	uiTextStretchNormal,
-	uiTextStretchSemiExpanded,
-	uiTextStretchExpanded,
-	uiTextStretchExtraExpanded,
-	uiTextStretchUltraExpanded,
+	uiTextStretchUltraCondensed, //!< Ultra condensed.
+	uiTextStretchExtraCondensed, //!< Extra condensed.
+	uiTextStretchCondensed,      //!< Condensed.
+	uiTextStretchSemiCondensed,  //!< Semi condensed.
+	uiTextStretchNormal,         //!< Normal.
+	uiTextStretchSemiExpanded,   //!< Semi Expanded.
+	uiTextStretchExpanded,       //!< Expanded.
+	uiTextStretchExtraExpanded,  //!< Extra expanded
+	uiTextStretchUltraExpanded,  //!< Ultra expanded.
 };
 
-// uiNewStretchAttribute() creates a new uiAttribute that changes the
-// stretch of the text it is applied to. It is an error to specify a strech
-// not specified in uiTextStretch.
+/**
+ * Creates a new attribute to specify the font stretch of a text section.
+ *
+ * @param stretch Text stretch.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewStretchAttribute(uiTextStretch stretch);
 
-// uiAttributeStretch() returns the font stretch stored in a. It is an
-// error to call this on a uiAttribute that does not hold a font stretch.
+/**
+ * Returns the font stretch held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeStretch.
+ *
+ * @param a uiAttribute instance.
+ * @returns Font weight.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN uiTextStretch uiAttributeStretch(const uiAttribute *a);
 
-// uiNewColorAttribute() creates a new uiAttribute that changes the
-// color of the text it is applied to. It is an error to specify an invalid
-// color.
+/**
+ * Creates a new attribute to specify the text color of a text section.
+ *
+ * @param r Red. Double in range of `[0, 1.0]`.
+ * @param g Green. Double in range of `[0, 1.0]`.
+ * @param b Blue. Double in range of `[0, 1.0]`.
+ * @param a Alpha. Double in range of `[0, 1.0]`.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewColorAttribute(double r, double g, double b, double a);
 
-// uiAttributeColor() returns the text color stored in a. It is an
-// error to call this on a uiAttribute that does not hold a text color.
+/**
+ * Returns the text color held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeColor.
+ *
+ * @param a uiAttribute instance.
+ * @param[out] r Red. Double in range of `[0, 1.0]`.
+ * @param[out] g Green. Double in range of `[0, 1.0]`.
+ * @param[out] b Blue. Double in range of `[0, 1.0]`.
+ * @param[out] alpha Alpha. Double in range of `[0, 1.0]`.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN void uiAttributeColor(const uiAttribute *a, double *r, double *g, double *b, double *alpha);
 
-// uiNewBackgroundAttribute() creates a new uiAttribute that
-// changes the background color of the text it is applied to. It is an
-// error to specify an invalid color.
+/**
+ * Creates a new attribute to specify the background color of a text section.
+ *
+ * @param r Red. Double in range of `[0, 1.0]`.
+ * @param g Green. Double in range of `[0, 1.0]`.
+ * @param b Blue. Double in range of `[0, 1.0]`.
+ * @param a Alpha. Double in range of `[0, 1.0]`.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewBackgroundAttribute(double r, double g, double b, double a);
 
 // TODO reuse uiAttributeColor() for background colors, or make a new function...
 
-// uiUnderline specifies a type of underline to use on text.
+/**
+ * Underline styles for text.
+ *
+ * Make sure to pair `uiUnderlineSuggestion` with #uiUnderlineColor to get the
+ * customary platform way of displaying suggestions.
+ *
+ * @enum uiUnderline
+ * @ingroup formattedText
+ */
 _UI_ENUM(uiUnderline) {
-	uiUnderlineNone,
-	uiUnderlineSingle,
-	uiUnderlineDouble,
-	uiUnderlineSuggestion,		// wavy or dotted underlines used for spelling/grammar checkers
+	uiUnderlineNone,       //!< No underline.
+	uiUnderlineSingle,     //!< Single line underline.
+	uiUnderlineDouble,     //!< Double line underline.
+	uiUnderlineSuggestion, //!< Wavy or dotted underline used by spell and grammar checkers.
 };
 
-// uiNewUnderlineAttribute() creates a new uiAttribute that changes
-// the type of underline on the text it is applied to. It is an error to
-// specify an underline type not specified in uiUnderline.
+/**
+ * Creates a new attribute to specify the underline style of a text section.
+ *
+ * @param u Underline style.
+ * @returns A new uiAttribute instance.
+ * @note By default the color of the underline matches the text color. Use
+ *       #uiUnderlineColor to specify a custom color.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewUnderlineAttribute(uiUnderline u);
 
-// uiAttributeUnderline() returns the underline type stored in a. It is
-// an error to call this on a uiAttribute that does not hold an underline
-// style.
+/**
+ * Returns the underline style held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeUnderline.
+ *
+ * @param a uiAttribute instance.
+ * @returns Font weight.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN uiUnderline uiAttributeUnderline(const uiAttribute *a);
 
-// uiUnderlineColor specifies the color of any underline on the text it
-// is applied to, regardless of the type of underline. In addition to
-// being able to specify a custom color, you can explicitly specify
-// platform-specific colors for suggestion underlines; to use them
-// correctly, pair them with uiUnderlineSuggestion (though they can
-// be used on other types of underline as well).
-// 
-// If an underline type is applied but no underline color is
-// specified, the text color is used instead. If an underline color
-// is specified without an underline type, the underline color
-// attribute is ignored, but not removed from the uiAttributedString.
+/**
+ * Color of the underline.
+ *
+ * @note The platform specific color values solely specify the customary color
+ *       and are applied irrespective of the underline style.
+ * @enum uiUnderlineColor
+ * @ingroup formattedText
+ */
 _UI_ENUM(uiUnderlineColor) {
-	uiUnderlineColorCustom,
-	uiUnderlineColorSpelling,
-	uiUnderlineColorGrammar,
-	uiUnderlineColorAuxiliary,		// for instance, the color used by smart replacements on macOS or in Microsoft Office
+	uiUnderlineColorCustom,    //!< Custom color specified via RGBA parameters.
+	uiUnderlineColorSpelling,  //!< Platform color used to highlight spelling mistakes.
+	uiUnderlineColorGrammar,   //!< Platform color used to highlight grammar mistakes.
+	uiUnderlineColorAuxiliary, //!< Platform color used by smart replacement suggestions.
 };
 
-// uiNewUnderlineColorAttribute() creates a new uiAttribute that
-// changes the color of the underline on the text it is applied to.
-// It is an error to specify an underline color not specified in
-// uiUnderlineColor.
-//
-// If the specified color type is uiUnderlineColorCustom, it is an
-// error to specify an invalid color value. Otherwise, the color values
-// are ignored and should be specified as zero.
+/**
+ * Creates a new attribute to specify the underline color of a text section.
+ *
+ * @param u Underline color type.
+ * @param r Red. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`, `0` otherwise.
+ * @param g Green. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`, `0` otherwise.
+ * @param b Blue. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`, `0` otherwise.
+ * @param a Alpha. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`, `0` otherwise.
+ * @returns A new uiAttribute instance.
+ * @note Applying an underline color attribute without specifying an underline
+ *       style will have no visual effect but retain the attribute nonetheless.
+ * @warning The parameters @p r @p g @p b @p a are only valid for `uiUnderlineColorCustom`.
+ *          Use a value of `0` for all other values of #uiUnderlineColor.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewUnderlineColorAttribute(uiUnderlineColor u, double r, double g, double b, double a);
 
-// uiAttributeUnderlineColor() returns the underline color stored in
-// a. It is an error to call this on a uiAttribute that does not hold an
-// underline color.
+/**
+ * Returns the underline color held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeUnderlineColor.
+ *
+ * @param a uiAttribute instance.
+ * @param[out] u Underline color type.
+ * @param[out] r Red. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`.
+ * @param[out] g Green. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`.
+ * @param[out] b Blue. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`.
+ * @param[out] alpha Alpha. Double in range of `[0, 1.0]` for `uiUnderlineColorCustom`.
+ * @warning The parameters @p r @p g @p b @p a are only valid for `uiUnderlineColorCustom`.
+ * @todo Guarantee RGBA return to be `0` or specify as undefined for values NOT equal to
+ *       `uiUnderlineColorCustom`.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN void uiAttributeUnderlineColor(const uiAttribute *a, uiUnderlineColor *u, double *r, double *g, double *b, double *alpha);
 
-// uiOpenTypeFeatures represents a set of OpenType feature
-// tag-value pairs, for applying OpenType features to text.
-// OpenType feature tags are four-character codes defined by
-// OpenType that cover things from design features like small
-// caps and swashes to language-specific glyph shapes and
-// beyond. Each tag may only appear once in any given
-// uiOpenTypeFeatures instance. Each value is a 32-bit integer,
-// often used as a Boolean flag, but sometimes as an index to choose
-// a glyph shape to use.
-// 
-// If a font does not support a certain feature, that feature will be
-// ignored. (TODO verify this on all OSs)
-// 
-// See the OpenType specification at
-// https://www.microsoft.com/typography/otspec/featuretags.htm
-// for the complete list of available features, information on specific
-// features, and how to use them.
-// TODO invalid features
+/**
+ * OpenType features.
+ *
+ * A collection of tag-value pairs representing OpenType features.
+ *
+ * Each feature tag is a four character code defined by OpenType that covers
+ * things from small caps and swashes to language specific glyph shapes.
+ *
+ * Each tag may only appear once within any gives uiOpenTypeFeatures instance.
+ *
+ * Each value is represented by a 32-bit integer, commonly used as a Boolean
+ * flag or an index to specify a glyph shape.
+ *
+ * If a font does not support a certain feature, that feature will be ignored.
+ *
+ * For a complete list of available features consult the OpenType specification
+ * at: https://www.microsoft.com/typography/otspec/featuretags.htm
+ *
+ * @todo Verify that unsupported features get ignored on all platforms.
+ * @struct uiOpenTypeFeatures
+ * @ingroup formattedText
+ */
 typedef struct uiOpenTypeFeatures uiOpenTypeFeatures;
 
-// uiOpenTypeFeaturesForEachFunc is the type of the function
-// invoked by uiOpenTypeFeaturesForEach() for every OpenType
-// feature in otf. Refer to that function's documentation for more
-// details.
+/**
+ * Type signature of the function called by uiOpenTypeFeaturesForEach().
+ *
+ * @param otf uiOpenTypeFeatures instance.
+ * @param a Tag character 1.
+ * @param b Tag character 2.
+ * @param c Tag character 3.
+ * @param d Tag character 4.
+ * @param value Feature value.
+ * @param data User data registered with uiOpenTypeFeaturesForEach().
+ * @memberof uiOpenTypeFeatures
+ */
 typedef uiForEach (*uiOpenTypeFeaturesForEachFunc)(const uiOpenTypeFeatures *otf, char a, char b, char c, char d, uint32_t value, void *data);
 
-// @role uiOpenTypeFeatures constructor
-// uiNewOpenTypeFeatures() returns a new uiOpenTypeFeatures
-// instance, with no tags yet added.
+/**
+ * Creates a new OpenType features container.
+ *
+ * @returns A new uiOpenTypeFeatures instance.
+ * @memberof uiOpenTypeFeatures @static
+ */
 _UI_EXTERN uiOpenTypeFeatures *uiNewOpenTypeFeatures(void);
 
-// @role uiOpenTypeFeatures destructor
-// uiFreeOpenTypeFeatures() frees otf.
+/**
+ * Frees an OpenType features container.
+ *
+ * @param otf uiOpenTypeFeatures instance.
+ * @memberof uiOpenTypeFeatures
+ */
 _UI_EXTERN void uiFreeOpenTypeFeatures(uiOpenTypeFeatures *otf);
 
-// uiOpenTypeFeaturesClone() makes a copy of otf and returns it.
-// Changing one will not affect the other.
+/**
+ * Clones a uiOpenTypeFeatures instance.
+ *
+ * Deep copies all features. Both instances are completely independent of each
+ * other.
+ *
+ * @param otf uiOpenTypeFeatures instance to clone.
+ * @returns The cloned uiOpenTypeFeatures instance.
+ * @memberof uiOpenTypeFeatures
+ */
 _UI_EXTERN uiOpenTypeFeatures *uiOpenTypeFeaturesClone(const uiOpenTypeFeatures *otf);
 
-// uiOpenTypeFeaturesAdd() adds the given feature tag and value
-// to otf. The feature tag is specified by a, b, c, and d. If there is
-// already a value associated with the specified tag in otf, the old
-// value is removed.
+/**
+ * Adds a new OpenType feature to the container.
+ *
+ * Any existing value with the same tag is overwritten.
+ *
+ * @todo Make the tag a `const char *` and strip `NUL` internally.
+ * @memberof uiOpenTypeFeatures
+ */
 _UI_EXTERN void uiOpenTypeFeaturesAdd(uiOpenTypeFeatures *otf, char a, char b, char c, char d, uint32_t value);
 
-// uiOpenTypeFeaturesRemove() removes the given feature tag
-// and value from otf. If the tag is not present in otf,
-// uiOpenTypeFeaturesRemove() does nothing.
+/**
+ * Removes an OpenType feature from the container.
+ *
+ * Removing a non existent tag does nothing.
+ *
+ * @param otf uiOpenTypeFeatures instance.
+ * @param a Tag character 1.
+ * @param b Tag character 2.
+ * @param c Tag character 3.
+ * @param d Tag character 4.
+ *
+ * @todo Make the tag a `const char *` and strip `NUL` internally.
+ * @memberof uiOpenTypeFeatures
+ */
 _UI_EXTERN void uiOpenTypeFeaturesRemove(uiOpenTypeFeatures *otf, char a, char b, char c, char d);
 
-// uiOpenTypeFeaturesGet() determines whether the given feature
-// tag is present in otf. If it is, *value is set to the tag's value and
-// nonzero is returned. Otherwise, zero is returned.
-// 
-// Note that if uiOpenTypeFeaturesGet() returns zero, value isn't
-// changed. This is important: if a feature is not present in a
-// uiOpenTypeFeatures, the feature is NOT treated as if its
-// value was zero anyway. Script-specific font shaping rules and
-// font-specific feature settings may use a different default value
-// for a feature. You should likewise not treat a missing feature as
-// having a value of zero either. Instead, a missing feature should
-// be treated as having some unspecified default value.
+/**
+ * Retrieves the value of an OpenType feature identified by it's tag.
+ *
+ * @param otf uiOpenTypeFeatures instance.
+ * @param a Tag character 1.
+ * @param b Tag character 2.
+ * @param c Tag character 3.
+ * @param d Tag character 4.
+ * @param[out] value The OpenType feature value if the tag is present, `0` otherwise.
+ * @returns Non-zero if the tag is present, `0` otherwise.
+ *
+ * @note Do not use a value of `0` as a default for a missing OpenType feature.
+ *       Do not use the value if this function returns `0`.
+ * @todo Make the tag a `const char *` and strip `NUL` internally.
+ * @memberof uiOpenTypeFeatures
+ */
 _UI_EXTERN int uiOpenTypeFeaturesGet(const uiOpenTypeFeatures *otf, char a, char b, char c, char d, uint32_t *value);
 
-// uiOpenTypeFeaturesForEach() executes f for every tag-value
-// pair in otf. The enumeration order is unspecified. You cannot
-// modify otf while uiOpenTypeFeaturesForEach() is running.
+/**
+ * Executes a function for each OpenType feature tag-value pair.
+ *
+ * The enumeration order is unspecified.
+ *
+ * @param otf uiOpenTypeFeatures instance.
+ * @param f Function to execute.
+ * @param data User data to be passed to the function.
+ * @warning You may not modify @p otf while uiOpenTypeFeaturesForEach()
+ *          is executing.
+ * @memberof uiOpenTypeFeatures
+ */
 _UI_EXTERN void uiOpenTypeFeaturesForEach(const uiOpenTypeFeatures *otf, uiOpenTypeFeaturesForEachFunc f, void *data);
 
-// uiNewFeaturesAttribute() creates a new uiAttribute that changes
-// the font family of the text it is applied to. otf is copied; you may
-// free it after uiNewFeaturesAttribute() returns.
+/**
+ * Creates a new attribute to specify OpenType features.
+ *
+ * @param otf uiOpenTypeFeatures instance.
+ * @returns A new uiAttribute instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttribute *uiNewFeaturesAttribute(const uiOpenTypeFeatures *otf);
 
-// uiAttributeFeatures() returns the OpenType features stored in a.
-// The returned uiOpenTypeFeatures object is owned by a. It is an
-// error to call this on a uiAttribute that does not hold OpenType
-// features.
+/**
+ * Returns the OpenType features container held internally.
+ *
+ * To be used only on uiAttribute objects of type uiAttributeTypeFeatures.
+ *
+ * @param a uiAttribute instance.
+ * @returns The uiOpenTypeFeatures instance held internally.
+ *          Data remains to be owned by @p a.
+ * @memberof uiAttribute
+ */
 _UI_EXTERN const uiOpenTypeFeatures *uiAttributeFeatures(const uiAttribute *a);
 
-// uiAttributedString represents a string of UTF-8 text that can
-// optionally be embellished with formatting attributes. libui
-// provides the list of formatting attributes, which cover common
-// formatting traits like boldface and color as well as advanced
-// typographical features provided by OpenType like superscripts
-// and small caps. These attributes can be combined in a variety of
-// ways.
-//
-// Attributes are applied to runs of Unicode codepoints in the string.
-// Zero-length runs are elided. Consecutive runs that have the same
-// attribute type and value are merged. Each attribute is independent
-// of each other attribute; overlapping attributes of different types
-// do not split each other apart, but different values of the same
-// attribute type do.
-//
-// The empty string can also be represented by uiAttributedString,
-// but because of the no-zero-length-attribute rule, it will not have
-// attributes.
-//
-// A uiAttributedString takes ownership of all attributes given to
-// it, as it may need to duplicate or delete uiAttribute objects at
-// any time. By extension, when you free a uiAttributedString,
-// all uiAttributes within will also be freed. Each method will
-// describe its own rules in more details.
-//
-// In addition, uiAttributedString provides facilities for moving
-// between grapheme clusters, which represent a character
-// from the point of view of the end user. The cursor of a text editor
-// is always placed on a grapheme boundary, so you can use these
-// features to move the cursor left or right by one "character".
-// TODO does uiAttributedString itself need this
-//
-// uiAttributedString does not provide enough information to be able
-// to draw itself onto a uiDrawContext or respond to user actions.
-// In order to do that, you'll need to use a uiDrawTextLayout, which
-// is built from the combination of a uiAttributedString and a set of
-// layout-specific properties.
+/**
+ * A string that can be stylistically enhanced with formatting attributes.
+ *
+ * uiAttribute objects are applied to runs of Unicode code points within the
+ * string.
+ *
+ * uiAttribute objects applied to zero length strings are discarded.
+ *
+ * uiAttribute objects applied to a uiAttributedString are merged whenever
+ * possible.
+ *
+ * uiAttributedString additionally provides methods to move between grapheme
+ * clusters to facilitate implementing text editors to always
+ * place the cursor on a grapheme boundary.
+ *
+ * Grapheme clusters: what users perceive as single characters.
+ *
+ * @todo Does uiAttributedString need grapheme methods?
+ *
+ * @note A uiAttributedString takes ownership of all uiAttribute objects passed
+ *       as parameters.
+ * @struct uiAttributedString
+ * @ingroup formattedText
+ */
 typedef struct uiAttributedString uiAttributedString;
 
-// uiAttributedStringForEachAttributeFunc is the type of the function
-// invoked by uiAttributedStringForEachAttribute() for every
-// attribute in s. Refer to that function's documentation for more
-// details.
+/**
+ * Type signature of the function called by uiAttributedStringForEachAttribute().
+ *
+ * @param s uiAttributedString instance.
+ * @param a uiAttribute instance.
+ *          Data remains owned by @p s.
+ * @param start Substring range start (inclusive) measured in bytes.
+ * @param end Substring range end (exclusive) measured in bytes.
+ * @param data User data registered with uiAttributedStringForEachAttribute().
+ * @memberof uiAttributedString
+ */
 typedef uiForEach (*uiAttributedStringForEachAttributeFunc)(const uiAttributedString *s, const uiAttribute *a, size_t start, size_t end, void *data);
 
-// @role uiAttributedString constructor
-// uiNewAttributedString() creates a new uiAttributedString from
-// initialString. The string will be entirely unattributed.
+/**
+ * Creates a new attributed string from a plain string.
+ *
+ * The string will have no attributes.
+ *
+ * @param initialString Plain text string.\n
+ *                      A `NUL` terminated UTF-8 string.\n
+ *                      Data is owned by the caller.
+ * @returns A new uiAttributedString instance.
+ * @memberof uiAttribute @static
+ */
 _UI_EXTERN uiAttributedString *uiNewAttributedString(const char *initialString);
 
-// @role uiAttributedString destructor
-// uiFreeAttributedString() destroys the uiAttributedString s.
-// It will also free all uiAttributes within.
+/**
+ * Frees the uiAttributedString and all associated uiAttribute objects.
+ *
+ * @param s uiAttributedString instance.
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN void uiFreeAttributedString(uiAttributedString *s);
 
-// uiAttributedStringString() returns the textual content of s as a
-// '\0'-terminated UTF-8 string. The returned pointer is valid until
-// the next change to the textual content of s.
+/**
+ * Returns the plain text content.
+ *
+ * @param s uiAttributedString instance.
+ * @returns Plain text content.\n
+ *          A `NUL` terminated UTF-8 string.\n
+ *          Data remains owned by @p s and is only valid until the contents of
+ *          @p s change.  Do **NOT** call `uiFreeText()`.
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN const char *uiAttributedStringString(const uiAttributedString *s);
 
-// uiAttributedStringLength() returns the number of UTF-8 bytes in
-// the textual content of s, excluding the terminating '\0'.
+/**
+ * Returns the attributed string's length as number of UTF-8 bytes.
+ *
+ * Like `strlen()` this does not count the terminating `nul` byte.
+ *
+ * @param s uiAttributedString instance.
+ * @returns Number of UTF-8 bytes.
+ * @todo Figure out what a *UTF-8 byte* is. Byte? Code point? Grapheme cluster?
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN size_t uiAttributedStringLen(const uiAttributedString *s);
 
-// uiAttributedStringAppendUnattributed() adds the '\0'-terminated
-// UTF-8 string str to the end of s. The new substring will be
-// unattributed.
+/**
+ * Appends a plain string to an attributed sting with no attributes.
+ *
+ * @param s uiAttributedString instance.
+ * @param str Plain text to append.\n
+ *            A valid, `NUL` terminated UTF-8 string.\n
+ *            Data is owned by the caller.
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN void uiAttributedStringAppendUnattributed(uiAttributedString *s, const char *str);
 
-// uiAttributedStringInsertAtUnattributed() adds the '\0'-terminated
-// UTF-8 string str to s at the byte position specified by at. The new
-// substring will be unattributed; existing attributes will be moved
-// along with their text.
+/**
+ * Inserts a plain string into an attributed sting at @p at with no attributes.
+ *
+ * The existing text and it's attributes will be moved accordingly.
+ *
+ * @param s uiAttributedString instance.
+ * @param str Plain text to insert.\n
+ *            A valid, `NUL` terminated UTF-8 string.\n
+ *            Data is owned by the caller.
+ * @param at Byte position to insert the string at.
+ * @todo What happens when the byte position points to the middle of an UTF-8
+ *       multi byte code point?
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN void uiAttributedStringInsertAtUnattributed(uiAttributedString *s, const char *str, size_t at);
 
 // TODO add the Append and InsertAtExtendingAttributes functions
 // TODO and add functions that take a string + length
 
-// uiAttributedStringDelete() deletes the characters and attributes of
-// s in the byte range [start, end).
+/**
+ * Deletes a substring from the attributed string.
+ *
+ * Deletes the substring and it's attributes for the byte range `[start, end)`.
+ *
+ * The existing text and it's attributes will be moved accordingly.
+ *
+ * @param s uiAttributedString instance.
+ * @param start Substring range start (inclusive) measured in bytes.
+ * @param end Substring range end (exclusive) measured in bytes.
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN void uiAttributedStringDelete(uiAttributedString *s, size_t start, size_t end);
 
 // TODO add a function to uiAttributedString to get an attribute's value at a specific index or in a specific range, so we can edit
 
-// uiAttributedStringSetAttribute() sets a in the byte range [start, end)
-// of s. Any existing attributes in that byte range of the same type are
-// removed. s takes ownership of a; you should not use it after
-// uiAttributedStringSetAttribute() returns.
+/**
+ * Sets an attribute for a substring of the attributed string.
+ *
+ * The attribute is set for the byte range `[start, end)`. Any existing
+ * attribute of the same type in the same range will be overridden.
+ *
+ * @param s uiAttributedString instance.
+ * @param a Attribute to be set for substring.\n
+ *          Ownership is transferred to @p s.
+ * @param start Substring range start (inclusive) measured in bytes.
+ * @param end Substring range end (exclusive) measured in bytes.
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN void uiAttributedStringSetAttribute(uiAttributedString *s, uiAttribute *a, size_t start, size_t end);
 
-// uiAttributedStringForEachAttribute() enumerates all the
-// uiAttributes in s. It is an error to modify s in f. Within f, s still
-// owns the attribute; you can neither free it nor save it for later
-// use.
-// TODO reword the above for consistency (TODO and find out what I meant by that)
-// TODO define an enumeration order (or mark it as undefined); also define how consecutive runs of identical attributes are handled here and sync with the definition of uiAttributedString itself
+/**
+ * Executes a function for each uiAttribute.
+ *
+ * The enumeration order is unspecified.
+ *
+ * @param s uiAttributedString instance.
+ * @param f Function to execute.
+ * @param data User data to be passed to the function.
+ * @warning You may not modify @p otf while uiAttributedStringForEachAttribute()
+ *          is executing.
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN void uiAttributedStringForEachAttribute(const uiAttributedString *s, uiAttributedStringForEachAttributeFunc f, void *data);
 
-// TODO const correct this somehow (the implementation needs to mutate the structure)
+/**
+ * Returns the number of grapheme clusters.
+ *
+ * Grapheme clusters: what users perceive as single characters.
+ *
+ * @param s uiAttributedString instance.
+ * @returns Number of grapheme clusters.
+ * @todo const correct this somehow (the implementation needs to mutate the structure)
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN size_t uiAttributedStringNumGraphemes(uiAttributedString *s);
 
-// TODO const correct this somehow (the implementation needs to mutate the structure)
+/**
+ * Converts a byte offset to a grapheme cluster position.
+ *
+ * Grapheme clusters: what users perceive as single characters.
+ *
+ * @param s uiAttributedString instance.
+ * @param pos Byte index.
+ * @returns Grapheme cluster position.
+ * @todo const correct this somehow (the implementation needs to mutate the structure)
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN size_t uiAttributedStringByteIndexToGrapheme(uiAttributedString *s, size_t pos);
 
-// TODO const correct this somehow (the implementation needs to mutate the structure)
+/**
+ * Converts a grapheme cluster position into a byte offset.
+ *
+ * Grapheme clusters: what users perceive as single characters.
+ *
+ * @param s uiAttributedString instance.
+ * @param pos Grapheme cluster position.
+ * @returns Byte index.
+ * @todo const correct this somehow (the implementation needs to mutate the structure)
+ * @memberof uiAttributedString
+ */
 _UI_EXTERN size_t uiAttributedStringGraphemeToByteIndex(uiAttributedString *s, size_t pos);
 
-// uiFontDescriptor provides a complete description of a font where
-// one is needed. Currently, this means as the default font of a
-// uiDrawTextLayout and as the data returned by uiFontButton.
-// All the members operate like the respective uiAttributes.
-typedef struct uiFontDescriptor uiFontDescriptor;
 
+/**
+ * Complete font description.
+ *
+ * Currently used in uiDrawTextLayout and uiFontButton.
+ *
+ * All the members operate like the respective uiAttributes.
+ *
+ * @struct uiFontDescriptor
+ * @ingroup formattedText
+ */
+typedef struct uiFontDescriptor uiFontDescriptor;
 struct uiFontDescriptor {
-	// TODO const-correct this or figure out how to deal with this when getting a value
-	char *Family;
-	double Size;
-	uiTextWeight Weight;
-	uiTextItalic Italic;
-	uiTextStretch Stretch;
+	char *Family;          //!< Font family. TODO const correct/figure out how to return const for getters
+	double Size;           //!< Font size.
+	uiTextWeight Weight;   //!< Font weight.
+	uiTextItalic Italic;   //!< Italic mode.
+	uiTextStretch Stretch; //!< Font stretch.
 };
 
 _UI_EXTERN void uiLoadControlFont(uiFontDescriptor *f);
 _UI_EXTERN void uiFreeFontDescriptor(uiFontDescriptor *desc);
 
-// uiDrawTextLayout is a concrete representation of a
-// uiAttributedString that can be displayed in a uiDrawContext.
-// It includes information important for the drawing of a block of
-// text, including the bounding box to wrap the text within, the
-// alignment of lines of text within that box, areas to mark as
-// being selected, and other things.
-//
-// Unlike uiAttributedString, the content of a uiDrawTextLayout is
-// immutable once it has been created.
-//
-// TODO talk about OS-specific differences with text drawing that libui can't account for...
+/**
+ * Draw text layout.
+ *
+ * uiDrawTextLayout is a concrete representation of a
+ * uiAttributedString that can be displayed in a uiDrawContext.
+ * It includes information important for the drawing of a block of
+ * text, including the bounding box to wrap the text within, the
+ * alignment of lines of text within that box, areas to mark as
+ * being selected, and other things.
+ *
+ * Unlike uiAttributedString, the content of a uiDrawTextLayout is
+ * immutable once it has been created.
+ *
+ * @todo talk about OS-specific differences with text drawing that libui can't account for...
+ *
+ * @struct uiDrawTextLayout
+ * @ingroup formattedText
+ */
 typedef struct uiDrawTextLayout uiDrawTextLayout;
 
-// uiDrawTextAlign specifies the alignment of lines of text in a
-// uiDrawTextLayout.
-// TODO should this really have Draw in the name?
+/**
+ * Text alignment.
+ *
+ * Used in uiDrawTextLayout.
+ *
+ * @todo Possibly rename to uiTextAlign.
+ * @enum uiDrawTextAlign
+ * @ingroup formattedText
+ */
 _UI_ENUM(uiDrawTextAlign) {
-	uiDrawTextAlignLeft,
-	uiDrawTextAlignCenter,
-	uiDrawTextAlignRight,
+	uiDrawTextAlignLeft,   //!< Text align left.
+	uiDrawTextAlignCenter, //!< Text align center.
+	uiDrawTextAlignRight,  //!< Text align right.
 };
 
-// uiDrawTextLayoutParams describes a uiDrawTextLayout.
-// DefaultFont is used to render any text that is not attributed
-// sufficiently in String. Width determines the width of the bounding
-// box of the text; the height is determined automatically.
+/** Parameters to create a uiDrawTextLayout.
+ *
+ * The height of the box is determined automatically.
+ *
+ * @todo const-correct.
+ * @todo Rename?
+ * @struct uiDrawTextLayoutParams
+ * @ingroup formattedText
+ */
 typedef struct uiDrawTextLayoutParams uiDrawTextLayoutParams;
-
-// TODO const-correct this somehow
 struct uiDrawTextLayoutParams {
-	uiAttributedString *String;
-	uiFontDescriptor *DefaultFont;
-	double Width;
-	uiDrawTextAlign Align;
+	uiAttributedString *String;    //!< Attributed string.
+	uiFontDescriptor *DefaultFont; //!< Default font if not overridden by an attribute.
+	double Width;                  //!< Bounding box max width.
+	uiDrawTextAlign Align;         //!< Text alignment.
 };
 
-// @role uiDrawTextLayout constructor
-// uiDrawNewTextLayout() creates a new uiDrawTextLayout from
-// the given parameters.
-//
-// TODO
-// - allow creating a layout out of a substring
-// - allow marking compositon strings
-// - allow marking selections, even after creation
-// - add the following functions:
-// 	- uiDrawTextLayoutHeightForWidth() (returns the height that a layout would need to be to display the entire string at a given width)
-// 	- uiDrawTextLayoutRangeForSize() (returns what substring would fit in a given size)
-// 	- uiDrawTextLayoutNewWithHeight() (limits amount of string used by the height)
-// - some function to fix up a range (for text editing)
+/**
+ * Creates a new draw text layout.
+ *
+ * @param params Text layout parameters.
+ * @returns A new uiDrawTextLayout instance.
+ *
+ * @todo allow creating a layout out of a substring
+ * @todo allow marking compositon strings
+ * @todo marking selections, even after creation
+ * @todo add the following functions:
+ * @todo uiDrawTextLayoutHeightForWidth() (returns the height that a layout would need to be to display the entire string at a given width)
+ * @todo uiDrawTextLayoutRangeForSize() (returns what substring would fit in a given size)
+ * @todo uiDrawTextLayoutNewWithHeight() (limits amount of string used by the height)
+ * @todo some function to fix up a range (for text editing)
+ *
+ * @memberof uiDrawTextLayout @static
+ */
 _UI_EXTERN uiDrawTextLayout *uiDrawNewTextLayout(uiDrawTextLayoutParams *params);
 
-// @role uiDrawFreeTextLayout destructor
-// uiDrawFreeTextLayout() frees tl. The underlying
-// uiAttributedString is not freed.
+/**
+ * Frees the draw text layout.
+ *
+ * @note This does not free the contained uiAttributedString.
+ * @memberof uiDrawTextLayout
+ */
 _UI_EXTERN void uiDrawFreeTextLayout(uiDrawTextLayout *tl);
 
-// uiDrawText() draws tl in c with the top-left point of tl at (x, y).
+/**
+ * Draws the uiDrawTextLayout onto the draw context.
+ *
+ * @param c uiDrawContext instance.
+ * @param tl uiDrawTextLayout instance.
+ * @param x Horizontal draw offset in pixels from the top-left corner.
+ * @param y Vertical draw offset in pixels from the top-left corner.
+ * @memberof uiDrawContext
+ */
 _UI_EXTERN void uiDrawText(uiDrawContext *c, uiDrawTextLayout *tl, double x, double y);
 
-// uiDrawTextLayoutExtents() returns the width and height of tl
-// in width and height. The returned width may be smaller than
-// the width passed into uiDrawNewTextLayout() depending on
-// how the text in tl is wrapped. Therefore, you can use this
-// function to get the actual size of the text layout.
+/**
+ * Returns the width and height of the drawn text layout.
+ *
+ * @param tl uiDrawTextLayout instance.
+ * @param width[out] Width in pixels.
+ * @param height[out] Height in pixels.
+ * @note The width may be smaller than the requested width due to text wrapping.
+ * @memberof uiDrawContext
+ */
 _UI_EXTERN void uiDrawTextLayoutExtents(uiDrawTextLayout *tl, double *width, double *height);
 
 // TODO metrics functions
