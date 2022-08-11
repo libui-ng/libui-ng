@@ -680,7 +680,7 @@ _UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c,
  * Returns whether or the checkbox is checked.
  *
  * @param c uiCheckbox instance.
- * @returns `TRUE` if checked, `FALSE` otherwise.
+ * @returns `TRUE` if checked, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiCheckbox
  */
 _UI_EXTERN int uiCheckboxChecked(uiCheckbox *c);
