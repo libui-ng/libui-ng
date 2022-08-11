@@ -9,6 +9,7 @@ libui_unit_sources = [
         'label.c',
         'button.c',
         'combobox.c',
+        'checkbox.c',
 ]
 
 if libui_OS == 'windows'
