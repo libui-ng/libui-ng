@@ -671,6 +671,7 @@ _UI_EXTERN void uiCheckboxSetText(uiCheckbox *c, const char *text);
  * @param data User data to be passed to the callback.
  *
  * @note The callback is not triggered when calling uiCheckboxSetChecked().
+ * @note Only one callback can be registered at a time.
  * @memberof uiCheckbox
  */
 _UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c,
