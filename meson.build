@@ -180,6 +180,10 @@ if libui_mode == 'static'
 	libui_binary_deps = libui_deps
 endif
 
+# Export symbols for use of libui as a meson subproject
+libui_dep = declare_dependency(include_directories: include_directories('.'),
+	link_with : libui_libui)
+
 if get_option('tests')
 	subdir('test')
 endif
