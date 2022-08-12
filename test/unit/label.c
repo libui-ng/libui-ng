@@ -13,7 +13,7 @@ static void labelNewEmptyString(void **state)
 {
 	uiLabel **l = uiLabelPtrFromState(state);
 
-	*l = uiNewLabel("Text");
+	*l = uiNewLabel("");
 }
 
 static void labelText(void **state)
