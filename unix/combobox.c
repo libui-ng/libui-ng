@@ -37,7 +37,9 @@ void uiComboboxInsertAt(uiCombobox *c, int n, const char *text)
 
 void uiComboboxDelete(uiCombobox *c, int n)
 {
+	g_signal_handler_block(c->combobox, c->onSelectedSignal);
 	gtk_combo_box_text_remove(c->comboboxText, n);
+	g_signal_handler_unblock(c->combobox, c->onSelectedSignal);
 }
 
 void uiComboboxClear(uiCombobox *c)
