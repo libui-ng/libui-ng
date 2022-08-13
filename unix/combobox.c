@@ -44,7 +44,9 @@ void uiComboboxDelete(uiCombobox *c, int n)
 
 void uiComboboxClear(uiCombobox *c)
 {
+	g_signal_handler_block(c->combobox, c->onSelectedSignal);
 	gtk_combo_box_text_remove_all(c->comboboxText);
+	g_signal_handler_unblock(c->combobox, c->onSelectedSignal);
 }
 
 int uiComboboxNumItems(uiCombobox *c)
