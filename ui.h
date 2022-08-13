@@ -1330,7 +1330,7 @@ _UI_EXTERN int uiComboboxNumItems(uiCombobox *c);
  * Returns the index of the item selected.
  *
  * @param c uiCombobox instance.
- * @returns Index of the item selected, `-1` on empty selection.
+ * @returns Index of the item selected, `-1` on empty selection. [Default `-1`]
  * @memberof uiCombobox
  */
 _UI_EXTERN int uiComboboxSelected(uiCombobox *c);
