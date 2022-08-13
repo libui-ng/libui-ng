@@ -1353,7 +1353,8 @@ _UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int index);
  *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
  *
- * @note The callback is not triggered when calling uiComboboxSetSelected().
+ * @note The callback is not triggered when calling uiComboboxSetSelected(),
+ *       uiComboboxInsertAt(), uiComboboxDelete(), or uiComboboxClear().
  * @note Only one callback can be registered at a time.
  * @memberof uiCombobox
  */
