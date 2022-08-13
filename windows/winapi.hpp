@@ -47,6 +47,7 @@
 #include <d2d1helper.h>
 #include <dwrite.h>
 #include <wincodec.h>
+#include <oleacc.h>
 
 #include <stdint.h>
 #include <string.h>
