@@ -79,16 +79,34 @@ static void uiComboboxDestroy(uiControl *cc)
 void uiComboboxAppend(uiCombobox *c, const char *text)
 {
 	[c->pbac addObject:uiprivToNSString(text)];
+	uiControlEnable(uiControl(c));
 }
 
 void uiComboboxInsertAt(uiCombobox *c, int n, const char *text)
 {
+	int selected = uiComboboxSelected(c);
+
 	[c->pbac insertObject:uiprivToNSString(text) atArrangedObjectIndex:n];
+	uiControlEnable(uiControl(c));
+
+	if (n <= selected)
+		uiComboboxSetSelected(c, selected+1);
+	else
+		uiComboboxSetSelected(c, selected);
 }
 
 void uiComboboxDelete(uiCombobox *c, int n)
 {
+	int selected = uiComboboxSelected(c);
+
 	[c->pbac removeObjectAtArrangedObjectIndex:n];
+
+	if (n < selected)
+		uiComboboxSetSelected(c, selected-1);
+	if (uiComboboxNumItems(c) == 0) {
+		uiControlDisable(uiControl(c));
+		uiComboboxSetSelected(c, -1);
+	}
 }
 
 void uiComboboxClear(uiCombobox *c)
@@ -98,6 +116,8 @@ void uiComboboxClear(uiCombobox *c)
 			// remove all items
 			return TRUE;
 	}]];
+	uiComboboxSetSelected(c, -1);
+	uiControlDisable(uiControl(c));
 }
 
 int uiComboboxNumItems(uiCombobox *c)
@@ -164,6 +184,8 @@ uiCombobox *uiNewCombobox(void)
 	}
 	[comboboxDelegate registerCombobox:c];
 	uiComboboxOnSelected(c, defaultOnSelected, NULL);
+	uiComboboxSetSelected(c, -1);
+	uiControlDisable(uiControl(c));
 
 	return c;
 }
