@@ -163,11 +163,12 @@ static void comboboxDelete(void **state)
 	assert_int_equal(uiComboboxNumItems(*c), 2);
 	assert_int_equal(uiComboboxSelected(*c), 0);
 
-	uiComboboxDelete(*c, 1);
-	//TODO assert_string_equal(uiComboboxAt(*c, 0), item1);
+	uiComboboxDelete(*c, 0);
+	//TODO assert_string_equal(uiComboboxAt(*c, 0), item2);
 	assert_int_equal(uiComboboxNumItems(*c), 1);
-	assert_int_equal(uiComboboxSelected(*c), 0);
+	assert_int_equal(uiComboboxSelected(*c), -1);
 
+	uiComboboxSetSelected(*c, 0);
 	uiComboboxDelete(*c, 0);
 	assert_int_equal(uiComboboxNumItems(*c), 0);
 	assert_int_equal(uiComboboxSelected(*c), -1);
