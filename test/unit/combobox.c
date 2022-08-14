@@ -43,6 +43,20 @@ static void comboboxAppend(void **state)
 	assert_int_equal(uiComboboxNumItems(*c), 2);
 }
 
+static void comboboxAppendDuplicate(void **state)
+{
+	uiCombobox **c = uiComboboxPtrFromState(state);
+	const char *duplicate = "Duplicate";
+
+	*c = uiNewCombobox();
+
+	uiComboboxAppend(*c, duplicate);
+	uiComboboxAppend(*c, duplicate);
+	//TODO assert_string_equal(uiComboboxAt(*c, 0), duplicate);
+	//TODO assert_string_equal(uiComboboxAt(*c, 1), duplicate);
+	assert_int_equal(uiComboboxNumItems(*c), 2);
+}
+
 static void comboboxSetSelected(void **state)
 {
 	uiCombobox **c = uiComboboxPtrFromState(state);
@@ -96,6 +110,20 @@ static void comboboxInsertAt(void **state)
 	//TODO assert_string_equal(uiComboboxAt(*c, 3), item3);
 	assert_int_equal(uiComboboxNumItems(*c), 4);
 	assert_int_equal(uiComboboxSelected(*c), 2);
+}
+
+static void comboboxInsertAtDuplicate(void **state)
+{
+	uiCombobox **c = uiComboboxPtrFromState(state);
+	const char *duplicate = "Duplicate";
+
+	*c = uiNewCombobox();
+
+	uiComboboxInsertAt(*c, 0, duplicate);
+	uiComboboxInsertAt(*c, 1, duplicate);
+	//TODO assert_string_equal(uiComboboxAt(*c, 0), duplicate);
+	//TODO assert_string_equal(uiComboboxAt(*c, 1), duplicate);
+	assert_int_equal(uiComboboxNumItems(*c), 2);
 }
 
 static void comboboxClearEmpty(void **state)
@@ -268,8 +296,10 @@ int comboboxRunUnitTests(void)
 		comboboxUnitTest(comboboxNumItemsDefault),
 		comboboxUnitTest(comboboxSelectedDefault),
 		comboboxUnitTest(comboboxAppend),
+		comboboxUnitTest(comboboxAppendDuplicate),
 		comboboxUnitTest(comboboxSetSelected),
 		comboboxUnitTest(comboboxInsertAt),
+		comboboxUnitTest(comboboxInsertAtDuplicate),
 		comboboxUnitTest(comboboxClearEmpty),
 		comboboxUnitTest(comboboxClear),
 		comboboxUnitTest(comboboxClearAppend),
