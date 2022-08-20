@@ -139,11 +139,11 @@ static LRESULT CALLBACK tableSubProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM
 	// TODO finish edit on WM_WINDOWPOSCHANGING and WM_SIZE?
 	// for the next three: this item is about to go away; don't bother keeping changes
 	case LVM_SETITEMCOUNT:
-		if (wParam <= t->editedItem)
+		if (int(wParam) <= t->editedItem)
 			abortEdit = true;
 		break;		// don't override default handling
 	case LVM_DELETEITEM:
-		if (wParam == t->editedItem)
+		if (int(wParam) == t->editedItem)
 			abortEdit = true;
 		break;		// don't override default handling
 	case LVM_DELETEALLITEMS:
