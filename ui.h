@@ -1303,6 +1303,9 @@ _UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int index, const char *text);
 /**
  * Deletes an item at @p index from the combo box.
  *
+ * @note Deleting the index of the item currently selected will move the
+ * selection to the next item in the combo box or `-1` if no such item exists.
+ *
  * @param c uiCombobox instance.
  * @param index Index of the item to be deleted.
  * @memberof uiCombobox
