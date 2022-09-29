@@ -3799,6 +3799,9 @@ _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
  */
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
 
+
+_UI_EXTERN const char *uiVersion(void);
+
 #ifdef __cplusplus
 }
 #endif

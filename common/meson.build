@@ -14,4 +14,5 @@ libui_sources += [
 	'common/tablevalue.c',
 	'common/userbugs.c',
 	'common/utf.c',
+	'common/version.c',
 ]
