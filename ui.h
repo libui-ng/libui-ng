@@ -61,6 +61,7 @@ struct uiInitOptions {
 	size_t Size;
 };
 
+_UI_EXTERN const char *uiVersion(void);
 _UI_EXTERN const char *uiInit(uiInitOptions *options);
 _UI_EXTERN void uiUninit(void);
 _UI_EXTERN void uiFreeInitError(const char *err);
@@ -3798,9 +3799,6 @@ _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
  * @memberof uiTable
  */
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
-
-
-_UI_EXTERN const char *uiVersion(void);
 
 #ifdef __cplusplus
 }
