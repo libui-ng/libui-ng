@@ -71,8 +71,6 @@ const char *uiInit(uiInitOptions *o)
 	if ((si.dwFlags & STARTF_USESHOWWINDOW) != 0)
 		nCmdShow = si.wShowWindow;
 
-	// LONGTERM set DPI awareness
-
 	hDefaultIcon = LoadIconW(NULL, IDI_APPLICATION);
 	if (hDefaultIcon == NULL)
 		return ieLastErr("loading default icon for window classes");
