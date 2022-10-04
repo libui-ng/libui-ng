@@ -65,6 +65,10 @@ const char *uiInit(uiInitOptions *o)
 	uiprivOptions = *o;
 
 	initAlloc();
+	
+	// works on Windows Vista and above
+	// do this before creating any windows
+	SetProcessDPIAware();
 
 	nCmdShow = SW_SHOWDEFAULT;
 	GetStartupInfoW(&si);
