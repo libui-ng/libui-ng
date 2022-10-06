@@ -83,12 +83,16 @@ void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text)
 
 void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text)
 {
+	DWORD selStart, selEnd;
 	LRESULT l;
 	char *crlf;
 	WCHAR *wtext;
 
 	// doing this raises an EN_CHANGED
 	e->inhibitChanged = TRUE;
+
+	// Save current selection
+	SendMessageW(e->hwnd, EM_GETSEL, (WPARAM) &selStart, (LPARAM) &selEnd);
 	// Append by replacing an empty selection at the end of the input
 	l = SendMessageW(e->hwnd, WM_GETTEXTLENGTH, 0, 0);
 	Edit_SetSel(e->hwnd, l, l);
@@ -97,6 +101,9 @@ void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text)
 	uiprivFree(crlf);
 	Edit_ReplaceSel(e->hwnd, wtext);
 	uiprivFree(wtext);
+	// Restore selection
+	Edit_SetSel(e->hwnd, selStart, selEnd);
+
 	e->inhibitChanged = FALSE;
 }
 
