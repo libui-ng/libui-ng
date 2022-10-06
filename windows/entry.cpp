@@ -68,7 +68,7 @@ void uiEntrySetText(uiEntry *e, const char *text)
 	e->inhibitChanged = TRUE;
 	uiWindowsSetWindowText(e->hwnd, text);
 	l = (int)strlen(text);
-	SendMessage(e->hwnd, EM_SETSEL, l, l);
+	Edit_SetSel(e->hwnd, l, l);
 	e->inhibitChanged = FALSE;
 	// don't queue the control for resize; entry sizes are independent of their contents
 }
@@ -86,13 +86,8 @@ int uiEntryReadOnly(uiEntry *e)
 
 void uiEntrySetReadOnly(uiEntry *e, int readonly)
 {
-	WPARAM ro;
-
-	ro = (WPARAM) FALSE;
-	if (readonly)
-		ro = (WPARAM) TRUE;
-	if (SendMessage(e->hwnd, EM_SETREADONLY, ro, 0) == 0)
-		logLastError(L"error making uiEntry read-only");
+	if (Edit_SetReadOnly(e->hwnd, readonly) == 0)
+		logLastError(L"error setting uiEntry read-only state");
 }
 
 static uiEntry *finishNewEntry(DWORD style)
