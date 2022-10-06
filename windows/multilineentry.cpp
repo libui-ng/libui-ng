@@ -83,21 +83,27 @@ void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text)
 
 void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text)
 {
-	LRESULT n;
+	DWORD selStart, selEnd;
+	LRESULT l;
 	char *crlf;
 	WCHAR *wtext;
 
 	// doing this raises an EN_CHANGED
 	e->inhibitChanged = TRUE;
-	// TODO preserve selection? caret? what if caret used to be at end?
-	// TODO scroll to bottom?
-	n = SendMessageW(e->hwnd, WM_GETTEXTLENGTH, 0, 0);
-	SendMessageW(e->hwnd, EM_SETSEL, n, n);
+
+	// Save current selection
+	SendMessageW(e->hwnd, EM_GETSEL, (WPARAM) &selStart, (LPARAM) &selEnd);
+	// Append by replacing an empty selection at the end of the input
+	l = SendMessageW(e->hwnd, WM_GETTEXTLENGTH, 0, 0);
+	Edit_SetSel(e->hwnd, l, l);
 	crlf = LFtoCRLF(text);
 	wtext = toUTF16(crlf);
 	uiprivFree(crlf);
-	SendMessageW(e->hwnd, EM_REPLACESEL, FALSE, (LPARAM) wtext);
+	Edit_ReplaceSel(e->hwnd, wtext);
 	uiprivFree(wtext);
+	// Restore selection
+	Edit_SetSel(e->hwnd, selStart, selEnd);
+
 	e->inhibitChanged = FALSE;
 }
 
@@ -114,13 +120,8 @@ int uiMultilineEntryReadOnly(uiMultilineEntry *e)
 
 void uiMultilineEntrySetReadOnly(uiMultilineEntry *e, int readonly)
 {
-	WPARAM ro;
-
-	ro = (WPARAM) FALSE;
-	if (readonly)
-		ro = (WPARAM) TRUE;
-	if (SendMessage(e->hwnd, EM_SETREADONLY, ro, 0) == 0)
-		logLastError(L"error making uiMultilineEntry read-only");
+	if (Edit_SetReadOnly(e->hwnd, readonly) == 0)
+		logLastError(L"error setting uiMultilineEntry read-only state");
 }
 
 static uiMultilineEntry *finishMultilineEntry(DWORD style)
