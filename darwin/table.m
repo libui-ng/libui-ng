@@ -19,6 +19,7 @@
 - (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m;
 - (uiTable *)uiTable;
 - (void)restoreHeaderView;
+- (void)onDoubleClicked:(id)sender;
 @end
 
 @implementation uiprivTableView
@@ -42,6 +43,17 @@
 - (void)restoreHeaderView
 {
 	[self setHeaderView:self->headerViewRef];
+}
+
+- (void)onDoubleClicked:(id)sender
+{
+	uiTable *t = self->uiprivT;
+	NSInteger row = [self clickedRow];
+
+	if (row < 0)
+		return;
+
+	(*(t->onRowDoubleClicked))(t, row, t->onRowDoubleClickedData);
 }
 
 // TODO is this correct for overflow scrolling?
@@ -214,6 +226,17 @@ static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
 	// do nothing
 }
 
+static void defaultOnRowDoubleClicked(uiTable *table, int row, void *data)
+{
+	// do nothing
+}
+
+void uiTableOnRowDoubleClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->onRowDoubleClicked = f;
+	t->onRowDoubleClickedData = data;
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
@@ -241,6 +264,9 @@ uiTable *uiNewTable(uiTableParams *p)
 	[t->tv setGridStyleMask:NSTableViewGridNone];
 	[t->tv setAllowsTypeSelect:YES];
 	// TODO floatsGroupRows — do we even allow group rows?
+
+	uiTableOnRowDoubleClicked(t, defaultOnRowDoubleClicked, NULL);
+	[t->tv setDoubleAction: @selector(onDoubleClicked:)];
 
 	memset(&sp, 0, sizeof (uiprivScrollViewCreateParams));
 	sp.DocumentView = t->tv;

@@ -119,6 +119,15 @@ static void changedColumnWidth(uiSpinbox *s, void *data)
 	uiTableColumnSetWidth(t, uiSpinboxValue(columnID), uiSpinboxValue(columnWidth));
 }
 
+uiLabel *lblRowDoubleClicked;
+static void onRowDoubleClicked(uiTable *table, int row, void *data)
+{
+	char str[128];
+
+	sprintf(str, "Double clicked row %d", row);
+	uiLabelSetText(lblRowDoubleClicked, str);
+}
+
 static uiTableModel *m;
 
 static void headerOnClicked(uiTable *t, int col, void *data)
@@ -140,6 +149,7 @@ uiBox *makePage16(void)
 {
 	uiBox *page16;
 	uiBox *controls;
+	uiBox *stats;
 	uiCheckbox *headerVisible;
 	uiTable *t;
 	uiTableParams p;
@@ -211,6 +221,15 @@ uiBox *makePage16(void)
 
 	uiSpinboxOnChanged(columnID, changedColumnID, t);
 	uiSpinboxOnChanged(columnWidth, changedColumnWidth, t);
+
+	stats = newHorizontalBox();
+	uiBoxSetPadded(stats, 1);
+	uiBoxAppend(page16, uiControl(stats), 0);
+
+	lblRowDoubleClicked = uiNewLabel("Double clicked row -");
+	uiBoxAppend(stats, uiControl(lblRowDoubleClicked), 0);
+
+	uiTableOnRowDoubleClicked(t, onRowDoubleClicked, NULL);
 
 	return page16;
 }
