@@ -19,6 +19,7 @@
 - (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m;
 - (uiTable *)uiTable;
 - (void)restoreHeaderView;
+- (void)onClicked:(id)sender;
 - (void)onDoubleClicked:(id)sender;
 @end
 
@@ -43,6 +44,17 @@
 - (void)restoreHeaderView
 {
 	[self setHeaderView:self->headerViewRef];
+}
+
+- (void)onClicked:(id)sender
+{
+	uiTable *t = self->uiprivT;
+	NSInteger row = [self clickedRow];
+
+	if (row < 0)
+		return;
+
+	(*(t->onRowClicked))(t, row, t->onRowClickedData);
 }
 
 - (void)onDoubleClicked:(id)sender
@@ -226,9 +238,20 @@ static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
 	// do nothing
 }
 
+static void defaultOnRowClicked(uiTable *table, int row, void *data)
+{
+	// do nothing
+}
+
 static void defaultOnRowDoubleClicked(uiTable *table, int row, void *data)
 {
 	// do nothing
+}
+
+void uiTableOnRowClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->onRowClicked = f;
+	t->onRowClickedData = data;
 }
 
 void uiTableOnRowDoubleClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
@@ -265,7 +288,9 @@ uiTable *uiNewTable(uiTableParams *p)
 	[t->tv setAllowsTypeSelect:YES];
 	// TODO floatsGroupRows — do we even allow group rows?
 
+	uiTableOnRowClicked(t, defaultOnRowClicked, NULL);
 	uiTableOnRowDoubleClicked(t, defaultOnRowDoubleClicked, NULL);
+	[t->tv setAction: @selector(onClicked:)];
 	[t->tv setDoubleAction: @selector(onDoubleClicked:)];
 
 	memset(&sp, 0, sizeof (uiprivScrollViewCreateParams));

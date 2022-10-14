@@ -20,6 +20,8 @@ struct uiTable {
 	guint indeterminateTimer;
 	void (*headerOnClicked)(uiTable *, int, void *);
 	void *headerOnClickedData;
+	void (*onRowClicked)(uiTable *, int, void *);
+	void *onRowClickedData;
 	void (*onRowDoubleClicked)(uiTable *, int, void *);
 	void *onRowDoubleClickedData;
 };
@@ -565,12 +567,9 @@ static void uiTableDestroy(uiControl *c)
 	uiFreeControl(uiControl(t));
 }
 
-static void onRowDoubleClicked(GtkTreeView *tv, GtkTreePath *path, GtkTreeViewColumn *col, gpointer data)
+static void defaultOnRowClicked(uiTable *table, int row, void *data)
 {
-	uiTable *t = uiTable(data);
-	gint row = gtk_tree_path_get_indices(path)[0];
-
-	(*(t->onRowDoubleClicked))(t, row, t->onRowDoubleClickedData);
+	// do nothing
 }
 
 static void defaultOnRowDoubleClicked(uiTable *table, int row, void *data)
@@ -578,10 +577,42 @@ static void defaultOnRowDoubleClicked(uiTable *table, int row, void *data)
 	// do nothing
 }
 
+void uiTableOnRowClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->onRowClicked = f;
+	t->onRowClickedData = data;
+}
+
 void uiTableOnRowDoubleClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
 {
 	t->onRowDoubleClicked = f;
 	t->onRowDoubleClickedData = data;
+}
+
+static gboolean onButtonPressed(GtkWidget *tv, GdkEventButton *event, gpointer data)
+{
+	uiTable *t = uiTable(data);
+	GtkTreePath *path;
+	gint row;
+
+	if (event->window != gtk_tree_view_get_bin_window(t->tv))
+		return FALSE;
+	if (event->button != GDK_BUTTON_PRIMARY)
+		return FALSE;
+
+	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(tv), event->x, event->y, &path, NULL, NULL, NULL);
+	if (path == NULL)
+		return FALSE;
+
+	row = gtk_tree_path_get_indices(path)[0];
+	gtk_tree_path_free(path);
+
+	if(event->type == GDK_BUTTON_PRESS)
+		(*(t->onRowClicked))(t, row, t->onRowClickedData);
+	else if(event->type == GDK_2BUTTON_PRESS)
+		(*(t->onRowDoubleClicked))(t, row, t->onRowDoubleClickedData);
+
+	return FALSE;
 }
 
 uiTable *uiNewTable(uiTableParams *p)
@@ -603,8 +634,9 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->tv = GTK_TREE_VIEW(t->treeWidget);
 
 	// TODO set up t->tv
+	uiTableOnRowClicked(t, defaultOnRowClicked, NULL);
 	uiTableOnRowDoubleClicked(t, defaultOnRowDoubleClicked, NULL);
-	g_signal_connect(t->tv, "row-activated", G_CALLBACK(onRowDoubleClicked), t);
+	g_signal_connect(t->tv, "button-press-event", G_CALLBACK(onButtonPressed), t);
 
 	gtk_container_add(t->scontainer, t->treeWidget);
 	// and make the tree view visible; only the scrolled window's visibility is controlled by libui

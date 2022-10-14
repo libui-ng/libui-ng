@@ -94,8 +94,10 @@ static void modelSetCellValue(uiTableModelHandler *mh, uiTableModel *m, int row,
 			uiTableModelRowChanged(m, prevYellowRow);
 		uiTableModelRowChanged(m, yellowRow);
 	}
-	if (col == 7)
+	if (col == 7) {
 		checkStates[row] = uiTableValueInt(val);
+		printf("Checkbox[%d] = %d\n", row, checkStates[row]);
+	}
 }
 
 void headerVisibleToggled(uiCheckbox *c, void *data)
@@ -119,11 +121,23 @@ static void changedColumnWidth(uiSpinbox *s, void *data)
 	uiTableColumnSetWidth(t, uiSpinboxValue(columnID), uiSpinboxValue(columnWidth));
 }
 
+
+uiLabel *lblRowClicked;
+static void onRowClicked(uiTable *table, int row, void *data)
+{
+	char str[128];
+
+	printf("Clicked row %d\n", row);
+	sprintf(str, "Clicked row %d", row);
+	uiLabelSetText(lblRowClicked, str);
+}
+
 uiLabel *lblRowDoubleClicked;
 static void onRowDoubleClicked(uiTable *table, int row, void *data)
 {
 	char str[128];
 
+	printf("Double clicked row %d\n", row);
 	sprintf(str, "Double clicked row %d", row);
 	uiLabelSetText(lblRowDoubleClicked, str);
 }
@@ -226,9 +240,13 @@ uiBox *makePage16(void)
 	uiBoxSetPadded(stats, 1);
 	uiBoxAppend(page16, uiControl(stats), 0);
 
+	lblRowClicked = uiNewLabel("Clicked row -");
+	uiBoxAppend(stats, uiControl(lblRowClicked), 0);
+
 	lblRowDoubleClicked = uiNewLabel("Double clicked row -");
 	uiBoxAppend(stats, uiControl(lblRowDoubleClicked), 0);
 
+	uiTableOnRowClicked(t, onRowClicked, NULL);
 	uiTableOnRowDoubleClicked(t, onRowDoubleClicked, NULL);
 
 	return page16;

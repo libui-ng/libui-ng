@@ -3734,12 +3734,29 @@ _UI_EXTERN uiTable *uiNewTable(uiTableParams *params);
 
 
 /**
- * Registers a callback for when the user double clicks a table row.
+ * Registers a callback for when the user single clicks a table row.
  *
  * @param t uiTable instance.
  * @param f Callback function.\n
  *          @p sender Back reference to the instance that triggered the callback.\n
  *          @p row Row index that was clicked.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiTable
+ */
+_UI_EXTERN void uiTableOnRowClicked(uiTable *t,
+	void (*f)(uiTable *t, int row, void *data),
+	void *data);
+
+/**
+ * Registers a callback for when the user double clicks a table row.
+ *
+ * @param t uiTable instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p row Row index that was double clicked.\n
  *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
  *

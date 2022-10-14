@@ -44,6 +44,8 @@ struct uiTable {
 	int editedSubitem;
 	void (*headerOnClicked)(uiTable *, int, void *);
 	void *headerOnClickedData;
+	void (*onRowClicked)(uiTable *, int, void *);
+	void *onRowClickedData;
 	void (*onRowDoubleClicked)(uiTable *, int, void *);
 	void *onRowDoubleClickedData;
 };
