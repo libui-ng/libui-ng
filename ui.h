@@ -3760,6 +3760,9 @@ _UI_EXTERN void uiTableOnRowClicked(uiTable *t,
  *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
  *
+ * @note The double click callback is always preceded by one uiTableOnRowClicked() callback.
+ * @bug For unix systems linking against `GTK < 3.14` the preceding uiTableOnRowClicked()
+ *      callback will be triggered twice.
  * @note Only one callback can be registered at a time.
  * @memberof uiTable
  */
