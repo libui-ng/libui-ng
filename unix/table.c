@@ -20,6 +20,10 @@ struct uiTable {
 	guint indeterminateTimer;
 	void (*headerOnClicked)(uiTable *, int, void *);
 	void *headerOnClickedData;
+	void (*onRowClicked)(uiTable *, int, void *);
+	void *onRowClickedData;
+	void (*onRowDoubleClicked)(uiTable *, int, void *);
+	void *onRowDoubleClickedData;
 };
 
 /*
@@ -563,9 +567,82 @@ static void uiTableDestroy(uiControl *c)
 	uiFreeControl(uiControl(t));
 }
 
+static void defaultOnRowClicked(uiTable *table, int row, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnRowDoubleClicked(uiTable *table, int row, void *data)
+{
+	// do nothing
+}
+
+void uiTableOnRowClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->onRowClicked = f;
+	t->onRowClickedData = data;
+}
+
+void uiTableOnRowDoubleClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->onRowDoubleClicked = f;
+	t->onRowDoubleClickedData = data;
+}
+
+#if GTK_CHECK_VERSION(3, 14, 0)
+static void onButtonPressed(GtkGestureMultiPress *gesture, gint nPress, gdouble wx, gdouble wy, gpointer data)
+{
+	uiTable *t = uiTable(data);
+	GtkTreePath *path;
+	gint row, x, y;
+
+	gtk_tree_view_convert_widget_to_bin_window_coords(t->tv, wx, wy, &x, &y);
+	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(t->tv), x, y, &path, NULL, NULL, NULL);
+	if (path == NULL)
+		return;
+
+	row = gtk_tree_path_get_indices(path)[0];
+	gtk_tree_path_free(path);
+
+	if (nPress == 1)
+		(*(t->onRowClicked))(t, row, t->onRowClickedData);
+	else if (nPress == 2)
+		(*(t->onRowDoubleClicked))(t, row, t->onRowDoubleClickedData);
+}
+#else
+static gboolean onButtonPressed(GtkWidget *tv, GdkEventButton *event, gpointer data)
+{
+	uiTable *t = uiTable(data);
+	GtkTreePath *path;
+	gint row;
+
+	if (event->window != gtk_tree_view_get_bin_window(t->tv))
+		return FALSE;
+	if (event->button != GDK_BUTTON_PRIMARY)
+		return FALSE;
+
+	gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(tv), event->x, event->y, &path, NULL, NULL, NULL);
+	if (path == NULL)
+		return FALSE;
+
+	row = gtk_tree_path_get_indices(path)[0];
+	gtk_tree_path_free(path);
+
+	if (event->type == GDK_BUTTON_PRESS)
+		(*(t->onRowClicked))(t, row, t->onRowClickedData);
+	else if (event->type == GDK_2BUTTON_PRESS)
+		(*(t->onRowDoubleClicked))(t, row, t->onRowDoubleClickedData);
+
+	return FALSE;
+}
+#endif
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
+#if GTK_CHECK_VERSION(3, 14, 0)
+	GtkGesture *gesture;
+#endif
 
 	uiUnixNewControl(uiTable, t);
 
@@ -580,7 +657,18 @@ uiTable *uiNewTable(uiTableParams *p)
 
 	t->treeWidget = gtk_tree_view_new_with_model(GTK_TREE_MODEL(t->model));
 	t->tv = GTK_TREE_VIEW(t->treeWidget);
+
 	// TODO set up t->tv
+	uiTableOnRowClicked(t, defaultOnRowClicked, NULL);
+	uiTableOnRowDoubleClicked(t, defaultOnRowDoubleClicked, NULL);
+
+#if GTK_CHECK_VERSION(3, 14, 0)
+	gesture = gtk_gesture_multi_press_new(GTK_WIDGET(t->tv));
+	g_signal_connect(gesture, "pressed", G_CALLBACK(onButtonPressed), t);
+	g_object_set_data_full(G_OBJECT(t->tv), "table-pressed-gesture", gesture, g_object_unref);
+#else
+	g_signal_connect(t->tv, "button-press-event", G_CALLBACK(onButtonPressed), t);
+#endif
 
 	gtk_container_add(t->scontainer, t->treeWidget);
 	// and make the tree view visible; only the scrolled window's visibility is controlled by libui

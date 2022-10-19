@@ -59,6 +59,28 @@ void uiTableModelRowDeleted(uiTableModel *m, int oldIndex)
 	}
 }
 
+static void defaultOnRowClicked(uiTable *table, int row, void *data)
+{
+	// do nothing
+}
+
+static void defaultOnRowDoubleClicked(uiTable *table, int row, void *data)
+{
+	// do nothing
+}
+
+void uiTableOnRowClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->onRowClicked = f;
+	t->onRowClickedData = data;
+}
+
+void uiTableOnRowDoubleClicked(uiTable *t, void (*f)(uiTable *, int, void *), void *data)
+{
+	t->onRowDoubleClicked = f;
+	t->onRowDoubleClickedData = data;
+}
+
 uiTableModelHandler *uiprivTableModelHandler(uiTableModel *m)
 {
 	return m->mh;
@@ -304,13 +326,31 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 		*lResult = 0;
 		return TRUE;
 #else
-		hr = uiprivTableHandleNM_CLICK(t, (NMITEMACTIVATE *) nmhdr, lResult);
-		if (hr != S_OK) {
-			// TODO
-			return FALSE;
+		{
+			LVHITTESTINFO ht = {};
+			ht.pt = ((NMITEMACTIVATE *)nmhdr)->ptAction;
+			if (SendMessageW(t->hwnd, LVM_SUBITEMHITTEST, 0, (LPARAM) &ht) == -1)
+				return FALSE;
+			(*(t->onRowClicked))(t, ht.iItem, t->onRowClickedData);
+
+			// Handle editing
+			hr = uiprivTableHandleNM_CLICK(t, (NMITEMACTIVATE *) nmhdr, lResult);
+			if (hr != S_OK) {
+				// TODO
+				return FALSE;
+			}
+			return TRUE;
 		}
-		return TRUE;
 #endif
+	case NM_DBLCLK:
+		{
+			LVHITTESTINFO ht = {};
+			ht.pt = ((NMITEMACTIVATE *)nmhdr)->ptAction;
+			if (SendMessageW(t->hwnd, LVM_SUBITEMHITTEST, 0, (LPARAM) &ht) == -1)
+				return FALSE;
+			(*(t->onRowDoubleClicked))(t, ht.iItem, t->onRowDoubleClickedData);
+			return TRUE;
+		}
 	case LVN_ITEMCHANGED:
 		{
 			NMLISTVIEW *nm = (NMLISTVIEW *) nmhdr;
@@ -582,6 +622,9 @@ uiTable *uiNewTable(uiTableParams *p)
 	t->indeterminatePositions = new std::map<std::pair<int, int>, LONG>;
 	if (SetWindowSubclass(t->hwnd, tableSubProc, 0, (DWORD_PTR) t) == FALSE)
 		logLastError(L"SetWindowSubclass()");
+
+	uiTableOnRowClicked(t, defaultOnRowClicked, NULL);
+	uiTableOnRowDoubleClicked(t, defaultOnRowDoubleClicked, NULL);
 
 	return t;
 }
