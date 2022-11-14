@@ -70,12 +70,12 @@ if libui_OS == 'darwin'
 	libui_darwin_langs = ['c', 'objc']
 
 	libui_macosx_version_min = '-mmacosx-version-min=10.8'
-	add_global_arguments(libui_macosx_version_min, language: libui_darwin_langs)
-	add_global_link_arguments(libui_macosx_version_min, language: libui_darwin_langs)
+	add_project_arguments(libui_macosx_version_min, language: libui_darwin_langs)
+	add_project_link_arguments(libui_macosx_version_min, language: libui_darwin_langs)
 
 	libui_arch = ['-arch', 'x86_64', '-arch', 'arm64']
-	add_global_arguments(libui_arch, language: libui_darwin_langs)
-	add_global_link_arguments(libui_arch, language: libui_darwin_langs)
+	add_project_arguments(libui_arch, language: libui_darwin_langs)
+	add_project_link_arguments(libui_arch, language: libui_darwin_langs)
 endif
 
 if libui_MSVC
