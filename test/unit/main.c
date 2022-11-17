@@ -72,6 +72,7 @@ int main(void)
 		{ spinboxRunUnitTests },
 		{ labelRunUnitTests },
 		{ buttonRunUnitTests },
+		{ comboboxRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {

@@ -1303,6 +1303,9 @@ _UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int index, const char *text);
 /**
  * Deletes an item at @p index from the combo box.
  *
+ * @note Deleting the index of the item currently selected will move the
+ * selection to the next item in the combo box or `-1` if no such item exists.
+ *
  * @param c uiCombobox instance.
  * @param index Index of the item to be deleted.
  * @memberof uiCombobox
@@ -1330,7 +1333,7 @@ _UI_EXTERN int uiComboboxNumItems(uiCombobox *c);
  * Returns the index of the item selected.
  *
  * @param c uiCombobox instance.
- * @returns Index of the item selected, `-1` on empty selection.
+ * @returns Index of the item selected, `-1` on empty selection. [Default `-1`]
  * @memberof uiCombobox
  */
 _UI_EXTERN int uiComboboxSelected(uiCombobox *c);
@@ -1353,7 +1356,8 @@ _UI_EXTERN void uiComboboxSetSelected(uiCombobox *c, int index);
  *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
  *
- * @note The callback is not triggered when calling uiComboboxSetSelected().
+ * @note The callback is not triggered when calling uiComboboxSetSelected(),
+ *       uiComboboxInsertAt(), uiComboboxDelete(), or uiComboboxClear().
  * @note Only one callback can be registered at a time.
  * @memberof uiCombobox
  */

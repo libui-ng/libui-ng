@@ -8,6 +8,7 @@ libui_unit_sources = [
         'spinbox.c',
         'label.c',
         'button.c',
+        'combobox.c',
 ]
 
 if libui_OS == 'windows'
