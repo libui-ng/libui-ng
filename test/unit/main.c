@@ -74,6 +74,7 @@ int main(void)
 		{ buttonRunUnitTests },
 		{ comboboxRunUnitTests },
 		{ checkboxRunUnitTests },
+		{ radioButtonsRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {
