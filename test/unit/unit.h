@@ -19,6 +19,7 @@ int spinboxRunUnitTests(void);
 int labelRunUnitTests(void);
 int buttonRunUnitTests(void);
 int comboboxRunUnitTests(void);
+int checkboxRunUnitTests(void);
 
 /**
  * Helper for general setup/teardown of controls embedded in a window.

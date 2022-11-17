@@ -73,6 +73,7 @@ int main(void)
 		{ labelRunUnitTests },
 		{ buttonRunUnitTests },
 		{ comboboxRunUnitTests },
+		{ checkboxRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {
