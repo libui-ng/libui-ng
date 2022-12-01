@@ -259,9 +259,27 @@ static uiMenuItem *newItem(uiMenu *m, int type, const char *name)
 		[m->menu addItem:item->item];
 		break;
 	default:
-		item->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString(name) action:@selector(onClicked:) keyEquivalent:@""];
-		[item->item setTarget:uiprivAppDelegate().menuManager];
-		[m->menu addItem:item->item];
+		if (!strcmp(name, "@macPaste")) {
+			item->disabled = NO;
+			item->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString("Paste") action:@selector(paste:) keyEquivalent:@"v"];
+			[m->menu addItem:item->item];
+		} else if (!strcmp(name, "@macCut")) {
+			item->disabled = NO;
+			item->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString("Cut") action:@selector(cut:) keyEquivalent:@"x"];
+			[m->menu addItem:item->item];
+		} else if (!strcmp(name, "@macCopy")) {
+			item->disabled = NO;
+			item->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString("Copy") action:@selector(copy:) keyEquivalent:@"c"];
+			[m->menu addItem:item->item];
+		} else if (!strcmp(name, "@macSelectAll")) {
+			item->disabled = NO;
+			item->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString("Select All") action:@selector(selectAll:) keyEquivalent:@"a"];
+			[m->menu addItem:item->item];
+		} else {
+			item->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString(name) action:@selector(onClicked:) keyEquivalent:@""];
+			[item->item setTarget:uiprivAppDelegate().menuManager];
+			[m->menu addItem:item->item];
+		}
 		break;
 	}
 
