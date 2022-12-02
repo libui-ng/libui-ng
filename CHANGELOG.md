@@ -8,6 +8,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- uiTableSelection API
+- uiTableOnRowClicked() API
+- uiTableOnRowDoubleClicked() API
 - Unit testing framework with cmocka
 - Doxygen documentation for most uiControls
 - uiWindowOnFocusChanged() API
