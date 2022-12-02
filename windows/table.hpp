@@ -42,12 +42,22 @@ struct uiTable {
 	HWND edit;
 	int editedItem;
 	int editedSubitem;
+	uiTableSelectionMode selectionMode;
+	BOOL maskOnSelectionChanged;
+	// Cache last focused item to signal selection changes
+	int lastFocusedItem;
+	// Cache if last focused item is selected to signal selection changes
+	BOOL lastFocusedItemIsSelected;
+	// Cache last number of selected items to signal selection changes
+	int lastNumSelected;
 	void (*headerOnClicked)(uiTable *, int, void *);
 	void *headerOnClickedData;
 	void (*onRowClicked)(uiTable *, int, void *);
 	void *onRowClickedData;
 	void (*onRowDoubleClicked)(uiTable *, int, void *);
 	void *onRowDoubleClickedData;
+	void (*onSelectionChanged)(uiTable *, void *);
+	void *onSelectionChangedData;
 };
 extern int uiprivTableProgress(uiTable *t, int item, int subitem, int modelColumn, LONG *pos);
 

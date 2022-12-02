@@ -3842,6 +3842,115 @@ _UI_EXTERN int uiTableColumnWidth(uiTable *t, int column);
  */
 _UI_EXTERN void uiTableColumnSetWidth(uiTable *t, int column, int width);
 
+/**
+ * Table selection modes.
+ *
+ * Table selection that enforce how a user can interact with a table.
+ *
+ * @warning An empty table selection is a valid state for any selection mode.
+ *          This is in fact the default upon table creation and can otherwise
+ *          triggered through operations such as row deletion.
+ *
+ * @enum uiTableSelectionMode
+ * @ingroup table
+ */
+_UI_ENUM(uiTableSelectionMode) {
+	/**
+	 * Allow no row selection.
+	 *
+	 * @warning This mode disables all editing of text columns. Buttons
+	 * and checkboxes keep working though.
+	 */
+        uiTableSelectionModeNone,
+        uiTableSelectionModeZeroOrOne,  //!< Allow zero or one row to be selected.
+        uiTableSelectionModeOne,        //!< Allow for exactly one row to be selected.
+        uiTableSelectionModeZeroOrMany, //!< Allow zero or many (multiple) rows to be selected.
+};
+
+/**
+ * Returns the table selection mode.
+ *
+ * @param t uiTable instance.
+ * @returns The table selection mode. [Default `uiTableSelectionModeZeroOrOne`]
+ *
+ * @memberof uiTable
+ */
+_UI_EXTERN uiTableSelectionMode uiTableGetSelectionMode(uiTable *t);
+
+/**
+ * Sets the table selection mode.
+ *
+ * @param t uiTable instance.
+ * @param mode Table selection mode to set.
+ *
+ * @warning All rows will be deselected if the existing selection is illegal
+ *          in the new selection mode.
+ * @memberof uiTable
+ */
+_UI_EXTERN void uiTableSetSelectionMode(uiTable *t, uiTableSelectionMode mode);
+
+/**
+ * Registers a callback for when the table selection changed.
+ *
+ * @param t uiTable instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiTableSetSelection() or
+ *       when needing to clear the selection on uiTableSetSelectionMode().
+ * @note Only one callback can be registered at a time.
+ * @memberof uiTable
+ */
+_UI_EXTERN void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *t, void *data), void *data);
+
+/**
+ * Holds an array of selected row indices for a table.
+ *
+ * @struct uiTableSelection
+ * @ingroup table
+ */
+typedef struct uiTableSelection uiTableSelection;
+struct uiTableSelection
+{
+	int NumRows; //!< Number of selected rows.
+	int *Rows;   //!< Array containing selected row indices, NULL on empty selection.
+};
+
+/**
+ * Returns the current table selection.
+ *
+ * @param t uiTable instance.
+ * @returns The number of selected rows and corresponding row indices.\n
+ *          Data is owned by the caller, make sure to call uiFreeTableSelection().
+ *
+ * @note For empty selections the `Rows` pointer will be NULL.
+ * @memberof uiTable
+ */
+_UI_EXTERN uiTableSelection* uiTableGetSelection(uiTable *t);
+
+/**
+ * Sets the current table selection clearing any previous selection.
+ *
+ * @param t uiTable instance.
+ * @param sel Table selection.\n
+ *            Data is owned by the caller.
+ *
+ * @note Selecting more rows than the selection mode allows for results in nothing happening.
+ * @note For empty selections the Rows pointer is never accessed.
+ * @memberof uiTable
+ */
+_UI_EXTERN void uiTableSetSelection(uiTable *t, uiTableSelection *sel);
+
+/**
+ * Frees the given uiTableSelection and all it's resources.
+ *
+ * @param s uiTableSelection instance.
+ * @memberof uiTableSelection
+ */
+_UI_EXTERN void uiFreeTableSelection(uiTableSelection* s);
+
 #ifdef __cplusplus
 }
 #endif

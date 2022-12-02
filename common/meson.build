@@ -10,6 +10,7 @@ libui_sources += [
 	'common/matrix.c',
 	'common/opentype.c',
 	'common/shouldquit.c',
+	'common/table.c',
 	'common/tablemodel.c',
 	'common/tablevalue.c',
 	'common/userbugs.c',

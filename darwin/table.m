@@ -8,6 +8,7 @@
 	uiTableModel *m;
 }
 - (id)initWithModel:(uiTableModel *)model;
+- (NSIndexSet *)tableView:(NSTableView *)tv selectionIndexesForProposedSelection:(NSIndexSet *)set;
 @end
 
 // TODO we really need to clean up the sharing of the table and model variables...
@@ -16,6 +17,8 @@
 	uiTableModel *uiprivM;
 	NSTableHeaderView *headerViewRef;
 }
+@property uiTableSelectionMode selectionMode;
+
 - (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m;
 - (uiTable *)uiTable;
 - (void)restoreHeaderView;
@@ -24,6 +27,8 @@
 @end
 
 @implementation uiprivTableView
+
+@synthesize selectionMode;
 
 - (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m
 {
@@ -104,6 +109,13 @@ static void setBackgroundColor(uiprivTableView *t, NSTableRowView *rv, NSInteger
 	return self;
 }
 
+- (NSIndexSet *)tableView:(uiprivTableView *)tv selectionIndexesForProposedSelection:(NSIndexSet *)set
+{
+	if ([tv selectionMode] == uiTableSelectionModeNone)
+		return nil;
+	return set;
+}
+
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)tv
 {
 	return uiprivTableModelNumRows(self->m);
@@ -130,6 +142,12 @@ static void setBackgroundColor(uiprivTableView *t, NSTableRowView *rv, NSInteger
 {
 	uiTable *t = [tv uiTable];
 	t->headerOnClicked(t, [[tc identifier] intValue], t->headerOnClickedData);
+}
+
+- (void)tableViewSelectionDidChange:(NSNotification *)notification
+{
+	uiTable *t = [(uiprivTableView*)[notification object] uiTable];
+	t->onSelectionChanged(t, t->onSelectionChangedData);
 }
 
 @end
@@ -238,6 +256,52 @@ static void defaultHeaderOnClicked(uiTable *table, int column, void *data)
 	// do nothing
 }
 
+static void defaultOnSelectionChanged(uiTable *t, void *data)
+{
+	// do nothing
+}
+
+uiTableSelectionMode uiTableGetSelectionMode(uiTable *t)
+{
+	return [(uiprivTableView*)t->tv selectionMode];
+}
+
+void uiTableSetSelectionMode(uiTable *t, uiTableSelectionMode mode)
+{
+	switch (mode) {
+		case uiTableSelectionModeNone:
+			if ([t->tv numberOfSelectedRows] > 0)
+				[t->tv deselectAll: t->tv];
+			break;
+		case uiTableSelectionModeZeroOrOne:
+			if ([t->tv numberOfSelectedRows] > 1)
+				[t->tv deselectAll: t->tv];
+			[t->tv setAllowsMultipleSelection: NO];
+			[t->tv setAllowsEmptySelection: YES];
+			break;
+		case uiTableSelectionModeOne:
+			if ([t->tv numberOfSelectedRows] > 1)
+				[t->tv deselectAll: t->tv];
+			[t->tv setAllowsMultipleSelection: NO];
+			[t->tv setAllowsEmptySelection: NO];
+			break;
+		case uiTableSelectionModeZeroOrMany:
+			[t->tv setAllowsMultipleSelection: YES];
+			[t->tv setAllowsEmptySelection: YES];
+			break;
+		default:
+			uiprivUserBug("Invalid table selection mode %d", mode);
+			return;
+	}
+	[(uiprivTableView*)t->tv setSelectionMode: mode];
+}
+
+void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *, void *), void *data)
+{
+	t->onSelectionChanged = f;
+	t->onSelectionChangedData = data;
+}
+
 static void defaultOnRowClicked(uiTable *table, int row, void *data)
 {
 	// do nothing
@@ -260,6 +324,44 @@ void uiTableOnRowDoubleClicked(uiTable *t, void (*f)(uiTable *, int, void *), vo
 	t->onRowDoubleClickedData = data;
 }
 
+uiTableSelection* uiTableGetSelection(uiTable *t)
+{
+	__block int i = 0;
+	NSIndexSet *set = [t->tv selectedRowIndexes];
+	uiTableSelection *s = uiprivNew(uiTableSelection);
+
+	s->NumRows = [set count];
+	if (s->NumRows == 0)
+		s->Rows = NULL;
+	else
+		s->Rows = uiprivAlloc(s->NumRows * sizeof(*s->Rows), "uiTableSelection->Rows");
+
+	[set enumerateIndexesUsingBlock:^(NSUInteger row, BOOL *stop) {
+		s->Rows[i++] = row;
+	}];
+
+	return s;
+}
+
+void uiTableSetSelection(uiTable *t, uiTableSelection *sel)
+{
+	int i;
+	NSMutableIndexSet *set;
+	uiTableSelectionMode mode = [(uiprivTableView*)t->tv selectionMode];
+
+	if ((mode == uiTableSelectionModeNone && sel->NumRows > 0) ||
+	    (mode == uiTableSelectionModeZeroOrOne && sel->NumRows > 1) ||
+	    (mode == uiTableSelectionModeOne && sel->NumRows > 1)) {
+		// TODO log error
+		return;
+	}
+
+	set = [NSMutableIndexSet new];
+	for (i = 0; i < sel->NumRows; ++i)
+		[set addIndex: sel->Rows[i]];
+	[t->tv selectRowIndexes: set byExtendingSelection: FALSE];
+}
+
 uiTable *uiNewTable(uiTableParams *p)
 {
 	uiTable *t;
@@ -279,8 +381,6 @@ uiTable *uiNewTable(uiTableParams *p)
 	// TODO is this sufficient?
 	[t->tv setAllowsColumnReordering:NO];
 	[t->tv setAllowsColumnResizing:YES];
-	[t->tv setAllowsMultipleSelection:NO];
-	[t->tv setAllowsEmptySelection:YES];
 	[t->tv setAllowsColumnSelection:NO];
 	[t->tv setUsesAlternatingRowBackgroundColors:YES];
 	[t->tv setSelectionHighlightStyle:NSTableViewSelectionHighlightStyleRegular];
@@ -304,7 +404,9 @@ uiTable *uiNewTable(uiTableParams *p)
 	sp.VScroll = YES;
 	t->sv = uiprivMkScrollView(&sp, &(t->d));
 
+	uiTableSetSelectionMode(t, uiTableSelectionModeZeroOrOne);
 	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
+	uiTableOnSelectionChanged(t, defaultOnSelectionChanged, NULL);
 
 	// TODO WHY DOES THIS REMOVE ALL GRAPHICAL GLITCHES?
 	// I got the idea from http://jwilling.com/blog/optimized-nstableview-scrolling/ but that was on an unrelated problem I didn't seem to have (although I have small-ish tables to start with)

@@ -18,12 +18,21 @@ struct uiTable {
 	// TODO document this properly
 	GHashTable *indeterminatePositions;
 	guint indeterminateTimer;
+	// Cache last selected row for GTK_SELECTION_BROWSE
+	int lastSelectedRow;
+	// Cache last selected rows count for GTK_SELECTION_MULTIPLE
+	int lastSelectedRowsCount;
+	// Cache last selected rows for GTK_SELECTION_MULTIPLE
+	GList *lastSelectedRows;
 	void (*headerOnClicked)(uiTable *, int, void *);
 	void *headerOnClickedData;
 	void (*onRowClicked)(uiTable *, int, void *);
 	void *onRowClickedData;
 	void (*onRowDoubleClicked)(uiTable *, int, void *);
 	void *onRowDoubleClickedData;
+	void (*onSelectionChanged)(uiTable *, void *);
+	void *onSelectionChangedData;
+	gulong onSelectionChangedSignal;
 };
 
 /*
@@ -388,6 +397,135 @@ static void headerOnClicked(GtkTreeViewColumn *c, gpointer data)
 			t->headerOnClicked(t, i, t->headerOnClickedData);
 }
 
+void uiTableOnSelectionChanged(uiTable *t, void (*f)(uiTable *t, void *data), void *data)
+{
+	t->onSelectionChanged = f;
+	t->onSelectionChangedData = data;
+}
+
+static void defaultOnSelectionChanged(uiTable *table, void *data)
+{
+	// do nothing
+}
+
+/**
+ * Determines if a selection truly changed.
+ *
+ * GTK sends a "changed" signal on various user interactions even when the
+ * selection has not truly changed. See upstream bugs:
+ *
+ * GTK_SELECTION_BROWSE:
+ * https://gitlab.gnome.org/GNOME/gtk/-/issues/5061
+ *
+ * GTK_SELECTION_MULTIPLE
+ * https://gitlab.gnome.org/GNOME/gtk/-/issues/5314
+ *
+ * @returns `TRUE` if the selection changed, `FALSE` otherwise.
+ */
+static gboolean selectionChanged(uiTable *t, GtkTreeSelection *s)
+{
+	GtkTreeIter iter;
+	gint row;
+	gint rowCount;
+	GList *list;
+	GList *a, *b;
+	GtkTreeModel *m = GTK_TREE_MODEL(t->model);
+
+	if (gtk_tree_selection_get_mode(s) == GTK_SELECTION_BROWSE) {
+		if (gtk_tree_selection_get_selected(s, NULL, &iter)) {
+			row = GPOINTER_TO_INT(iter.user_data);
+			if (row == t->lastSelectedRow)
+				return FALSE;
+			else
+				t->lastSelectedRow = row;
+		}
+		else {
+			t->lastSelectedRow = -1;
+		}
+	}
+	else if (gtk_tree_selection_get_mode(s) == GTK_SELECTION_MULTIPLE) {
+		rowCount = gtk_tree_selection_count_selected_rows(s);
+		if (rowCount != t->lastSelectedRowsCount) {
+			t->lastSelectedRowsCount = rowCount;
+		}
+		else {
+			list = gtk_tree_selection_get_selected_rows(s, &m);
+			for (a = list, b = t->lastSelectedRows; a != NULL && b != NULL; a = a->next, b = b->next) {
+				if (gtk_tree_path_compare(a->data, b->data) != 0) {
+					g_list_free_full(t->lastSelectedRows, (GDestroyNotify)gtk_tree_path_free);
+					t->lastSelectedRows = list;
+					return TRUE;
+				}
+			}
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+static void onSelectionChanged(GtkTreeSelection *s, gpointer data)
+{
+	uiTable *t = uiTable(data);
+
+	// Abort if the row is already selected. See upstream bug:
+	// https://gitlab.gnome.org/GNOME/gtk/-/issues/5061
+	if (!selectionChanged(t, s))
+		return;
+
+	t->onSelectionChanged(t, t->onSelectionChangedData);
+}
+
+uiTableSelection* uiTableGetSelection(uiTable *t)
+{
+	int i = 0;
+	GList *e;
+	GList *list;
+	GtkTreeSelection *sel;
+	GtkTreeModel *m = GTK_TREE_MODEL(t->model);
+	uiTableSelection *s = uiprivNew(uiTableSelection);
+
+	sel = gtk_tree_view_get_selection(t->tv);
+	list = gtk_tree_selection_get_selected_rows(sel, &m);
+
+	s->NumRows = g_list_length(list);
+	if (s->NumRows == 0)
+		s->Rows = NULL;
+	else
+		s->Rows = uiprivAlloc(s->NumRows * sizeof(*s->Rows), "uiTableSelection->Rows");
+
+	for (e = list; e != NULL; e = e->next) {
+		GtkTreePath *path = e->data;
+		s->Rows[i++] = gtk_tree_path_get_indices(path)[0];
+	}
+
+	g_list_free_full(list, (GDestroyNotify) gtk_tree_path_free);
+
+	return s;
+}
+
+void uiTableSetSelection(uiTable *t, uiTableSelection *sel)
+{
+	int i;
+	GtkTreeSelection *ts;
+	uiTableSelectionMode mode = uiTableGetSelectionMode(t);
+
+	if ((mode == uiTableSelectionModeNone && sel->NumRows > 0) ||
+	    (mode == uiTableSelectionModeZeroOrOne && sel->NumRows > 1) ||
+	    (mode == uiTableSelectionModeOne && sel->NumRows > 1)) {
+		// TODO log error
+		return;
+	}
+
+	ts = gtk_tree_view_get_selection(t->tv);
+	gtk_tree_selection_unselect_all(ts);
+
+	for (i = 0; i < sel->NumRows; ++i) {
+		GtkTreePath *path = gtk_tree_path_new_from_indices(sel->Rows[i], -1);
+		gtk_tree_selection_select_path(ts, path);
+		gtk_tree_path_free(path);
+	}
+}
+
 static GtkTreeViewColumn *addColumn(uiTable *t, const char *name)
 {
 	GtkTreeViewColumn *c;
@@ -563,6 +701,8 @@ static void uiTableDestroy(uiControl *c)
 	if (g_hash_table_size(t->indeterminatePositions) != 0)
 		g_source_remove(t->indeterminateTimer);
 	g_hash_table_destroy(t->indeterminatePositions);
+	if (t->lastSelectedRows != NULL)
+		g_list_free_full(t->lastSelectedRows, (GDestroyNotify)gtk_tree_path_free);
 	g_object_unref(t->widget);
 	uiFreeControl(uiControl(t));
 }
@@ -643,6 +783,7 @@ uiTable *uiNewTable(uiTableParams *p)
 #if GTK_CHECK_VERSION(3, 14, 0)
 	GtkGesture *gesture;
 #endif
+	GtkTreeSelection *selection;
 
 	uiUnixNewControl(uiTable, t);
 
@@ -678,6 +819,12 @@ uiTable *uiNewTable(uiTableParams *p)
 		uiprivFree, uiprivFree);
 
 	uiTableHeaderOnClicked(t, defaultHeaderOnClicked, NULL);
+	uiTableOnSelectionChanged(t, defaultOnSelectionChanged, NULL);
+
+	selection = gtk_tree_view_get_selection(t->tv);
+	t->onSelectionChangedSignal = g_signal_connect(G_OBJECT(selection), "changed",
+		G_CALLBACK(onSelectionChanged), t);
+	t->lastSelectedRows = NULL;
 
 	return t;
 }
@@ -693,3 +840,63 @@ void uiTableColumnSetWidth(uiTable *t, int column, int width)
 	GtkTreeViewColumn *c = gtk_tree_view_get_column(t->tv, column);
 	gtk_tree_view_column_set_fixed_width(c, width);
 }
+
+uiTableSelectionMode uiTableGetSelectionMode(uiTable *t)
+{
+	GtkTreeSelection *select = gtk_tree_view_get_selection(t->tv);
+
+	switch (gtk_tree_selection_get_mode(select)) {
+		case GTK_SELECTION_NONE:
+			return uiTableSelectionModeNone;
+		case GTK_SELECTION_SINGLE:
+			return uiTableSelectionModeZeroOrOne;
+		case GTK_SELECTION_BROWSE:
+			return uiTableSelectionModeOne;
+		case GTK_SELECTION_MULTIPLE:
+			return uiTableSelectionModeZeroOrMany;
+		default:
+			uiprivImplBug("Invalid table selection mode");
+			return 0;
+	}
+}
+
+void uiTableSetSelectionMode(uiTable *t, uiTableSelectionMode mode)
+{
+	GtkTreeSelection *selection = gtk_tree_view_get_selection(t->tv);
+	GtkSelectionMode type;
+	GtkTreeModel *m = GTK_TREE_MODEL(t->model);
+
+	g_signal_handler_block(selection, t->onSelectionChangedSignal);
+	switch (mode) {
+		case uiTableSelectionModeNone:
+			type = GTK_SELECTION_NONE;
+			break;
+		case uiTableSelectionModeZeroOrOne:
+			// gtk_tree_selection_unselect_all() is broken when followed
+			// by a mode change. TODO report upstream
+			if (gtk_tree_selection_count_selected_rows(selection) > 1)
+				gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
+			type = GTK_SELECTION_SINGLE;
+			break;
+		case uiTableSelectionModeOne:
+			// gtk_tree_selection_unselect_all() is broken when followed
+			// by a mode change. TODO report upstream
+			if (gtk_tree_selection_count_selected_rows(selection) > 1)
+				gtk_tree_selection_set_mode(selection, GTK_SELECTION_NONE);
+			type = GTK_SELECTION_BROWSE;
+			break;
+		case uiTableSelectionModeZeroOrMany:
+			t->lastSelectedRowsCount = gtk_tree_selection_count_selected_rows(selection);
+			t->lastSelectedRows = gtk_tree_selection_get_selected_rows(selection, &m);
+			type = GTK_SELECTION_MULTIPLE;
+			break;
+		default:
+			uiprivUserBug("Invalid table selection mode %d", mode);
+			return;
+	}
+
+	gtk_tree_selection_set_mode(selection, type);
+	selectionChanged(t, selection);
+	g_signal_handler_unblock(selection, t->onSelectionChangedSignal);
+}
+

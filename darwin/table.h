@@ -22,6 +22,8 @@ struct uiTable {
 	void *onRowClickedData;
 	void (*onRowDoubleClicked)(uiTable *, int, void *);
 	void *onRowDoubleClickedData;
+	void (*onSelectionChanged)(uiTable *, void *);
+	void *onSelectionChangedData;
 };
 
 // tablecolumn.m
