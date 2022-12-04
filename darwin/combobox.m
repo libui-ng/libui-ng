@@ -1,4 +1,3 @@
-// 14 august 2015
 #import "uipriv_darwin.h"
 
 // NSComboBoxes have no intrinsic width; we'll use the default Interface Builder width for them.
@@ -13,54 +12,43 @@ struct uiCombobox {
 	void *onSelectedData;
 };
 
-@interface comboboxDelegateClass : NSObject {
-	uiprivMap *comboboxes;
+@interface uiprivCombobox : NSPopUpButton {
+	uiCombobox *combobox;
 }
+- (id)initWithFrame:(NSRect)frame uiCombobox:(uiCombobox *)c;
 - (IBAction)onSelected:(id)sender;
-- (void)registerCombobox:(uiCombobox *)c;
-- (void)unregisterCombobox:(uiCombobox *)c;
 @end
 
-@implementation comboboxDelegateClass
+@implementation uiprivCombobox
 
-- (id)init
+- (id)initWithFrame:(NSRect)frame uiCombobox:(uiCombobox *)c
 {
-	self = [super init];
-	if (self)
-		self->comboboxes = uiprivNewMap();
+	self = [super initWithFrame:frame pullsDown:NO];
+	if (self) {
+		self->combobox = c;
+
+		[self setPreferredEdge:NSMinYEdge];
+
+		[[self cell] setArrowPosition:NSPopUpArrowAtBottom];
+
+		// Use the regular font size for consistency instead of the
+		// Interface Builder defined one "Menu 13"
+		uiDarwinSetControlFont(self, NSRegularControlSize);
+
+		[self setTarget:self];
+		[self setAction:@selector(onSelected:)];
+	}
 	return self;
-}
-
-- (void)dealloc
-{
-	uiprivMapDestroy(self->comboboxes);
-	[super dealloc];
 }
 
 - (IBAction)onSelected:(id)sender
 {
-	uiCombobox *c;
+	uiCombobox *c = self->combobox;
 
-	c = uiCombobox(uiprivMapGet(self->comboboxes, sender));
 	(*(c->onSelected))(c, c->onSelectedData);
 }
 
-- (void)registerCombobox:(uiCombobox *)c
-{
-	uiprivMapSet(self->comboboxes, c->pb, c);
-	[c->pb setTarget:self];
-	[c->pb setAction:@selector(onSelected:)];
-}
-
-- (void)unregisterCombobox:(uiCombobox *)c
-{
-	[c->pb setTarget:nil];
-	uiprivMapDelete(self->comboboxes, c->pb);
-}
-
 @end
-
-static comboboxDelegateClass *comboboxDelegate = nil;
 
 uiDarwinControlAllDefaultsExceptDestroy(uiCombobox, pb)
 
@@ -68,7 +56,6 @@ static void uiComboboxDestroy(uiControl *cc)
 {
 	uiCombobox *c = uiCombobox(cc);
 
-	[comboboxDelegate unregisterCombobox:c];
 	[c->pb unbind:@"contentObjects"];
 	[c->pb unbind:@"selectedIndex"];
 	[c->pbac release];
@@ -149,17 +136,10 @@ static void defaultOnSelected(uiCombobox *c, void *data)
 uiCombobox *uiNewCombobox(void)
 {
 	uiCombobox *c;
-	NSPopUpButtonCell *pbcell;
 
 	uiDarwinNewControl(uiCombobox, c);
 
-	c->pb = [[NSPopUpButton alloc] initWithFrame:NSZeroRect pullsDown:NO];
-	[c->pb setPreferredEdge:NSMinYEdge];
-	pbcell = (NSPopUpButtonCell *) [c->pb cell];
-	[pbcell setArrowPosition:NSPopUpArrowAtBottom];
-	// the font defined by Interface Builder is Menu 13, which is lol
-	// just use the regular control size for consistency
-	uiDarwinSetControlFont(c->pb, NSRegularControlSize);
+	c->pb = [[uiprivCombobox alloc] initWithFrame:NSZeroRect uiCombobox:c];
 
 	// NSPopUpButton doesn't work like a combobox
 	// - it automatically selects the first item
@@ -178,11 +158,6 @@ uiCombobox *uiNewCombobox(void)
 		withKeyPath:@"selectionIndex"
 		options:nil];
 
-	if (comboboxDelegate == nil) {
-		comboboxDelegate = [[comboboxDelegateClass new] autorelease];
-		[uiprivDelegates addObject:[NSValue valueWithPointer:&comboboxDelegate]];
-	}
-	[comboboxDelegate registerCombobox:c];
 	uiComboboxOnSelected(c, defaultOnSelected, NULL);
 	uiComboboxSetSelected(c, -1);
 	uiControlDisable(uiControl(c));
