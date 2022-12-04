@@ -48,6 +48,12 @@ libui_examples = {
 	'datetime': {
 		'sources':		['datetime/main.c'],
 	},
+	'hello-world': {
+		'sources':		['hello-world/main.c'],
+	},
+	'window': {
+		'sources':		['window/main.c'],
+	},
 }
 foreach name, args : libui_examples
 	# TODO once we upgrade to 0.49.0, add pie: true
@@ -56,6 +62,7 @@ foreach name, args : libui_examples
 		link_with: libui_libui,
 		cpp_args: args.get('cpp_args', []),
 		link_args: args.get('link_args', []) + libui_example_link_args,
+		include_directories: include_directories('..'),
 		gui_app: false,
 		install: false)
 endforeach
