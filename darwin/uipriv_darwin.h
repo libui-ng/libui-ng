@@ -90,7 +90,16 @@ extern void uiprivDisableAutocorrect(NSTextView *);
 extern NSTextField *uiprivNewEditableTextField(void);
 
 // window.m
-@interface uiprivNSWindow : NSWindow
+@interface uiprivNSWindow : NSWindow<NSWindowDelegate> {
+	uiWindow *window;
+}
+- (BOOL)windowShouldClose:(id)sender;
+- (void)windowDidResize:(NSNotification *)note;
+- (void)windowDidEnterFullScreen:(NSNotification *)note;
+- (void)windowDidExitFullScreen:(NSNotification *)note;
+- (void)windowDidBecomeKey:(NSNotification *)note;
+- (void)windowDidResignKey:(NSNotification *)note;
+- (uiWindow *)window;
 - (void)uiprivDoMove:(NSEvent *)initialEvent;
 - (void)uiprivDoResize:(NSEvent *)initialEvent on:(uiWindowResizeEdge)edge;
 @end
