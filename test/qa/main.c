@@ -15,12 +15,18 @@ struct controlTestGroup {
 
 #define QA_TEST(desciption, name) { desciption, name, name##Guide }
 
+struct controlTestCase buttonTestCases[] = {
+	QA_TEST("1. Button OnClicked Callback", buttonOnClicked),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestCase labelTestCases[] = {
 	QA_TEST("1. Multi Line", labelMultiLine),
 	{NULL, NULL, NULL}
 };
 
 struct controlTestGroup controlTestGroups[] = {
+	{"uiButton", buttonTestCases},
 	{"uiLabel", labelTestCases},
 };
 

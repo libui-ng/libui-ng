@@ -7,6 +7,8 @@ uiControl* qaMakeGuide(uiControl *c, const char *text);
 
 #define QA_DECLARE_TEST(name) uiControl* name(); const char *name##Guide()
 
+QA_DECLARE_TEST(buttonOnClicked);
+
 QA_DECLARE_TEST(labelMultiLine);
 
 #endif
