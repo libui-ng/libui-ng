@@ -8,54 +8,40 @@ struct uiCheckbox {
 	void *onToggledData;
 };
 
-@interface checkboxDelegateClass : NSObject {
-	uiprivMap *buttons;
+@interface uiprivCheckbox : NSButton {
+	uiCheckbox *checkbox;
 }
+- (id)initWithFrame:(NSRect)frame uiCheckbox:(uiCheckbox *)c;
 - (IBAction)onToggled:(id)sender;
-- (void)registerCheckbox:(uiCheckbox *)c;
-- (void)unregisterCheckbox:(uiCheckbox *)c;
 @end
 
-@implementation checkboxDelegateClass
+@implementation uiprivCheckbox
 
-- (id)init
+- (id)initWithFrame:(NSRect)frame uiCheckbox:(uiCheckbox *)c
 {
-	self = [super init];
-	if (self)
-		self->buttons = uiprivNewMap();
+	self = [super initWithFrame:frame];
+	if (self) {
+		self->checkbox = c;
+
+		[self setButtonType:NSSwitchButton];
+		[self setBordered:NO];
+		// doesn't seem to have an associated bezel style
+		[self setTransparent:NO];
+
+		[self setTarget:self];
+		[self setAction:@selector(onToggled:)];
+	}
 	return self;
-}
-
-- (void)dealloc
-{
-	uiprivMapDestroy(self->buttons);
-	[super dealloc];
 }
 
 - (IBAction)onToggled:(id)sender
 {
-	uiCheckbox *c;
+	uiCheckbox *c = self->checkbox;
 
-	c = (uiCheckbox *) uiprivMapGet(self->buttons, sender);
 	(*(c->onToggled))(c, c->onToggledData);
 }
 
-- (void)registerCheckbox:(uiCheckbox *)c
-{
-	uiprivMapSet(self->buttons, c->button, c);
-	[c->button setTarget:self];
-	[c->button setAction:@selector(onToggled:)];
-}
-
-- (void)unregisterCheckbox:(uiCheckbox *)c
-{
-	[c->button setTarget:nil];
-	uiprivMapDelete(self->buttons, c->button);
-}
-
 @end
-
-static checkboxDelegateClass *checkboxDelegate = nil;
 
 uiDarwinControlAllDefaultsExceptDestroy(uiCheckbox, button)
 
@@ -63,7 +49,6 @@ static void uiCheckboxDestroy(uiControl *cc)
 {
 	uiCheckbox *c = uiCheckbox(cc);
 
-	[checkboxDelegate unregisterCheckbox:c];
 	[c->button release];
 	uiFreeControl(uiControl(c));
 }
@@ -93,9 +78,7 @@ void uiCheckboxSetChecked(uiCheckbox *c, int checked)
 {
 	NSInteger state;
 
-	state = NSOnState;
-	if (!checked)
-		state = NSOffState;
+	state = (checked) ? NSOnState : NSOffState;
 	[c->button setState:state];
 }
 
@@ -110,19 +93,10 @@ uiCheckbox *uiNewCheckbox(const char *text)
 
 	uiDarwinNewControl(uiCheckbox, c);
 
-	c->button = [[NSButton alloc] initWithFrame:NSZeroRect];
-	[c->button setTitle:uiprivToNSString(text)];
-	[c->button setButtonType:NSSwitchButton];
-	// doesn't seem to have an associated bezel style
-	[c->button setBordered:NO];
-	[c->button setTransparent:NO];
+	c->button = [[uiprivCheckbox alloc] initWithFrame:NSZeroRect uiCheckbox:c];
+	uiCheckboxSetText(c, text);
 	uiDarwinSetControlFont(c->button, NSRegularControlSize);
 
-	if (checkboxDelegate == nil) {
-		checkboxDelegate = [[checkboxDelegateClass new] autorelease];
-		[uiprivDelegates addObject:[NSValue valueWithPointer:&checkboxDelegate]];
-	}
-	[checkboxDelegate registerCheckbox:c];
 	uiCheckboxOnToggled(c, defaultOnToggled, NULL);
 
 	return c;
