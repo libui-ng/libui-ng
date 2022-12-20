@@ -2,6 +2,7 @@ libui_qa_sources = [
 	'qa.c',
 	'main.c',
 	'button.c',
+	'checkbox.c',
 	'label.c',
 ]
 

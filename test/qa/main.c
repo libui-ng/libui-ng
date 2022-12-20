@@ -20,6 +20,11 @@ struct controlTestCase buttonTestCases[] = {
 	{NULL, NULL, NULL}
 };
 
+struct controlTestCase checkboxTestCases[] = {
+	QA_TEST("1. Checkbox OnToggled Callback", checkboxOnToggled),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestCase labelTestCases[] = {
 	QA_TEST("1. Multi Line", labelMultiLine),
 	{NULL, NULL, NULL}
@@ -27,6 +32,7 @@ struct controlTestCase labelTestCases[] = {
 
 struct controlTestGroup controlTestGroups[] = {
 	{"uiButton", buttonTestCases},
+	{"uiCheckbox", checkboxTestCases},
 	{"uiLabel", labelTestCases},
 };
 

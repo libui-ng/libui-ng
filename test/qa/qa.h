@@ -9,6 +9,8 @@ uiControl* qaMakeGuide(uiControl *c, const char *text);
 
 QA_DECLARE_TEST(buttonOnClicked);
 
+QA_DECLARE_TEST(checkboxOnToggled);
+
 QA_DECLARE_TEST(labelMultiLine);
 
 #endif
