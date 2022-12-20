@@ -365,4 +365,8 @@ void uiprivUninitMenus(void)
 		uiprivFree(m);
 	}];
 	[menus release];
+
+	/* Reset global state. */
+	menus = nil;
+	menusFinalized = NO;
 }
