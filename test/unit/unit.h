@@ -30,6 +30,11 @@ struct state {
 	uiControl *c;
 };
 
+int unitWindowOnClosingQuit(uiWindow *w, void *data);
+
+#define UNIT_TEST_WINDOW_WIDTH 300
+#define UNIT_TEST_WINDOW_HEIGHT 200
+
 /**
  * Helper for setting up the state variable used in unit tests.
  */
