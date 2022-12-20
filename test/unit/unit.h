@@ -21,6 +21,7 @@ int buttonRunUnitTests(void);
 int comboboxRunUnitTests(void);
 int checkboxRunUnitTests(void);
 int radioButtonsRunUnitTests(void);
+int menuRunUnitTests(void);
 
 /**
  * Helper for general setup/teardown of controls embedded in a window.
