@@ -10,10 +10,22 @@
 // NSComboBoxes have no intrinsic width; we'll use the default Interface Builder width for them.
 #define comboboxWidth 96
 
-@interface libui_intrinsicWidthNSComboBox : NSComboBox
+@interface uiprivEditableCombobox : NSComboBox<NSComboBoxDelegate>
+- (id)initWithFrame:(NSRect)frame uiEditableCombobox:(uiEditableCombobox *)cb;
+- (void)controlTextDidChange:(NSNotification *)note;
+- (void)comboBoxSelectionDidChange:(NSNotification *)note;
 @end
 
-@implementation libui_intrinsicWidthNSComboBox
+struct uiEditableCombobox {
+	uiDarwinControl c;
+	NSComboBox *cb;
+	void (*onChanged)(uiEditableCombobox *, void *);
+	void *onChangedData;
+};
+
+@implementation uiprivEditableCombobox {
+	uiEditableCombobox *combobox;
+}
 
 - (NSSize)intrinsicContentSize
 {
@@ -24,46 +36,25 @@
 	return s;
 }
 
-@end
-
-struct uiEditableCombobox {
-	uiDarwinControl c;
-	NSComboBox *cb;
-	void (*onChanged)(uiEditableCombobox *, void *);
-	void *onChangedData;
-};
-
-@interface editableComboboxDelegateClass : NSObject<NSComboBoxDelegate> {
-	uiprivMap *comboboxes;
-}
-- (void)controlTextDidChange:(NSNotification *)note;
-- (void)comboBoxSelectionDidChange:(NSNotification *)note;
-- (void)registerCombobox:(uiEditableCombobox *)c;
-- (void)unregisterCombobox:(uiEditableCombobox *)c;
-@end
-
-@implementation editableComboboxDelegateClass
-
-- (id)init
+- (id)initWithFrame:(NSRect)frame uiEditableCombobox:(uiEditableCombobox *)cb
 {
-	self = [super init];
-	if (self)
-		self->comboboxes = uiprivNewMap();
+	self = [super initWithFrame:frame];
+	if (self) {
+		self->combobox = cb;
+
+		[self setUsesDataSource:NO];
+		[self setButtonBordered:YES];
+		[self setCompletes:NO];
+
+		[self setDelegate:self];
+	}
 	return self;
-}
-
-- (void)dealloc
-{
-	uiprivMapDestroy(self->comboboxes);
-	[super dealloc];
 }
 
 - (void)controlTextDidChange:(NSNotification *)note
 {
-	uiEditableCombobox *c;
+	uiEditableCombobox *c = self->combobox;
 
-	// TODO normalize the cast styles in these calls
-	c = uiEditableCombobox(uiprivMapGet(self->comboboxes, [note object]));
 	(*(c->onChanged))(c, c->onChangedData);
 }
 
@@ -78,21 +69,7 @@ struct uiEditableCombobox {
 		afterDelay:0];
 }
 
-- (void)registerCombobox:(uiEditableCombobox *)c
-{
-	uiprivMapSet(self->comboboxes, c->cb, c);
-	[c->cb setDelegate:self];
-}
-
-- (void)unregisterCombobox:(uiEditableCombobox *)c
-{
-	[c->cb setDelegate:nil];
-	uiprivMapDelete(self->comboboxes, c->cb);
-}
-
 @end
-
-static editableComboboxDelegateClass *comboboxDelegate = nil;
 
 uiDarwinControlAllDefaultsExceptDestroy(uiEditableCombobox, cb)
 
@@ -100,7 +77,6 @@ static void uiEditableComboboxDestroy(uiControl *cc)
 {
 	uiEditableCombobox *c = uiEditableCombobox(cc);
 
-	[comboboxDelegate unregisterCombobox:c];
 	[c->cb release];
 	uiFreeControl(uiControl(c));
 }
@@ -169,17 +145,10 @@ uiEditableCombobox *uiNewEditableCombobox(void)
 
 	uiDarwinNewControl(uiEditableCombobox, c);
 
-	c->cb = [[libui_intrinsicWidthNSComboBox alloc] initWithFrame:NSZeroRect];
-	[c->cb setUsesDataSource:NO];
-	[c->cb setButtonBordered:YES];
-	[c->cb setCompletes:NO];
+	c->cb = [[uiprivEditableCombobox alloc] initWithFrame:NSZeroRect uiEditableCombobox:c];
+
 	uiDarwinSetControlFont(c->cb, NSRegularControlSize);
 
-	if (comboboxDelegate == nil) {
-		comboboxDelegate = [[editableComboboxDelegateClass new] autorelease];
-		[uiprivDelegates addObject:[NSValue valueWithPointer:&comboboxDelegate]];
-	}
-	[comboboxDelegate registerCombobox:c];
 	uiEditableComboboxOnChanged(c, defaultOnChanged, NULL);
 
 	return c;
