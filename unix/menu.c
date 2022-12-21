@@ -364,4 +364,11 @@ void uiprivUninitMenus(void)
 		uiprivFree(m);
 	}
 	g_array_free(menus, TRUE);
+
+	/* Reset global state. */
+	menus = NULL;
+	menusFinalized = FALSE;
+	hasQuit = FALSE;
+	hasPreferences = FALSE;
+	hasAbout = FALSE;
 }
