@@ -96,6 +96,79 @@ static void menuAppendSeparator(void **_state)
 	uiMenuAppendSeparator(m);
 }
 
+static void menuAppendFull(void **_state)
+{
+	uiMenu *m;
+
+	m = uiNewMenu("Menu");
+	uiMenuAppendItem(m, "Item");
+	uiMenuAppendSeparator(m);
+	uiMenuAppendCheckItem(m, "Check Item");
+	uiMenuAppendAboutItem(m);
+	uiMenuAppendPreferencesItem(m);
+	uiMenuAppendQuitItem(m);
+}
+
+static void menuItemEnable(void **_state)
+{
+	uiMenu *m;
+	uiMenuItem *i;
+
+	m = uiNewMenu("Menu");
+	i = uiMenuAppendItem(m, "Item");
+	uiMenuItemEnable(i);
+}
+
+static void menuItemDisable(void **_state)
+{
+	uiMenu *m;
+	uiMenuItem *i;
+
+	m = uiNewMenu("Menu");
+	i = uiMenuAppendItem(m, "Item");
+	uiMenuItemDisable(i);
+}
+
+static void menuItemCheckedDefaultFalse(void **_state)
+{
+	uiMenu *m;
+	uiMenuItem *i;
+
+	m = uiNewMenu("Menu");
+	i = uiMenuAppendCheckItem(m, "Item");
+	assert_int_equal(uiMenuItemChecked(i), 0);
+}
+
+static void menuItemSetChecked(void **_state)
+{
+	uiMenu *m;
+	uiMenuItem *i;
+
+	m = uiNewMenu("Menu");
+	i = uiMenuAppendCheckItem(m, "Item");
+	uiMenuItemSetChecked(i, 1);
+	assert_int_equal(uiMenuItemChecked(i), 1);
+	uiMenuItemSetChecked(i, 0);
+	assert_int_equal(uiMenuItemChecked(i), 0);
+}
+
+static void onClickedNoCall(uiMenuItem *i, uiWindow *w, void *data)
+{
+	function_called();
+}
+
+static void menuItemOnClicked(void **_state)
+{
+	uiMenu *m;
+	uiMenuItem *i;
+
+	m = uiNewMenu("Menu");
+	i = uiMenuAppendItem(m, "Item");
+	// FIXME: https://gitlab.com/cmocka/cmocka/-/issues/18
+	//expect_function_calls(onClickedNoCall, 0);
+	uiMenuItemOnClicked(i, onClickedNoCall, NULL);
+}
+
 int menuTestSetup(void **_state)
 {
 	uiInitOptions o = {0};
@@ -136,6 +209,12 @@ int menuRunUnitTests(void)
 		menuUnitTest(menuAppendPreferencesItem),
 		menuUnitTest(menuAppendQuitItem),
 		menuUnitTest(menuAppendSeparator),
+		menuUnitTest(menuAppendFull),
+		menuUnitTest(menuItemEnable),
+		menuUnitTest(menuItemDisable),
+		menuUnitTest(menuItemCheckedDefaultFalse),
+		menuUnitTest(menuItemSetChecked),
+		menuUnitTest(menuItemOnClicked),
 	};
 
 	return cmocka_run_group_tests_name("uiMenu", tests, unitTestsSetup, unitTestsTeardown);
