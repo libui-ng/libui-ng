@@ -34,18 +34,25 @@ extern void uiprivMapWalk(uiprivMap *m, void (*f)(void *key, void *value));
 extern void uiprivMapReset(uiprivMap *m);
 
 // menu.m
+@interface uiprivMenuItem : NSMenuItem {
+@public
+	uiMenuItem *item;
+}
+@end
 @interface uiprivMenuManager : NSObject {
-	uiprivMap *items;
 	BOOL hasQuit;
 	BOOL hasPreferences;
 	BOOL hasAbout;
+	BOOL finalized;
 }
-@property (strong) NSMenuItem *quitItem;
-@property (strong) NSMenuItem *preferencesItem;
-@property (strong) NSMenuItem *aboutItem;
+@property (strong) uiprivMenuItem *quitItem;
+@property (strong) uiprivMenuItem *preferencesItem;
+@property (strong) uiprivMenuItem *aboutItem;
 // NSMenuValidation is only informal
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 - (NSMenu *)makeMenubar;
+- (BOOL)finalized;
+- (void)finalize;
 @end
 extern void uiprivFinalizeMenus(void);
 extern void uiprivUninitMenus(void);
