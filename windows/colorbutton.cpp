@@ -58,9 +58,11 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 	D2D1_RECT_F r;
 	D2D1_COLOR_F color;
 	D2D1_BRUSH_PROPERTIES bprop;
+	D2D1_MATRIX_3X2_F dm;
 	ID2D1SolidColorBrush *brush;
 	uiWindowsSizing sizing;
 	int x, y;
+	float dpi_x, dpi_y;
 	HRESULT hr;
 
 	if (nmhdr->code != NM_CUSTOMDRAW)
@@ -72,6 +74,17 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
 	uiWindowsEnsureGetClientRect(b->hwnd, &client);
 	rt = makeHDCRenderTarget(nm->hdc, &client);
 	rt->BeginDraw();
+
+	rt->GetDpi(&dpi_x, &dpi_y);
+	ZeroMemory(&dm, sizeof (D2D1_MATRIX_3X2_F));
+
+	// scale by the ratio of Windows' assumed DPI (96) to the actual DPI
+
+	// m11 is horizontal scaling
+	dm.m11 = 96.f / dpi_x;
+	// m22 is vertical scaling
+	dm.m22 = 96.f / dpi_y;
+	rt->SetTransform(&dm);
 
 	uiWindowsGetSizing(b->hwnd, &sizing);
 	x = 3;		// should be enough
