@@ -45,9 +45,21 @@ static void uiMultilineEntryMinimumSize(uiWindowsControl *c, int *width, int *he
 	uiMultilineEntry *e = uiMultilineEntry(c);
 	uiWindowsSizing sizing;
 	int x, y;
+	int dpi;
 
+// GetDpiForWindow is available on Windows 10 1607 and beyond, which corresponds to this NTDDI_VERSION
+#if (NTDDI_VERSION >= 0x0A000002)
+	// the DPI of the monitor where this window is located
+	dpi = GetDpiForWindow(c->hwnd);
+	assert(dpi > 0);
+
+	// scale by the ratio of the window DPI to Windows' assumed DPI (96)
+	x = MulDiv(entryWidth, dpi, 96);
+	y = MulDiv(entryHeight, dpi, 96);
+#else
 	x = entryWidth;
 	y = entryHeight;
+#endif
 	uiWindowsGetSizing(e->hwnd, &sizing);
 	uiWindowsSizingDlgUnitsToPixels(&sizing, &x, &y);
 	*width = x;
