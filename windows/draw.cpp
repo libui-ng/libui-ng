@@ -26,18 +26,28 @@ ID2D1HwndRenderTarget *makeHWNDRenderTarget(HWND hwnd)
 {
 	D2D1_RENDER_TARGET_PROPERTIES props;
 	D2D1_HWND_RENDER_TARGET_PROPERTIES hprops;
+	HDC dc;
 	RECT r;
 	ID2D1HwndRenderTarget *rt;
 	HRESULT hr;
+
+	// we need a DC for the DPI
+	// we *could* just use the screen DPI but why when we have a window handle and its DC has a DPI
+	dc = GetDC(hwnd);
+	if (dc == NULL)
+		logLastError(L"error getting DC to find DPI");
 
 	ZeroMemory(&props, sizeof (D2D1_RENDER_TARGET_PROPERTIES));
 	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 	props.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 	props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
-	props.dpiX = 0;
-	props.dpiY = 0;
+	props.dpiX = GetDeviceCaps(dc, LOGPIXELSX);
+	props.dpiY = GetDeviceCaps(dc, LOGPIXELSY);
 	props.usage = D2D1_RENDER_TARGET_USAGE_NONE;
 	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
+
+	if (ReleaseDC(hwnd, dc) == 0)
+		logLastError(L"error releasing DC for finding DPI");
 
 	uiWindowsEnsureGetClientRect(hwnd, &r);
 
@@ -67,9 +77,8 @@ ID2D1DCRenderTarget *makeHDCRenderTarget(HDC dc, RECT *r)
 	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 	props.pixelFormat.format = DXGI_FORMAT_B8G8R8A8_UNORM;
 	props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_PREMULTIPLIED;
-	// use default DPI
-	props.dpiX = 0;
-	props.dpiY = 0;
+	props.dpiX = GetDeviceCaps(dc, LOGPIXELSX);
+	props.dpiY = GetDeviceCaps(dc, LOGPIXELSY);
 	props.usage = D2D1_RENDER_TARGET_USAGE_GDI_COMPATIBLE;
 	props.minLevel = D2D1_FEATURE_LEVEL_DEFAULT;
 
