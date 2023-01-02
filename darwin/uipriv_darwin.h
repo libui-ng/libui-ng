@@ -23,6 +23,13 @@
 #define NSAppKitVersionNumber10_9 1265
 #endif
 
+// nstextfield.m
+@interface NSTextField (ui)
+- (void)uiSetStyleLabel;
+- (void)uiSetStyleEntry;
+- (void)uiSetStyleSearchEntry;
+@end
+
 // map.m
 typedef struct uiprivMap uiprivMap;
 extern uiprivMap *uiprivNewMap(void);
@@ -73,7 +80,6 @@ extern int uiprivMainStep(uiprivNextEventArgs *nea, BOOL (^interceptEvent)(NSEve
 extern void uiprivDisableAutocorrect(NSTextView *);
 
 // entry.m
-extern void uiprivFinishNewTextField(NSTextField *, BOOL);
 extern NSTextField *uiprivNewEditableTextField(void);
 
 // window.m

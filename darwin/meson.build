@@ -51,6 +51,7 @@ libui_sources += [
 	'darwin/util.m',
 	'darwin/window.m',
 	'darwin/winmoveresize.m',
+	'darwin/nstextfield.m',
 ]
 
 libui_deps += [
