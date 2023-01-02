@@ -76,6 +76,8 @@ if libui_OS == 'darwin'
 	libui_arch = ['-arch', 'x86_64', '-arch', 'arm64']
 	add_global_arguments(libui_arch, language: libui_darwin_langs)
 	add_global_link_arguments(libui_arch, language: libui_darwin_langs)
+
+	add_global_link_arguments(['-ObjC'], language: ['objc'])
 endif
 
 if libui_MSVC

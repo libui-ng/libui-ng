@@ -175,29 +175,12 @@ static void defaultOnChanged(uiEntry *e, void *data)
 	// do nothing
 }
 
-// these are based on interface builder defaults; my comments in the old code weren't very good so I don't really know what talked about what, sorry :/
-void uiprivFinishNewTextField(NSTextField *t, BOOL isEntry)
-{
-	uiDarwinSetControlFont(t, NSRegularControlSize);
-
-	// THE ORDER OF THESE CALLS IS IMPORTANT; CHANGE IT AND THE BORDERS WILL DISAPPEAR
-	[t setBordered:NO];
-	[t setBezelStyle:NSTextFieldSquareBezel];
-	[t setBezeled:isEntry];
-
-	// we don't need to worry about substitutions/autocorrect here; see window_darwin.m for details
-
-	[[t cell] setLineBreakMode:NSLineBreakByClipping];
-	[[t cell] setScrollable:YES];
-}
-
 static NSTextField *realNewEditableTextField(Class class)
 {
 	NSTextField *tf;
 
 	tf = [[class alloc] initWithFrame:NSZeroRect];
-	[tf setSelectable:YES];		// otherwise the setting is masked by the editable default of YES
-	uiprivFinishNewTextField(tf, YES);
+	[tf uiSetStyleEntry];
 	return tf;
 }
 
@@ -244,8 +227,6 @@ uiEntry *uiNewSearchEntry(void)
 	// TODO these are only on 10.10
 //	[s setSendsSearchStringImmediately:NO];
 //	[s setSendsWholeSearchString:NO];
-	[s setBordered:NO];
-	[s setBezelStyle:NSTextFieldRoundedBezel];
-	[s setBezeled:YES];
+	[s uiSetStyleSearchEntry];
 	return e;
 }
