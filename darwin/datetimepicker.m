@@ -42,8 +42,6 @@ struct uiDateTimePicker {
 
 - (void)datePickerCell:(NSDatePickerCell *)cell validateProposedDateValue:(NSDate **)proposedDateValue timeInterval:(NSTimeInterval *)proposedTimeInterval
 {
-	uiDateTimePicker *d = self->picker;
-
 	[NSTimer scheduledTimerWithTimeInterval:0
 		target:self
 		selector:@selector(doTimer:)
@@ -53,7 +51,6 @@ struct uiDateTimePicker {
 
 - (void)doTimer:(NSTimer *)timer
 {
-	NSValue *v;
 	uiDateTimePicker *d = self->picker;
 
 	if (d->blockSendOnce) {
