@@ -25,6 +25,13 @@ struct controlTestCase checkboxTestCases[] = {
 	{NULL, NULL, NULL}
 };
 
+struct controlTestCase entryTestCases[] = {
+	QA_TEST("1. Entry OnChanged Callback", entryOnChanged),
+	QA_TEST("2. Password Entry OnChanged Callback", passwordEntryOnChanged),
+	QA_TEST("3. Search Entry OnChanged Callback", searchEntryOnChanged),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestCase labelTestCases[] = {
 	QA_TEST("1. Multi Line", labelMultiLine),
 	{NULL, NULL, NULL}
@@ -33,6 +40,7 @@ struct controlTestCase labelTestCases[] = {
 struct controlTestGroup controlTestGroups[] = {
 	{"uiButton", buttonTestCases},
 	{"uiCheckbox", checkboxTestCases},
+	{"uiEntry", entryTestCases},
 	{"uiLabel", labelTestCases},
 };
 
