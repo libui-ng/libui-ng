@@ -11,6 +11,10 @@ uiMenuItem *undoItem;
 uiMenuItem *checkItem;
 uiMenuItem *accelItem;
 uiMenuItem *prefsItem;
+uiMenu *submenuTest;
+uiMenu *submenuMenu;
+uiMenuItem *submenuEnabledItem;
+uiMenuItem *submenuItem;
 uiMenu *testMenu;
 uiMenuItem *enabledItem;
 uiMenuItem *enableThisItem;
@@ -72,6 +76,16 @@ void initMenus(void)
 	checkItem = uiMenuAppendCheckItem(editMenu, "Check Me\tTest");
 	accelItem = uiMenuAppendItem(editMenu, "A&ccele&&rator T_es__t");
 	prefsItem = uiMenuAppendPreferencesItem(editMenu);
+
+	submenuTest = uiNewMenu("Submenu Test");
+	submenuEnabledItem = uiMenuAppendCheckItem(submenuTest, "Submenu Item Enabled");
+	uiMenuItemSetChecked(submenuEnabledItem, 1);
+	submenuMenu = uiNewMenu("Item with submenu");
+	uiMenuAppendItem(submenuMenu, "Nested Item 1");
+	uiMenuAppendItem(submenuMenu, "Nested Item 2");
+	uiMenuAppendItem(submenuMenu, "Nested Item 3");
+	submenuItem = uiMenuAppendSubmenu(submenuTest, submenuMenu);
+	uiMenuItemOnClicked(submenuEnabledItem, enableItemTest, submenuItem);
 
 	testMenu = uiNewMenu("Test");
 	enabledItem = uiMenuAppendCheckItem(testMenu, "Enable Below Item");

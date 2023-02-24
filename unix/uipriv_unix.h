@@ -21,7 +21,7 @@
 
 // menu.c
 extern GtkWidget *uiprivMakeMenubar(uiWindow *);
-extern void uiprivFreeMenubar(GtkWidget *);
+extern void uiprivFreeMenubar(uiWindow *);
 extern void uiprivUninitMenus(void);
 
 // alloc.c
