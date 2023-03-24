@@ -96,7 +96,7 @@ Language | Bindings
 --- | ---
 C++ | [libui-cpp](https://github.com/billyquith/libui-cpp), [cpp-libui-qtlike](https://github.com/aoloe/cpp-libui-qtlike)
 C# / .NET Framework | [LibUI.Binding](https://github.com/NattyNarwhal/LibUI.Binding)
-C# / .NET Core | [DevZH.UI](https://github.com/noliar/DevZH.UI), [SharpUI](https://github.com/benpye/sharpui/), [SimplexiDev.UI](https://github.com/simplexidev/sdfx)
+C# / .NET Core | [DevZH.UI](https://github.com/noliar/DevZH.UI), [SharpUI](https://github.com/benpye/sharpui/)
 CHICKEN Scheme | [wasamasa/libui](https://github.com/wasamasa/libui)
 Common Lisp | [jinwoo/cl-ui](https://github.com/jinwoo/cl-ui)
 Crystal | [libui.cr](https://github.com/Fusion/libui.cr), [hedron](https://github.com/Qwerp-Derp/hedron), [iu](https://github.com/grkek/iu)
