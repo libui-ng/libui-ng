@@ -42,9 +42,10 @@
 	BOOL hasAbout;
 	BOOL finalized;
 }
-@property (strong) uiprivMenuItem *quitItem;
-@property (strong) uiprivMenuItem *preferencesItem;
-@property (strong) uiprivMenuItem *aboutItem;
+// TODO: replace with weak references in ARC
+@property (unsafe_unretained) uiprivMenuItem *quitItem;
+@property (unsafe_unretained) uiprivMenuItem *preferencesItem;
+@property (unsafe_unretained) uiprivMenuItem *aboutItem;
 // NSMenuValidation is only informal
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 - (NSMenu *)makeMenubar;
