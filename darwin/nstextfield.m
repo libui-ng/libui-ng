@@ -1,34 +1,31 @@
 #import "uipriv_darwin.h"
 
-@implementation NSTextField (ui)
-
 // Settings are based on the interface builder defaults.
-- (void)uiSetStyleLabel
+void uiprivNSTextFieldSetStyleLabel(NSTextField *t)
 {
-	uiDarwinSetControlFont(self, NSRegularControlSize);
+	uiDarwinSetControlFont(t, NSRegularControlSize);
 
-	[self setBordered:NO];
-	[self setBezeled:NO];
+	[t setBordered:NO];
+	[t setBezeled:NO];
 
 	// auto correct is handled in window_darwin.m
-	[[self cell] setLineBreakMode:NSLineBreakByClipping];
-	[[self cell] setScrollable:YES];
+	[[t cell] setLineBreakMode:NSLineBreakByClipping];
+	[[t cell] setScrollable:YES];
 }
 
-- (void)uiSetStyleEntry
+void uiprivNSTextFieldSetStyleEntry(NSTextField *t)
 {
-	[self uiSetStyleLabel];
+	uiprivNSTextFieldSetStyleLabel(t);
 
-	[self setSelectable:YES];
-	[self setBezeled:YES];
-	[self setBezelStyle:NSTextFieldSquareBezel];
+	[t setSelectable:YES];
+	[t setBezeled:YES];
+	[t setBezelStyle:NSTextFieldSquareBezel];
 }
 
-- (void)uiSetStyleSearchEntry
+void uiprivNSTextFieldSetStyleSearchEntry(NSTextField *t)
 {
-	[self uiSetStyleEntry];
+	uiprivNSTextFieldSetStyleEntry(t);
 
-	[self setBezelStyle:NSTextFieldRoundedBezel];
+	[t setBezelStyle:NSTextFieldRoundedBezel];
 }
 
-@end

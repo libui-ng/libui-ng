@@ -160,7 +160,7 @@ static NSTextField *realNewEditableTextField(Class class)
 	NSTextField *tf;
 
 	tf = [[class alloc] initWithFrame:NSZeroRect];
-	[tf uiSetStyleEntry];
+	uiprivNSTextFieldSetStyleEntry(tf);
 	return tf;
 }
 
@@ -211,6 +211,6 @@ uiEntry *uiNewSearchEntry(void)
 	// TODO these are only on 10.10
 //	[s setSendsSearchStringImmediately:NO];
 //	[s setSendsWholeSearchString:NO];
-	[s uiSetStyleSearchEntry];
+	uiprivNSTextFieldSetStyleSearchEntry(s);
 	return e;
 }

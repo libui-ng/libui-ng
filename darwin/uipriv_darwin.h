@@ -24,11 +24,9 @@
 #endif
 
 // nstextfield.m
-@interface NSTextField (ui)
-- (void)uiSetStyleLabel;
-- (void)uiSetStyleEntry;
-- (void)uiSetStyleSearchEntry;
-@end
+void uiprivNSTextFieldSetStyleLabel(NSTextField *t);
+void uiprivNSTextFieldSetStyleEntry(NSTextField *t);
+void uiprivNSTextFieldSetStyleSearchEntry(NSTextField *t);
 
 // menu.m
 @interface uiprivMenuItem : NSMenuItem {
