@@ -29,6 +29,12 @@ struct uiWindow {
 	void (*onFocusChanged)(uiWindow *, void *);
 	void *onFocusChangedData;
 	gboolean fullscreen;
+	void (*onPositionChanged)(uiWindow *, void *);
+	void *onPositionChangedData;
+	gboolean changingPosition;
+
+	gint cachedPosX;
+	gint cachedPosY;
 };
 
 static gboolean onClosing(GtkWidget *win, GdkEvent *e, gpointer data)
@@ -63,6 +69,27 @@ static gboolean onLoseFocus(GtkWidget *win, GdkEvent *e, gpointer data)
 	uiWindow *w = uiWindow(data);
 	w->focused = 0;
 	w->onFocusChanged(w, w->onFocusChangedData);
+	return FALSE;
+}
+
+static gboolean onConfigure(GtkWidget *win, GdkEvent *e, gpointer data)
+{
+	uiWindow *w = uiWindow(data);
+
+	int x, y;
+
+	// Ignore resize events
+	uiWindowPosition(w, &x, &y);
+	if (x != w->cachedPosX || y != w->cachedPosY) {
+		w->cachedPosX = x;
+		w->cachedPosY = y;
+		if (!w->changingPosition)
+			(*(w->onPositionChanged))(w, w->onPositionChangedData);
+	}
+
+	if (w->changingPosition)
+		w->changingPosition = FALSE;
+
 	return FALSE;
 }
 
@@ -157,7 +184,18 @@ void uiWindowPosition(uiWindow *w, int *x, int *y)
 
 void uiWindowSetPosition(uiWindow *w, int x, int y)
 {
+	w->changingPosition = TRUE;
 	gtk_window_move(w->window, x, y);
+	// gtk_window_move() is asynchronous. Wait for the configure-event
+	while (w->changingPosition)
+		if (!uiMainStep(1))
+			break;
+}
+
+void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+{
+	w->onPositionChanged = f;
+	w->onPositionChangedData = data;
 }
 
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
@@ -338,11 +376,12 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	g_signal_connect(w->childHolderWidget, "size-allocate", G_CALLBACK(onSizeAllocate), w);
 	g_signal_connect(w->widget, "focus-in-event", G_CALLBACK(onGetFocus), w);
 	g_signal_connect(w->widget, "focus-out-event", G_CALLBACK(onLoseFocus), w);
+	g_signal_connect(w->widget, "configure-event", G_CALLBACK(onConfigure), w);
 
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
-
 	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
+	uiWindowOnPositionChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
 	// normally it's SetParent() that does this, but we can't call SetParent() on a uiWindow
 	// TODO we really need to clean this up, especially since see uiWindowDestroy() above

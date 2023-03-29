@@ -25,6 +25,9 @@ struct uiWindow {
 	void *onContentSizeChangedData;
 	void (*onFocusChanged)(uiWindow *, void *);
 	void *onFocusChangedData;
+	void (*onPositionChanged)(uiWindow *, void *);
+	void *onPositionChangedData;
+	BOOL changingPosition;
 };
 
 // from https://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
@@ -100,6 +103,9 @@ static LRESULT CALLBACK windowWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 		runMenuEvent(LOWORD(wParam), uiWindow(w));
 		return 0;
 	case WM_WINDOWPOSCHANGED:
+		if ((wp->flags & SWP_NOMOVE) == 0)
+			if (!w->changingPosition)
+				(*(w->onPositionChanged))(w, w->onPositionChangedData);
 		if ((wp->flags & SWP_NOSIZE) != 0)
 			break;
 		if (w->onContentSizeChanged != NULL)		// TODO figure out why this is happening too early
@@ -342,8 +348,16 @@ void uiWindowPosition(uiWindow *w, int *x, int *y)
 
 void uiWindowSetPosition(uiWindow *w, int x, int y)
 {
+	w->changingPosition = TRUE;
 	if (SetWindowPos(w->hwnd, NULL, x, y, 0, 0, SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOOWNERZORDER | SWP_NOZORDER) == 0)
 		logLastError(L"error setting window position");
+	w->changingPosition = FALSE;
+}
+
+void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+{
+	w->onPositionChanged = f;
+	w->onPositionChangedData = data;
 }
 
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
@@ -552,8 +566,8 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
-
 	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
+	uiWindowOnPositionChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
 	windows[w] = true;
 	return w;

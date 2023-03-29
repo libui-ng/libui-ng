@@ -324,6 +324,22 @@ _UI_EXTERN void uiWindowPosition(uiWindow *w, int *x, int *y);
 _UI_EXTERN void uiWindowSetPosition(uiWindow *w, int x, int y);
 
 /**
+ * Registers a callback for when the window moved.
+ *
+ * @param w uiWindow instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @note The callback is not triggered when calling uiWindowSetPosition().
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowOnPositionChanged(uiWindow *w,
+	void (*f)(uiWindow *sender, void *senderData), void *data);
+
+/**
  * Gets the window content size.
  *
  * @param w uiWindow instance.
