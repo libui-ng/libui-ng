@@ -27,7 +27,7 @@ NSTextField *uiprivNewLabel(NSString *str)
 	[tf setEditable:NO];
 	[tf setSelectable:NO];
 	[tf setDrawsBackground:NO];
-	uiprivFinishNewTextField(tf, NO);
+	[tf uiSetStyleLabel];
 	return tf;
 }
 

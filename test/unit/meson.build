@@ -11,6 +11,8 @@ libui_unit_sources = [
         'combobox.c',
         'checkbox.c',
         'radiobuttons.c',
+        'entry.c',
+        'menu.c',
 ]
 
 if libui_OS == 'windows'

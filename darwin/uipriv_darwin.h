@@ -23,29 +23,33 @@
 #define NSAppKitVersionNumber10_9 1265
 #endif
 
-// map.m
-typedef struct uiprivMap uiprivMap;
-extern uiprivMap *uiprivNewMap(void);
-extern void uiprivMapDestroy(uiprivMap *m);
-extern void *uiprivMapGet(uiprivMap *m, void *key);
-extern void uiprivMapSet(uiprivMap *m, void *key, void *value);
-extern void uiprivMapDelete(uiprivMap *m, void *key);
-extern void uiprivMapWalk(uiprivMap *m, void (*f)(void *key, void *value));
-extern void uiprivMapReset(uiprivMap *m);
+// nstextfield.m
+@interface NSTextField (ui)
+- (void)uiSetStyleLabel;
+- (void)uiSetStyleEntry;
+- (void)uiSetStyleSearchEntry;
+@end
 
 // menu.m
+@interface uiprivMenuItem : NSMenuItem {
+@public
+	uiMenuItem *item;
+}
+@end
 @interface uiprivMenuManager : NSObject {
-	uiprivMap *items;
 	BOOL hasQuit;
 	BOOL hasPreferences;
 	BOOL hasAbout;
+	BOOL finalized;
 }
-@property (strong) NSMenuItem *quitItem;
-@property (strong) NSMenuItem *preferencesItem;
-@property (strong) NSMenuItem *aboutItem;
+@property (strong) uiprivMenuItem *quitItem;
+@property (strong) uiprivMenuItem *preferencesItem;
+@property (strong) uiprivMenuItem *aboutItem;
 // NSMenuValidation is only informal
 - (BOOL)validateMenuItem:(NSMenuItem *)item;
 - (NSMenu *)makeMenubar;
+- (BOOL)finalized;
+- (void)finalize;
 @end
 extern void uiprivFinalizeMenus(void);
 extern void uiprivUninitMenus(void);
@@ -73,11 +77,19 @@ extern int uiprivMainStep(uiprivNextEventArgs *nea, BOOL (^interceptEvent)(NSEve
 extern void uiprivDisableAutocorrect(NSTextView *);
 
 // entry.m
-extern void uiprivFinishNewTextField(NSTextField *, BOOL);
 extern NSTextField *uiprivNewEditableTextField(void);
 
 // window.m
-@interface uiprivNSWindow : NSWindow
+@interface uiprivNSWindow : NSWindow<NSWindowDelegate> {
+	uiWindow *window;
+}
+- (BOOL)windowShouldClose:(id)sender;
+- (void)windowDidResize:(NSNotification *)note;
+- (void)windowDidEnterFullScreen:(NSNotification *)note;
+- (void)windowDidExitFullScreen:(NSNotification *)note;
+- (void)windowDidBecomeKey:(NSNotification *)note;
+- (void)windowDidResignKey:(NSNotification *)note;
+- (uiWindow *)window;
 - (void)uiprivDoMove:(NSEvent *)initialEvent;
 - (void)uiprivDoResize:(NSEvent *)initialEvent on:(uiWindowResizeEdge)edge;
 @end

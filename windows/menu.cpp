@@ -366,4 +366,14 @@ void uninitMenus(void)
 	}
 	if (menus != NULL)
 		uiprivFree(menus);
+
+	/* Reset global state. */
+	menus = NULL;
+	len = 0;
+	cap = 0;
+	menusFinalized = FALSE;
+	curID = 100;
+	hasQuit = FALSE;
+	hasPreferences = FALSE;
+	hasAbout = FALSE;
 }

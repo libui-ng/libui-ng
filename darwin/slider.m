@@ -5,22 +5,6 @@
 // This will also be used for the initial frame size, to ensure the slider is always horizontal (see below).
 #define sliderWidth 92
 
-@interface libui_intrinsicWidthNSSlider : NSSlider
-@end
-
-@implementation libui_intrinsicWidthNSSlider
-
-- (NSSize)intrinsicContentSize
-{
-	NSSize s;
-
-	s = [super intrinsicContentSize];
-	s.width = sliderWidth;
-	return s;
-}
-
-@end
-
 struct uiSlider {
 	uiDarwinControl c;
 	NSSlider *slider;
@@ -33,34 +17,35 @@ struct uiSlider {
 
 static void _uiSliderUpdateToolTip(uiSlider *s);
 
-@interface sliderDelegateClass : NSObject {
-	uiprivMap *sliders;
+@interface uiprivSlider : NSSlider {
+	uiSlider *slider;
 }
+- (id)initWithFrame:(NSRect)frame uiSlider:(uiSlider *)s;
 - (IBAction)onChanged:(id)sender;
-- (void)registerSlider:(uiSlider *)b;
-- (void)unregisterSlider:(uiSlider *)b;
 @end
 
-@implementation sliderDelegateClass
+@implementation uiprivSlider
 
-- (id)init
+- (id)initWithFrame:(NSRect)frame uiSlider:(uiSlider *)s
 {
-	self = [super init];
-	if (self)
-		self->sliders = uiprivNewMap();
+	self = [super initWithFrame:frame];
+	if (self) {
+		self->slider = s;
+
+		[self setAllowsTickMarkValuesOnly:NO];
+		[self setNumberOfTickMarks:0];
+		[self setTickMarkPosition:NSTickMarkAbove];
+		[[self cell] setSliderType:NSLinearSlider];
+
+		[self setTarget:self];
+		[self setAction:@selector(onChanged:)];
+	}
 	return self;
-}
-
-- (void)dealloc
-{
-	uiprivMapDestroy(self->sliders);
-	[super dealloc];
 }
 
 - (IBAction)onChanged:(id)sender
 {
-	uiSlider *s;
-	s = (uiSlider *) uiprivMapGet(self->sliders, sender);
+	uiSlider *s = self->slider;
 
 	NSEvent *currentEvent = [[sender window] currentEvent];
 	if([currentEvent type] == NSLeftMouseUp) {
@@ -73,22 +58,16 @@ static void _uiSliderUpdateToolTip(uiSlider *s);
 		_uiSliderUpdateToolTip(s);
 }
 
-- (void)registerSlider:(uiSlider *)s
+- (NSSize)intrinsicContentSize
 {
-	uiprivMapSet(self->sliders, s->slider, s);
-	[s->slider setTarget:self];
-	[s->slider setAction:@selector(onChanged:)];
-}
+	NSSize s;
 
-- (void)unregisterSlider:(uiSlider *)s
-{
-	[s->slider setTarget:nil];
-	uiprivMapDelete(self->sliders, s->slider);
+	s = [super intrinsicContentSize];
+	s.width = sliderWidth;
+	return s;
 }
 
 @end
-
-static sliderDelegateClass *sliderDelegate = nil;
 
 uiDarwinControlAllDefaultsExceptDestroy(uiSlider, slider)
 
@@ -96,7 +75,6 @@ static void uiSliderDestroy(uiControl *c)
 {
 	uiSlider *s = uiSlider(c);
 
-	[sliderDelegate unregisterSlider:s];
 	[s->slider release];
 	uiFreeControl(uiControl(s));
 }
@@ -170,39 +148,21 @@ void uiSliderSetRange(uiSlider *s, int min, int max)
 uiSlider *uiNewSlider(int min, int max)
 {
 	uiSlider *s;
-	NSSliderCell *cell;
-	int temp;
-
-	if (min >= max) {
-		temp = min;
-		min = max;
-		max = temp;
-	}
 
 	uiDarwinNewControl(uiSlider, s);
 
 	// a horizontal slider is defined as one where the width > height, not by a flag
 	// to be safe, don't use NSZeroRect, but make it horizontal from the get-go
-	s->slider = [[libui_intrinsicWidthNSSlider alloc]
-		initWithFrame:NSMakeRect(0, 0, sliderWidth, 2)];
-	[s->slider setMinValue:min];
-	[s->slider setMaxValue:max];
-	[s->slider setAllowsTickMarkValuesOnly:NO];
-	[s->slider setNumberOfTickMarks:0];
-	[s->slider setTickMarkPosition:NSTickMarkAbove];
+	s->slider = [[uiprivSlider alloc]
+		initWithFrame:NSMakeRect(0, 0, sliderWidth, 2)
+		uiSlider:s];
 
-	cell = (NSSliderCell *) [s->slider cell];
-	[cell setSliderType:NSLinearSlider];
+	uiSliderSetRange(s, min, max);
+	uiSliderSetHasToolTip(s, 1);
 
-	if (sliderDelegate == nil) {
-		sliderDelegate = [[sliderDelegateClass new] autorelease];
-		[uiprivDelegates addObject:[NSValue valueWithPointer:&sliderDelegate]];
-	}
-	[sliderDelegate registerSlider:s];
 	uiSliderOnChanged(s, defaultOnChanged, NULL);
 	uiSliderOnReleased(s, defaultOnReleased, NULL);
 
-	uiSliderSetHasToolTip(s, 1);
 
 	return s;
 }

@@ -2,22 +2,11 @@
 
 #include "unit.h"
 
-#define UNIT_TEST_WIDTH 300
-#define UNIT_TEST_HEIGHT 200
-
-static int onClosing(uiWindow *w, void *data)
+int unitWindowOnClosingQuit(uiWindow *w, void *data)
 {
 	uiQuit();
 	return 1;
 }
-
-/*
-int close(void *data)
-{
-	uiQuit();
-	return 1;
-}
-*/
 
 int unitTestsSetup(void **state)
 {
@@ -38,8 +27,8 @@ int unitTestSetup(void **_state)
 	uiInitOptions o = {0};
 
 	assert_null(uiInit(&o));
-	state->w = uiNewWindow("Unit Test", UNIT_TEST_WIDTH, UNIT_TEST_HEIGHT, 0);
-	uiWindowOnClosing(state->w, onClosing, NULL);
+	state->w = uiNewWindow("Unit Test", UNIT_TEST_WINDOW_WIDTH, UNIT_TEST_WINDOW_HEIGHT, 0);
+	uiWindowOnClosing(state->w, unitWindowOnClosingQuit, NULL);
 	return 0;
 }
 
@@ -68,6 +57,7 @@ int main(void)
 	int failedComponents = 0;
 	struct unitTest unitTests[] = {
 		{ initRunUnitTests },
+		{ menuRunUnitTests },
 		{ sliderRunUnitTests },
 		{ spinboxRunUnitTests },
 		{ labelRunUnitTests },
@@ -75,6 +65,7 @@ int main(void)
 		{ comboboxRunUnitTests },
 		{ checkboxRunUnitTests },
 		{ radioButtonsRunUnitTests },
+		{ entryRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {

@@ -11,50 +11,48 @@ struct uiDateTimePicker {
 
 // TODO see if target-action works here or not; I forgot what cody271@ originally said
 // the primary advantage of the delegate is the ability to reject changes, but libui doesn't support that yet — we should consider that API option as well
-@interface uiprivDatePickerDelegateClass : NSObject<NSDatePickerCellDelegate> {
-	uiprivMap *pickers;
+@interface uiprivDatePicker : NSDatePicker<NSDatePickerCellDelegate> {
+	uiDateTimePicker *picker;
 }
+- (id)initWithElements:(NSDatePickerElementFlags)elements uiDateTimePicker:(uiDateTimePicker *)d;
 - (void)datePickerCell:(NSDatePickerCell *)aDatePickerCell validateProposedDateValue:(NSDate **)proposedDateValue timeInterval:(NSTimeInterval *)proposedTimeInterval;
 - (void)doTimer:(NSTimer *)timer;
-- (void)registerPicker:(uiDateTimePicker *)d;
-- (void)unregisterPicker:(uiDateTimePicker *)d;
 @end
 
-@implementation uiprivDatePickerDelegateClass
+@implementation uiprivDatePicker
 
-- (id)init
+- (id)initWithElements:(NSDatePickerElementFlags)elements uiDateTimePicker:(uiDateTimePicker *)d
 {
-	self = [super init];
-	if (self)
-		self->pickers = uiprivNewMap();
+	self = [super initWithFrame:NSZeroRect];
+	if (self) {
+		self->picker = d;
+
+		[self setDateValue:[NSDate date]];
+		[self setBordered:NO];
+		[self setBezeled:YES];
+		[self setDrawsBackground:YES];
+		[self setDatePickerStyle:NSTextFieldAndStepperDatePickerStyle];
+		[self setDatePickerElements:elements];
+		[self setDatePickerMode:NSSingleDateMode];
+
+		[self setDelegate:self];
+	}
 	return self;
-}
-
-- (void)dealloc
-{
-	uiprivMapDestroy(self->pickers);
-	[super dealloc];
 }
 
 - (void)datePickerCell:(NSDatePickerCell *)cell validateProposedDateValue:(NSDate **)proposedDateValue timeInterval:(NSTimeInterval *)proposedTimeInterval
 {
-	uiDateTimePicker *d;
-
-	d = (uiDateTimePicker *) uiprivMapGet(self->pickers, cell);
 	[NSTimer scheduledTimerWithTimeInterval:0
 		target:self
 		selector:@selector(doTimer:)
-		userInfo:[NSValue valueWithPointer:d]
+		userInfo:nil
 		repeats:NO];
 }
 
 - (void)doTimer:(NSTimer *)timer
 {
-	NSValue *v;
-	uiDateTimePicker *d;
+	uiDateTimePicker *d = self->picker;
 
-	v = (NSValue *) [timer userInfo];
-	d = (uiDateTimePicker *) [v pointerValue];
 	if (d->blockSendOnce) {
 		d->blockSendOnce = NO;
 		return;
@@ -62,21 +60,7 @@ struct uiDateTimePicker {
 	(*(d->onChanged))(d, d->onChangedData);
 }
 
-- (void)registerPicker:(uiDateTimePicker *)d
-{
-	uiprivMapSet(self->pickers, d->dp.cell, d);
-	[d->dp setDelegate:self];
-}
-
-- (void)unregisterPicker:(uiDateTimePicker *)d
-{
-	[d->dp setDelegate:nil];
-	uiprivMapDelete(self->pickers, d->dp.cell);
-}
-
 @end
-
-static uiprivDatePickerDelegateClass *datePickerDelegate = nil;
 
 uiDarwinControlAllDefaultsExceptDestroy(uiDateTimePicker, dp)
 
@@ -84,7 +68,6 @@ static void uiDateTimePickerDestroy(uiControl *c)
 {
 	uiDateTimePicker *d = uiDateTimePicker(c);
 
-	[datePickerDelegate unregisterPicker:d];
 	[d->dp release];
 	uiFreeControl(uiControl(d));
 }
@@ -136,21 +119,9 @@ static uiDateTimePicker *finishNewDateTimePicker(NSDatePickerElementFlags elemen
 
 	uiDarwinNewControl(uiDateTimePicker, d);
 
-	d->dp = [[NSDatePicker alloc] initWithFrame:NSZeroRect];
-	[d->dp setDateValue:[NSDate date]];
-	[d->dp setBordered:NO];
-	[d->dp setBezeled:YES];
-	[d->dp setDrawsBackground:YES];
-	[d->dp setDatePickerStyle:NSTextFieldAndStepperDatePickerStyle];
-	[d->dp setDatePickerElements:elements];
-	[d->dp setDatePickerMode:NSSingleDateMode];
+	d->dp = [[uiprivDatePicker alloc] initWithElements:elements uiDateTimePicker:d];
 	uiDarwinSetControlFont(d->dp, NSRegularControlSize);
 
-	if (datePickerDelegate == nil) {
-		datePickerDelegate = [[uiprivDatePickerDelegateClass new] autorelease];
-		[uiprivDelegates addObject:[NSValue valueWithPointer:&datePickerDelegate]];
-	}
-	[datePickerDelegate registerPicker:d];
 	uiDateTimePickerOnChanged(d, defaultOnChanged, NULL);
 
 	return d;

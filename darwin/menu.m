@@ -1,39 +1,83 @@
 // 28 april 2015
 #import "uipriv_darwin.h"
 
-static NSMutableArray *menus = nil;
-static BOOL menusFinalized = NO;
-
 struct uiMenu {
 	NSMenu *menu;
 	NSMenuItem *item;
-	NSMutableArray *items;
 };
 
 struct uiMenuItem {
-	NSMenuItem *item;
+	uiprivMenuItem *item;
 	int type;
 	BOOL disabled;
 	void (*onClicked)(uiMenuItem *, uiWindow *, void *);
 	void *onClickedData;
 };
 
-enum {
+enum uiprivMenuItemType {
 	typeRegular,
 	typeCheckbox,
 	typeQuit,
 	typePreferences,
 	typeAbout,
-	typeSeparator,
 };
 
-static void mapItemReleaser(void *key, void *value)
-{
-	uiMenuItem *item;
- 
-	item = (uiMenuItem *) value;
-	[item->item release];
+@interface uiprivMenu : NSMenu {
+@public
+	uiMenu *menu;
 }
+@end
+
+@implementation uiprivMenu
+- (id)initWithTitle:(NSString *)title uiMenu:(uiMenu *)m
+{
+	self = [super initWithTitle:title];
+	if (self) {
+		self->menu = m;
+	}
+	return self;
+}
+@end
+
+@implementation uiprivMenuItem
+- (id)initWithTitle:(NSString *)title uiMenuItem:(uiMenuItem *)i
+{
+	self = [super initWithTitle:title action:@selector(onClicked:) keyEquivalent:@""];
+	if (self) {
+		self->item = i;
+
+		[self setTarget:self];
+	}
+	return self;
+}
+
+- (IBAction)onClicked:(id)sender
+{
+	switch (self->item->type) {
+	case typeQuit:
+		if (uiprivShouldQuit())
+			uiQuit();
+		return;
+	case typeCheckbox:
+		uiMenuItemSetChecked(self->item, !uiMenuItemChecked(self->item));
+		// fall through
+	default:
+		// System menu items that may have no user callback (Preferences/About)
+		if (self->item == NULL)
+			break;
+		// use the key window as the source of the menu event; it's the active window
+		(*(self->item->onClicked))(self->item, uiprivWindowFromNSWindow([uiprivNSApp() keyWindow]),
+			self->item->onClickedData);
+		break;
+	}
+}
+
+- (void)setUiMenuItem:(uiMenuItem *)i
+{
+	self->item = i;
+}
+
+@end
 
 @implementation uiprivMenuManager
 
@@ -41,43 +85,33 @@ static void mapItemReleaser(void *key, void *value)
 {
 	self = [super init];
 	if (self) {
-		self->items = uiprivNewMap();
 		self->hasQuit = NO;
 		self->hasPreferences = NO;
 		self->hasAbout = NO;
+		self->finalized = NO;
 	}
 	return self;
 }
 
+- (BOOL)finalized
+{
+	return self->finalized;
+}
+
+- (void)finalize
+{
+	self->finalized = YES;
+}
+
 - (void)dealloc
 {
-	uiprivMapWalk(self->items, mapItemReleaser);
-	uiprivMapReset(self->items);
-	uiprivMapDestroy(self->items);
 	uiprivUninitMenus();
 	[super dealloc];
 }
 
-- (IBAction)onClicked:(id)sender
+- (void)register:(enum uiprivMenuItemType)type
 {
-	uiMenuItem *item;
-
-	item = (uiMenuItem *) uiprivMapGet(self->items, sender);
-	if (item->type == typeCheckbox)
-		uiMenuItemSetChecked(item, !uiMenuItemChecked(item));
-	// use the key window as the source of the menu event; it's the active window
-	(*(item->onClicked))(item, uiprivWindowFromNSWindow([uiprivNSApp() keyWindow]), item->onClickedData);
-}
-
-- (IBAction)onQuitClicked:(id)sender
-{
-	if (uiprivShouldQuit())
-		uiQuit();
-}
-
-- (void)register:(NSMenuItem *)item to:(uiMenuItem *)smi
-{
-	switch (smi->type) {
+	switch (type) {
 	case typeQuit:
 		if (self->hasQuit)
 			uiprivUserBug("You can't have multiple Quit menu items in one program.");
@@ -94,7 +128,6 @@ static void mapItemReleaser(void *key, void *value)
 		self->hasAbout = YES;
 		break;
 	}
-	uiprivMapSet(self->items, item, smi);
 }
 
 // on OS X there are two ways to handle menu items being enabled or disabled: automatically and manually
@@ -102,8 +135,6 @@ static void mapItemReleaser(void *key, void *value)
 // therefore, we have to handle enabling of the other options ourselves
 - (BOOL)validateMenuItem:(NSMenuItem *)item
 {
-	uiMenuItem *smi;
-
 	// disable the special items if they aren't present
 	if (item == self.quitItem && !self->hasQuit)
 		return NO;
@@ -112,8 +143,11 @@ static void mapItemReleaser(void *key, void *value)
 	if (item == self.aboutItem && !self->hasAbout)
 		return NO;
 	// then poll the item's enabled/disabled state
-	smi = (uiMenuItem *) uiprivMapGet(self->items, item);
-	return !smi->disabled;
+	if ([item isKindOfClass:[uiprivMenuItem class]]) {
+		uiprivMenuItem *mi = (uiprivMenuItem *)item;
+		return !mi->item->disabled;
+	}
+	return NO;
 }
 
 // Cocoa constructs the default application menu by hand for each program; that's what MainMenu.[nx]ib does
@@ -123,6 +157,7 @@ static void mapItemReleaser(void *key, void *value)
 	NSMenuItem *appMenuItem;
 	NSMenu *appMenu;
 	NSMenuItem *item;
+	uiprivMenuItem *pitem;
 	NSString *title;
 	NSMenu *servicesMenu;
 
@@ -135,18 +170,16 @@ static void mapItemReleaser(void *key, void *value)
 
 	// first is About
 	title = [@"About " stringByAppendingString:appName];
-	item = [[[NSMenuItem alloc] initWithTitle:title action:@selector(onClicked:) keyEquivalent:@""] autorelease];
-	[item setTarget:self];
-	[appMenu addItem:item];
-	self.aboutItem = item;
+	pitem = [[[uiprivMenuItem alloc] initWithTitle:title uiMenuItem:NULL] autorelease];
+	[appMenu addItem:pitem];
+	self.aboutItem = pitem;
 
 	[appMenu addItem:[NSMenuItem separatorItem]];
 
 	// next is Preferences
-	item = [[[NSMenuItem alloc] initWithTitle:@"Preferences…" action:@selector(onClicked:) keyEquivalent:@","] autorelease];
-	[item setTarget:self];
-	[appMenu addItem:item];
-	self.preferencesItem = item;
+	pitem = [[[uiprivMenuItem alloc] initWithTitle:@"Preferences\u2026" uiMenuItem:NULL] autorelease];
+	[appMenu addItem:pitem];
+	self.preferencesItem = pitem;
 
 	[appMenu addItem:[NSMenuItem separatorItem]];
 
@@ -176,10 +209,9 @@ static void mapItemReleaser(void *key, void *value)
 	// and finally Quit
 	// DON'T use @selector(terminate:) as the action; we handle termination ourselves
 	title = [@"Quit " stringByAppendingString:appName];
-	item = [[[NSMenuItem alloc] initWithTitle:title action:@selector(onQuitClicked:) keyEquivalent:@"q"] autorelease];
-	[item setTarget:self];
-	[appMenu addItem:item];
-	self.quitItem = item;
+	pitem = [[[uiprivMenuItem alloc] initWithTitle:title uiMenuItem:NULL] autorelease];
+	[appMenu addItem:pitem];
+	self.quitItem = pitem;
 }
 
 - (NSMenu *)makeMenubar
@@ -238,7 +270,7 @@ static uiMenuItem *newItem(uiMenu *m, int type, const char *name)
 
 	uiMenuItem *item;
 
-	if (menusFinalized)
+	if ([uiprivAppDelegate().menuManager finalized])
 		uiprivUserBug("You can't create a new menu item after menus have been finalized.");
 
 	item = uiprivNew(uiMenuItem);
@@ -246,29 +278,27 @@ static uiMenuItem *newItem(uiMenu *m, int type, const char *name)
 	item->type = type;
 	switch (item->type) {
 	case typeQuit:
-		item->item = [uiprivAppDelegate().menuManager.quitItem retain];
+		item->item = uiprivAppDelegate().menuManager.quitItem;
+		[item->item setUiMenuItem:item];
 		break;
 	case typePreferences:
-		item->item = [uiprivAppDelegate().menuManager.preferencesItem retain];
+		item->item = uiprivAppDelegate().menuManager.preferencesItem;
+		[item->item setUiMenuItem:item];
 		break;
 	case typeAbout:
-		item->item = [uiprivAppDelegate().menuManager.aboutItem retain];
-		break;
-	case typeSeparator:
-		item->item = [[NSMenuItem separatorItem] retain];
-		[m->menu addItem:item->item];
+		item->item = uiprivAppDelegate().menuManager.aboutItem;
+		[item->item setUiMenuItem:item];
 		break;
 	default:
-		item->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString(name) action:@selector(onClicked:) keyEquivalent:@""];
-		[item->item setTarget:uiprivAppDelegate().menuManager];
+		item->item = [[uiprivMenuItem alloc] initWithTitle:uiprivToNSString(name) uiMenuItem:item];
 		[m->menu addItem:item->item];
 		break;
 	}
 
-	[uiprivAppDelegate().menuManager register:item->item to:item];
-	item->onClicked = defaultOnClicked;
-
-	[m->items addObject:[NSValue valueWithPointer:item]];
+	[uiprivAppDelegate().menuManager register:item->type];
+	// typeQuit is handled via uiprivShouldQuit()
+	if (item->type != typeQuit)
+		uiMenuItemOnClicked(item, defaultOnClicked, NULL);
 
 	return item;
 
@@ -287,25 +317,22 @@ uiMenuItem *uiMenuAppendCheckItem(uiMenu *m, const char *name)
 
 uiMenuItem *uiMenuAppendQuitItem(uiMenu *m)
 {
-	// duplicate check is in the register:to: selector
 	return newItem(m, typeQuit, NULL);
 }
 
 uiMenuItem *uiMenuAppendPreferencesItem(uiMenu *m)
 {
-	// duplicate check is in the register:to: selector
 	return newItem(m, typePreferences, NULL);
 }
 
 uiMenuItem *uiMenuAppendAboutItem(uiMenu *m)
 {
-	// duplicate check is in the register:to: selector
 	return newItem(m, typeAbout, NULL);
 }
 
 void uiMenuAppendSeparator(uiMenu *m)
 {
-	newItem(m, typeSeparator, NULL);
+	[m->menu addItem:[NSMenuItem separatorItem]];
 }
 
 uiMenu *uiNewMenu(const char *name)
@@ -314,24 +341,18 @@ uiMenu *uiNewMenu(const char *name)
 
 	uiMenu *m;
 
-	if (menusFinalized)
+	if ([uiprivAppDelegate().menuManager finalized])
 		uiprivUserBug("You can't create a new menu after menus have been finalized.");
-	if (menus == nil)
-		menus = [NSMutableArray new];
 
 	m = uiprivNew(uiMenu);
 
-	m->menu = [[NSMenu alloc] initWithTitle:uiprivToNSString(name)];
+	m->menu = [[uiprivMenu alloc] initWithTitle:uiprivToNSString(name) uiMenu:m];
 	// use automatic menu item enabling for all menus for consistency's sake
 
 	m->item = [[NSMenuItem alloc] initWithTitle:uiprivToNSString(name) action:NULL keyEquivalent:@""];
 	[m->item setSubmenu:m->menu];
 
-	m->items = [NSMutableArray new];
-
 	[[uiprivNSApp() mainMenu] addItem:m->item];
-
-	[menus addObject:[NSValue valueWithPointer:m]];
 
 	return m;
 
@@ -340,29 +361,29 @@ uiMenu *uiNewMenu(const char *name)
 
 void uiprivFinalizeMenus(void)
 {
-	menusFinalized = YES;
+	[uiprivAppDelegate().menuManager finalize];
 }
 
 void uiprivUninitMenus(void)
 {
-	if (menus == NULL)
-		return;
-	[menus enumerateObjectsUsingBlock:^(id obj, NSUInteger index, BOOL *stop) {
-		NSValue *v;
-		uiMenu *m;
+	NSMenuItem *mi;
+	NSMenu *sm;
+	NSMenuItem *smi;
 
-		v = (NSValue *) obj;
-		m = (uiMenu *) [v pointerValue];
-		[m->items enumerateObjectsUsingBlock:^(id obj, NSUInteger index, BOOL *stop) {
-			NSValue *v;
-			uiMenuItem *mi;
-
-			v = (NSValue *) obj;
-			mi = (uiMenuItem *) [v pointerValue];
-			uiprivFree(mi);
-		}];
-		[m->items release];
-		uiprivFree(m);
-	}];
-	[menus release];
+	for (mi in [[uiprivNSApp() mainMenu] itemArray]) {
+		if ([mi hasSubmenu]) {
+			sm = [mi submenu];
+			for (smi in [sm itemArray]) {
+				if ([smi isKindOfClass:[uiprivMenuItem class]]) {
+					uiprivMenuItem *x = (uiprivMenuItem *)smi;
+					if (x->item != NULL)
+						uiprivFree(x->item);
+				}
+			}
+			if ([sm isKindOfClass:[uiprivMenu class]]) {
+				uiprivMenu *x = (uiprivMenu *)sm;
+				uiprivFree(x->menu);
+			}
+		}
+	}
 }
