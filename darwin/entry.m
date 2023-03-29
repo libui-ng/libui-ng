@@ -103,11 +103,16 @@ uiDarwinControlAllDefaultsExceptDestroy(uiEntry, textfield)
 static void uiEntryDestroy(uiControl *c)
 {
 	uiEntry *e = uiEntry(c);
+	uiprivEntryDelegate *delegate;
 
-	if (isSearchField(e->textfield))
+	if (isSearchField(e->textfield)) {
+		delegate = [e->textfield target];
 		[e->textfield setTarget:nil];
-	else
+	} else {
+		delegate = [e->textfield delegate];
 		[e->textfield setDelegate:nil];
+	}
+	[delegate release];
 
 	[e->textfield release];
 	uiFreeControl(uiControl(e));
@@ -173,7 +178,7 @@ static uiEntry *finishNewEntry(Class class)
 
 	e->textfield = realNewEditableTextField(class);
 
-	delegate = [[[uiprivEntryDelegate alloc] initWithEntry:e] autorelease];
+	delegate = [[uiprivEntryDelegate alloc] initWithEntry:e];
 	if (isSearchField(e->textfield)) {
 		[e->textfield setTarget:delegate];
 		[e->textfield setAction:@selector(onChanged:)];
