@@ -68,6 +68,16 @@ For the sake of completeness, I should note that the default value of `--layout`
 
 Backends other than `ninja` should work, but are untested by me.
 
+## Testing
+
+### Automated Unit Tests
+
+Run the included unit tests via `meson test -C build`. Alternatively you can also run the `unit` executable manually.
+
+### Manual Testing Suite
+
+Run the manual quality assurance test suite via `qa` and follow the instructions laid out within.
+
 ## Installation
 
 Meson also supports installing from source; if you use Ninja, just do
