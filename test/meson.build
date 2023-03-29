@@ -49,3 +49,4 @@ executable('tester', libui_test_sources,
 	install: false)
 
 subdir('unit')
+subdir('qa')
