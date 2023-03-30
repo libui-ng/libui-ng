@@ -109,7 +109,6 @@ extern void uiprivFreeTimer(uiprivTimer *t);
 extern void uiprivUninitTimers(void);
 
 // parent.cpp
-extern void paintContainerBackground(HWND hwnd, HDC dc, RECT *paintRect);
 extern BOOL handleParentMessages(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT *lResult);
 
 // d2dscratch.cpp

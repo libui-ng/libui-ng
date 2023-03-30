@@ -64,17 +64,6 @@ static INT_PTR CALLBACK dlgproc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		return FALSE;
 	}
 
-	// unthemed dialogs don't respond to WM_PRINTCLIENT
-	// fortunately they don't have any special painting
-	if (uMsg == WM_PRINTCLIENT) {
-		// don't worry about the return value; hopefully DefWindowProcW() caught it (if not the dialog procedure itself)
-		// we COULD paint the dialog background brush ourselves but meh, it works
-		SendMessageW(hwnd, WM_ERASEBKGND, wParam, lParam);
-		// and pretend we did nothing just so the themed dialog can still paint its content
-		// TODO see if w ecan avoid erasing the background in this case in the first place, or if we even need to
-		return FALSE;
-	}
-
 	return FALSE;
 }
 
