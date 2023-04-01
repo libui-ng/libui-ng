@@ -210,6 +210,7 @@ void onMoved(uiWindow *w, void *data)
 {
 	int x, y;
 
+	puts("PositionChanged");
 	uiWindowPosition(w, &x, &y);
 	uiSpinboxSetValue(posX, x);
 	uiSpinboxSetValue(posY, y);
@@ -228,7 +229,7 @@ static void updatesize(uiWindow *w)
 
 void onSize(uiWindow *w, void *data)
 {
-	printf("size\n");
+	puts("ContentSizeChanged");
 	updatesize(w);
 }
 
