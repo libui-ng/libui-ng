@@ -70,12 +70,12 @@ static LRESULT CALLBACK containerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		mmi->ptMinTrackSize.y = minht;
 		return lResult;
 
-	// GDI doesn't support transparency. The Win32 controls way to achieve a similar effect 
+	// GDI doesn't support transparency. The Win32 controls way to achieve a similar effect
 	// is to ask the parent control for the appropriate background brush (WM_CTLCOLORSTATIC)
 	// or ask to the parent to render the background for it (WM_PRINTCLIENT).
 	//
 	// Our container control is supposed to be fully transparent. And containers can contain
-	// other containers. So we have to dynamically find the next control that is not a 
+	// other containers. So we have to dynamically find the next control that is not a
 	// container itself and retrieve its background brush so we can paint ourselves with it.
 	//
 	// NOTE: Doing "transparency" this way, only works for solid color backgrounds. Supporting
@@ -85,7 +85,8 @@ static LRESULT CALLBACK containerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	// Paint ourself with the background brush.
 	case WM_PAINT:
 		dc = BeginPaint(hwnd, &ps);
-		if(!dc) break;
+		if(dc == NULL)
+			break;
 		hwndParent = parentWithBackground(hwnd);
 		bgBrush = (HBRUSH) SendMessage(hwndParent, WM_CTLCOLORSTATIC, (WPARAM) dc, (LPARAM) hwnd);
 		FillRect(dc, &ps.rcPaint, bgBrush);
