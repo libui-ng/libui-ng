@@ -35,6 +35,8 @@ struct uiWindow {
 
 	gint cachedPosX;
 	gint cachedPosY;
+	gint cachedWidth;
+	gint cachedHeight;
 };
 
 static gboolean onClosing(GtkWidget *win, GdkEvent *e, gpointer data)
@@ -50,10 +52,16 @@ static gboolean onClosing(GtkWidget *win, GdkEvent *e, gpointer data)
 
 static void onSizeAllocate(GtkWidget *widget, GdkRectangle *allocation, gpointer data)
 {
+	int width, height;
 	uiWindow *w = uiWindow(data);
 
-	// TODO deal with spurious size-allocates
-	(*(w->onContentSizeChanged))(w, w->onContentSizeChangedData);
+	// Ignore spurious size-allocate events
+	uiWindowContentSize(w, &width, &height);
+	if (width != w->cachedWidth || height != w->cachedHeight) {
+		w->cachedWidth = width;
+		w->cachedHeight = height;
+		(*(w->onContentSizeChanged))(w, w->onContentSizeChangedData);
+	}
 }
 
 static gboolean onGetFocus(GtkWidget *win, GdkEvent *e, gpointer data)
