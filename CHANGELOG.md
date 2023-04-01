@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Manual testing suite for quality assurance
 - uiTableSelection API
 - uiTableOnRowClicked() API
 - uiTableOnRowDoubleClicked() API
