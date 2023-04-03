@@ -1252,6 +1252,7 @@ typedef struct uiProgressBar uiProgressBar;
  * Returns the progress bar value.
  *
  * @param p uiProgressBar instance.
+ * @returns Progress bar value. `[Default 0]`
  * @memberof uiProgressBar
  */
 _UI_EXTERN int uiProgressBarValue(uiProgressBar *p);

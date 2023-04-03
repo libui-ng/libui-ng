@@ -66,6 +66,7 @@ int main(void)
 		{ checkboxRunUnitTests },
 		{ radioButtonsRunUnitTests },
 		{ entryRunUnitTests },
+		{ progressBarRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {
