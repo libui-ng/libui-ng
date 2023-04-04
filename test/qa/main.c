@@ -37,11 +37,22 @@ struct controlTestCase labelTestCases[] = {
 	{NULL, NULL, NULL}
 };
 
+struct controlTestCase windowTestCases[] = {
+	QA_TEST("1. Fullscreen", windowFullscreen),
+	QA_TEST("2. Borderless", windowBorderless),
+	QA_TEST("3. Resizable", windowResizeable),
+	QA_TEST("4. Fullscreen + Borderless", windowFullscreenBorderless),
+	QA_TEST("5. Fullscreen + Resizeable", windowFullscreenResizeable),
+	QA_TEST("6. Resizeable + Borderless", windowResizeableBorderless),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestGroup controlTestGroups[] = {
 	{"uiButton", buttonTestCases},
 	{"uiCheckbox", checkboxTestCases},
 	{"uiEntry", entryTestCases},
 	{"uiLabel", labelTestCases},
+	{"uiWindow", windowTestCases},
 };
 
 uiControl* qaGuide()
@@ -159,7 +170,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 
-	w = uiNewWindow("Quality Assurance", 960, 720, 1);
+	w = uiNewWindow("Quality Assurance", QA_WINDOW_WIDTH, QA_WINDOW_HEIGHT, 1);
 	uiWindowSetMargined(w, 1);
 	uiWindowOnClosing(w, onClosing, NULL);
 

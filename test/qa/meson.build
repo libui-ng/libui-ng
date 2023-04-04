@@ -5,6 +5,7 @@ libui_qa_sources = [
 	'checkbox.c',
 	'entry.c',
 	'label.c',
+	'window.c',
 ]
 
 if libui_OS == 'windows'
