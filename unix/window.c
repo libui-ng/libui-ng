@@ -32,9 +32,12 @@ struct uiWindow {
 	void (*onPositionChanged)(uiWindow *, void *);
 	void *onPositionChangedData;
 	gboolean changingPosition;
+	gboolean changingSize;
 
 	gint cachedPosX;
 	gint cachedPosY;
+	gint cachedWidth;
+	gint cachedHeight;
 };
 
 static gboolean onClosing(GtkWidget *win, GdkEvent *e, gpointer data)
@@ -50,10 +53,20 @@ static gboolean onClosing(GtkWidget *win, GdkEvent *e, gpointer data)
 
 static void onSizeAllocate(GtkWidget *widget, GdkRectangle *allocation, gpointer data)
 {
+	int width, height;
 	uiWindow *w = uiWindow(data);
 
-	// TODO deal with spurious size-allocates
-	(*(w->onContentSizeChanged))(w, w->onContentSizeChangedData);
+	// Ignore spurious size-allocate events
+	uiWindowContentSize(w, &width, &height);
+	if (width != w->cachedWidth || height != w->cachedHeight) {
+		w->cachedWidth = width;
+		w->cachedHeight = height;
+		if (!w->changingSize)
+			(*(w->onContentSizeChanged))(w, w->onContentSizeChangedData);
+	}
+
+	if (w->changingSize)
+		w->changingSize = FALSE;
 }
 
 static gboolean onGetFocus(GtkWidget *win, GdkEvent *e, gpointer data)
@@ -233,9 +246,13 @@ void uiWindowSetContentSize(uiWindow *w, int width, int height)
 	// now we just need to add the new size back in
 	winWidth += width;
 	winHeight += height;
-	// and set it
-	// this will not move the window in my tests, so we're good
+
+	w->changingSize = TRUE;
 	gtk_window_resize(w->window, winWidth, winHeight);
+	// gtk_window_resize may be asynchronous. Wait for the size-allocate event.
+	while (w->changingSize)
+		if (!uiMainStep(1))
+			break;
 }
 
 int uiWindowFullscreen(uiWindow *w)
