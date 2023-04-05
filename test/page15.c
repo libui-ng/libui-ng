@@ -163,6 +163,7 @@ uiWindowSetChild(w,uiControl(b));}
 }
 
 static uiSpinbox *width, *height;
+static uiSpinbox *posX, *posY;
 static uiCheckbox *fullscreen;
 
 static void sizeWidth(uiSpinbox *s, void *data)
@@ -185,6 +186,36 @@ static void sizeHeight(uiSpinbox *s, void *data)
 	uiWindowSetContentSize(w, xp, yp);
 }
 
+static void posXChanged(uiSpinbox *s, void *data)
+{
+	uiWindow *w = uiWindow(data);
+	int x, y;
+
+	uiWindowPosition(w, &x, &y);
+	x = uiSpinboxValue(posX);
+	uiWindowSetPosition(w, x, y);
+}
+
+static void posYChanged(uiSpinbox *s, void *data)
+{
+	uiWindow *w = uiWindow(data);
+	int x, y;
+
+	uiWindowPosition(w, &x, &y);
+	y = uiSpinboxValue(posY);
+	uiWindowSetPosition(w, x, y);
+}
+
+void onMoved(uiWindow *w, void *data)
+{
+	int x, y;
+
+	puts("PositionChanged");
+	uiWindowPosition(w, &x, &y);
+	uiSpinboxSetValue(posX, x);
+	uiSpinboxSetValue(posY, y);
+}
+
 static void updatesize(uiWindow *w)
 {
 	int xp, yp;
@@ -198,7 +229,7 @@ static void updatesize(uiWindow *w)
 
 void onSize(uiWindow *w, void *data)
 {
-	printf("size\n");
+	puts("ContentSizeChanged");
 	updatesize(w);
 }
 
@@ -230,15 +261,31 @@ uiBox *makePage15(uiWindow *w)
 	uiBoxAppend(page15, uiControl(hbox), 0);
 
 	uiBoxAppend(hbox, uiControl(uiNewLabel("Size")), 0);
-	width = uiNewSpinbox(INT_MIN, INT_MAX);
+	width = uiNewSpinbox(0, INT_MAX);
 	uiBoxAppend(hbox, uiControl(width), 1);
-	height = uiNewSpinbox(INT_MIN, INT_MAX);
+	height = uiNewSpinbox(0, INT_MAX);
 	uiBoxAppend(hbox, uiControl(height), 1);
-	fullscreen = uiNewCheckbox("Fullscreen");
-	uiBoxAppend(hbox, uiControl(fullscreen), 0);
 
 	uiSpinboxOnChanged(width, sizeWidth, w);
 	uiSpinboxOnChanged(height, sizeHeight, w);
+
+	hbox = newHorizontalBox();
+	uiBoxAppend(page15, uiControl(hbox), 0);
+
+	uiBoxAppend(hbox, uiControl(uiNewLabel("Position")), 0);
+	posX = uiNewSpinbox(INT_MIN, INT_MAX);
+	uiBoxAppend(hbox, uiControl(posX), 1);
+	posY = uiNewSpinbox(INT_MIN, INT_MAX);
+
+	uiSpinboxOnChanged(posX, posXChanged, w);
+	uiSpinboxOnChanged(posY, posYChanged, w);
+	uiWindowOnPositionChanged(w, onMoved, NULL);
+	onMoved(w, NULL);
+
+	uiBoxAppend(hbox, uiControl(posY), 1);
+	fullscreen = uiNewCheckbox("Fullscreen");
+	uiBoxAppend(page15, uiControl(fullscreen), 0);
+
 	uiCheckboxOnToggled(fullscreen, setFullscreen, w);
 	uiWindowOnContentSizeChanged(w, onSize, NULL);
 	updatesize(w);

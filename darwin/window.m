@@ -13,9 +13,12 @@ struct uiWindow {
 	uiprivSingleChildConstraints constraints;
 	void (*onContentSizeChanged)(uiWindow *, void *);
 	void *onContentSizeChangedData;
+	BOOL suppressSizeChanged;
 	void (*onFocusChanged)(uiWindow*, void *);
 	void *onFocusChangedData;
-	BOOL suppressSizeChanged;
+	void (*onPositionChanged)(uiWindow*, void *);
+	void *onPositionChangedData;
+	BOOL suppressPositionChanged;
 	int fullscreen;
 	int borderless;
 	int resizeable;
@@ -68,6 +71,14 @@ struct uiWindow {
 
 	if (!w->suppressSizeChanged)
 		(*(w->onContentSizeChanged))(w, w->onContentSizeChangedData);
+}
+
+- (void)windowDidMove:(NSNotification *)note
+{
+	uiWindow *w = self->window;
+
+	if (!w->suppressPositionChanged)
+		(*(w->onPositionChanged))(w, w->onPositionChangedData);
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)note
@@ -240,6 +251,43 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	[w->window setTitle:uiprivToNSString(title)];
 }
 
+void uiWindowPosition(uiWindow *w, int *x, int *y)
+{
+	NSRect screen;
+	NSRect window;
+	int screenHeightSansMenu;
+
+	screen = [[w->window screen] visibleFrame];
+	// Visible screen (no menu, no dock) + dock height
+	screenHeightSansMenu = screen.size.height + screen.origin.y;
+
+	window = [w->window frame];
+	*x = window.origin.x;
+	*y = screenHeightSansMenu - window.origin.y - window.size.height;
+}
+
+void uiWindowSetPosition(uiWindow *w, int x, int y)
+{
+	NSRect screen;
+	int screenHeightSansMenu;
+
+	screen = [[w->window screen] visibleFrame];
+	// Visible screen (no menu, no dock) + dock height
+	screenHeightSansMenu = screen.size.height + screen.origin.y;
+
+	y = screenHeightSansMenu - y;
+
+	w->suppressPositionChanged = YES;
+	[w->window setFrameTopLeftPoint:NSMakePoint(x, y)];
+	w->suppressPositionChanged = NO;
+}
+
+void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
+{
+	w->onPositionChanged = f;
+	w->onPositionChangedData = data;
+}
+
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
 {
 	NSRect r;
@@ -400,6 +448,7 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	uiWindowOnClosing(w, defaultOnClosing, NULL);
 	uiWindowOnFocusChanged(w, defaultOnFocusChanged, NULL);
 	uiWindowOnContentSizeChanged(w, defaultOnPositionContentSizeChanged, NULL);
+	uiWindowOnPositionChanged(w, defaultOnPositionContentSizeChanged, NULL);
 
 	return w;
 }
