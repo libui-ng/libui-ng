@@ -129,7 +129,6 @@ const char *windowResizeableGuide() {
 	"\tVerify resizeability by dragging the bottom right corner.\n"
 	"\n"
 	"4.\tClose the secondary window.\n"
-
 	;
 }
 
