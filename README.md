@@ -92,9 +92,13 @@ When running `meson`, the `--prefix` option will set the installation prefix. [T
 
 Can be built from AUR: https://aur.archlinux.org/packages/libui-ng-git/
 
-## Documentation
+## Documentation [WIP]
 
-Needs to be written. Consult `ui.h` and the examples for details for now.
+[API](https://libui-ng.github.io/libui-ng/), check the [modules](https://libui-ng.github.io/libui-ng/modules.html) section for an overview of (nearly all) uiControls.
+
+Consult the `ui.h` comments for the uiControls missing in the docs.
+
+Check the `examples` directory for fully fledged examples. Check out the `tests` directory and subdirectories for more real world usage.
 
 ## Language Bindings
 
