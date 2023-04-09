@@ -280,7 +280,7 @@ typedef struct uiWindow uiWindow;
  * @param w uiWindow instance.
  * @returns The window title text.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiWindow
  */
 _UI_EXTERN char *uiWindowTitle(uiWindow *w);
@@ -291,7 +291,7 @@ _UI_EXTERN char *uiWindowTitle(uiWindow *w);
  * @param w uiWindow instance.
  * @param title Window title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
- *              Data is owned by the caller.
+ *              Data is copied internally. Ownership is not transferred.
  * @note This method is merely a hint and may be ignored on unix platforms.
  * @memberof uiWindow
  */
@@ -511,7 +511,7 @@ _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
  *
  * @param title Window title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
- *              Data is owned by the caller.
+ *              Data is copied internally. Ownership is not transferred.
  * @param width Window width.
  * @param height Window height.
  * @param hasMenubar Whether or not the window should display a menu bar.
@@ -537,7 +537,7 @@ typedef struct uiButton uiButton;
  * @param b uiButton instance.
  * @returns The text of the label.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiButton
  */
 _UI_EXTERN char *uiButtonText(uiButton *b);
@@ -548,7 +548,7 @@ _UI_EXTERN char *uiButtonText(uiButton *b);
  * @param b uiButton instance.
  * @param text Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiButton
  */
 _UI_EXTERN void uiButtonSetText(uiButton *b, const char *text);
@@ -573,7 +573,7 @@ _UI_EXTERN void uiButtonOnClicked(uiButton *b,
  *
  * @param text Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @returns A new uiButton instance.
  * @memberof uiButton @static
  */
@@ -685,7 +685,7 @@ typedef struct uiCheckbox uiCheckbox;
  * @param c uiCheckbox instance.
  * @returns The text of the label.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiCheckbox
  */
 _UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
@@ -696,7 +696,7 @@ _UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
  * @param c uiCheckbox instance.
  * @param text Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiCheckbox
  */
 _UI_EXTERN void uiCheckboxSetText(uiCheckbox *c, const char *text);
@@ -740,7 +740,7 @@ _UI_EXTERN void uiCheckboxSetChecked(uiCheckbox *c, int checked);
  *
  * @param text Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @returns A new uiCheckbox instance.
  * @memberof uiCheckbox @static
  */
@@ -763,7 +763,7 @@ typedef struct uiEntry uiEntry;
  * @param e uiEntry instance.
  * @returns The text of the entry.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiEntry
  */
 _UI_EXTERN char *uiEntryText(uiEntry *e);
@@ -774,7 +774,7 @@ _UI_EXTERN char *uiEntryText(uiEntry *e);
  * @param e uiEntry instance.
  * @param text Entry text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiEntry
  */
 _UI_EXTERN void uiEntrySetText(uiEntry *e, const char *text);
@@ -858,7 +858,7 @@ typedef struct uiLabel uiLabel;
  * @param l uiLabel instance.
  * @returns The text of the label.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiLabel
  */
 _UI_EXTERN char *uiLabelText(uiLabel *l);
@@ -869,7 +869,7 @@ _UI_EXTERN char *uiLabelText(uiLabel *l);
  * @param l uiLabel instance.
  * @param text Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiLabel
  */
 _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
@@ -879,7 +879,7 @@ _UI_EXTERN void uiLabelSetText(uiLabel *l, const char *text);
  *
  * @param text Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @returns A new uiLabel instance.
  * @memberof uiLabel @static
  */
@@ -905,7 +905,7 @@ typedef struct uiTab uiTab;
  * @param t uiTab instance.
  * @param name Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param c Control to append.
  * @memberof uiTab
  */
@@ -917,7 +917,7 @@ _UI_EXTERN void uiTabAppend(uiTab *t, const char *name, uiControl *c);
  * @param t uiTab instance.
  * @param name Label text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param index Index at which to insert the control.
  * @param c Control to insert.
  * @memberof uiTab
@@ -996,7 +996,7 @@ typedef struct uiGroup uiGroup;
  * @param g uiGroup instance.
  * @returns The group title text.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiGroup
  */
 _UI_EXTERN char *uiGroupTitle(uiGroup *g);
@@ -1007,7 +1007,7 @@ _UI_EXTERN char *uiGroupTitle(uiGroup *g);
  * @param g uiGroup instance.
  * @param title Group title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
- *              Data is owned by the caller.
+ *              Data is copied internally. Ownership is not transferred.
  * @memberof uiGroup
  */
 _UI_EXTERN void uiGroupSetTitle(uiGroup *g, const char *title);
@@ -1046,7 +1046,7 @@ _UI_EXTERN void uiGroupSetMargined(uiGroup *g, int margined);
  *
  * @param title Group title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
- *              Data is owned by the caller.
+ *              Data is copied internally. Ownership is not transferred.
  * @returns A new uiGroup instance.
  * @memberof uiGroup @static
  */
@@ -1325,7 +1325,7 @@ typedef struct uiCombobox uiCombobox;
  * @param c uiCombobox instance.
  * @param text Item text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiCombobox
  */
 _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
@@ -1337,7 +1337,7 @@ _UI_EXTERN void uiComboboxAppend(uiCombobox *c, const char *text);
  * @param index Index at which to insert the item.
  * @param text Item text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiCombobox
  */
 _UI_EXTERN void uiComboboxInsertAt(uiCombobox *c, int index, const char *text);
@@ -1436,7 +1436,7 @@ typedef struct uiEditableCombobox uiEditableCombobox;
  * @param c uiEditableCombobox instance.
  * @param text Item text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiEditableCombobox
  */
 _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text);
@@ -1450,7 +1450,7 @@ _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text
  * @param c uiEditableCombobox instance.
  * @returns The editable combo box text.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiEditableCombobox
  */
 _UI_EXTERN char *uiEditableComboboxText(uiEditableCombobox *c);
@@ -1461,7 +1461,7 @@ _UI_EXTERN char *uiEditableComboboxText(uiEditableCombobox *c);
  * @param c uiEditableCombobox instance.
  * @param text Text field text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiEditableCombobox
  */
 _UI_EXTERN void uiEditableComboboxSetText(uiEditableCombobox *c, const char *text);
@@ -1510,7 +1510,7 @@ typedef struct uiRadioButtons uiRadioButtons;
  * @param r uiRadioButtons instance.
  * @param text Radio button text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiRadioButtons
  */
 _UI_EXTERN void uiRadioButtonsAppend(uiRadioButtons *r, const char *text);
@@ -1656,7 +1656,7 @@ typedef struct uiMultilineEntry uiMultilineEntry;
  * @param e uiMultilineEntry instance.
  * @returns The containing text.\n
  *          A `NUL` terminated UTF-8 string.\n
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiMultilineEntry
  */
 _UI_EXTERN char *uiMultilineEntryText(uiMultilineEntry *e);
@@ -1667,7 +1667,7 @@ _UI_EXTERN char *uiMultilineEntryText(uiMultilineEntry *e);
  * @param e uiMultilineEntry instance.
  * @param text Single/multi line text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiMultilineEntry
  */
 _UI_EXTERN void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text);
@@ -1678,7 +1678,7 @@ _UI_EXTERN void uiMultilineEntrySetText(uiMultilineEntry *e, const char *text);
  * @param e uiMultilineEntry instance.
  * @param text Text to append.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @memberof uiMultilineEntry
  */
 _UI_EXTERN void uiMultilineEntryAppend(uiMultilineEntry *e, const char *text);
@@ -1839,7 +1839,7 @@ typedef struct uiMenu uiMenu;
  * @param m uiMenu instance.
  * @param name Menu item text.\n
  *             A `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @returns A new uiMenuItem instance.
  * @memberof uiMenu
  */
@@ -1851,7 +1851,7 @@ _UI_EXTERN uiMenuItem *uiMenuAppendItem(uiMenu *m, const char *name);
  * @param m uiMenu instance.
  * @param name Menu item text.\n
  *             A `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @returns A new uiMenuItem instance.
  * @memberof uiMenu
  */
@@ -1902,7 +1902,7 @@ _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
  *
  * @param name Menu label.\n
  *             A `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @returns A new uiMenu instance.
  * @memberof uiMenu @static
  */
@@ -1916,7 +1916,7 @@ _UI_EXTERN uiMenu *uiNewMenu(const char *name);
  * @returns File path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
@@ -1929,7 +1929,7 @@ _UI_EXTERN char *uiOpenFile(uiWindow *parent);
  * @returns Folder path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
@@ -1945,7 +1945,7 @@ _UI_EXTERN char *uiOpenFolder(uiWindow *parent);
  * @returns File path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
- *          Data is owned by the caller, make sure to call `uiFreeText()`.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
@@ -1959,10 +1959,10 @@ _UI_EXTERN char *uiSaveFile(uiWindow *parent);
  * @param parent Parent window.
  * @param title Dialog window title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
- *              Data is owned by the caller.
+ *              Data is copied internally. Ownership is not transferred.
  * @param description Dialog message text.\n
  *                    A valid, `NUL` terminated UTF-8 string.\n
- *                    Data is owned by the caller.
+ *                    Data is copied internally. Ownership is not transferred.
  * @ingroup dialogWindow
  */
 _UI_EXTERN void uiMsgBox(uiWindow *parent, const char *title, const char *description);
@@ -1976,10 +1976,10 @@ _UI_EXTERN void uiMsgBox(uiWindow *parent, const char *title, const char *descri
  * @param parent Parent window.
  * @param title Dialog window title text.\n
  *              A valid, `NUL` terminated UTF-8 string.\n
- *              Data is owned by the caller.
+ *              Data is copied internally. Ownership is not transferred.
  * @param description Dialog message text.\n
  *                    A valid, `NUL` terminated UTF-8 string.\n
- *                    Data is owned by the caller.
+ *                    Data is copied internally. Ownership is not transferred.
  * @ingroup dialogWindow
  */
 _UI_EXTERN void uiMsgBoxError(uiWindow *parent, const char *title, const char *description);
@@ -2383,7 +2383,7 @@ _UI_EXTERN uiUnderline uiAttributeUnderline(const uiAttribute *a);
 // platform-specific colors for suggestion underlines; to use them
 // correctly, pair them with uiUnderlineSuggestion (though they can
 // be used on other types of underline as well).
-// 
+//
 // If an underline type is applied but no underline color is
 // specified, the text color is used instead. If an underline color
 // is specified without an underline type, the underline color
@@ -2419,10 +2419,10 @@ _UI_EXTERN void uiAttributeUnderlineColor(const uiAttribute *a, uiUnderlineColor
 // uiOpenTypeFeatures instance. Each value is a 32-bit integer,
 // often used as a Boolean flag, but sometimes as an index to choose
 // a glyph shape to use.
-// 
+//
 // If a font does not support a certain feature, that feature will be
 // ignored. (TODO verify this on all OSs)
-// 
+//
 // See the OpenType specification at
 // https://www.microsoft.com/typography/otspec/featuretags.htm
 // for the complete list of available features, information on specific
@@ -2463,7 +2463,7 @@ _UI_EXTERN void uiOpenTypeFeaturesRemove(uiOpenTypeFeatures *otf, char a, char b
 // uiOpenTypeFeaturesGet() determines whether the given feature
 // tag is present in otf. If it is, *value is set to the tag's value and
 // nonzero is returned. Otherwise, zero is returned.
-// 
+//
 // Note that if uiOpenTypeFeaturesGet() returns zero, value isn't
 // changed. This is important: if a feature is not present in a
 // uiOpenTypeFeatures, the feature is NOT treated as if its
@@ -2926,7 +2926,7 @@ typedef struct uiForm uiForm;
  * @param f uiForm instance.
  * @param label Label text.\n
  *              A `NUL` terminated UTF-8 string.\n
- *              Data is owned by the caller.
+ *              Data is copied internally. Ownership is not transferred.
  * @param c Control to append.
  * @param stretchy `TRUE` to stretch control, `FALSE` otherwise.
  * @memberof uiForm
@@ -3150,7 +3150,7 @@ _UI_EXTERN void uiFreeImage(uiImage *i);
  *               `((uint8_t *) pixels)[0]` equals the **R** of the first pixel,
  *               `[3]` the **A** of the first pixel.\n
  *               `pixels` must be at least `byteStride * pixelHeight` bytes long.\n
- *               Data is owned by the caller.
+ *               Data is copied internally. Ownership is not transferred.
  * @param pixelWidth Width in pixels.
  * @param pixelHeight Height in pixels.
  * @param byteStride Number of bytes per row of the pixel array.
@@ -3253,7 +3253,7 @@ _UI_EXTERN uiTableValueType uiTableValueGetType(const uiTableValue *v);
  *
  * @param str String value.\n
  *            A valid, `NUL` terminated UTF-8 string.\n
- *            Data is owned by the caller.
+ *            Data is copied internally. Ownership is not transferred.
  * @returns A new uiTableValue instance.
  * @memberof uiTableValue @static
  */
@@ -3593,7 +3593,7 @@ typedef struct uiTable uiTable;
  * @param t uiTable instance.
  * @param name Column title text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param textModelColumn Column that holds the text to be displayed.\n
  *                        #uiTableValueTypeString
  * @param textEditableModelColumn Column that defines whether or not the text is editable.\n
@@ -3619,7 +3619,7 @@ _UI_EXTERN void uiTableAppendTextColumn(uiTable *t,
  * @param t uiTable instance.
  * @param name Column title text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param imageModelColumn Column that holds the images to be displayed.\n
  *                         #uiTableValueTypeImage
  * @memberof uiTable
@@ -3637,7 +3637,7 @@ _UI_EXTERN void uiTableAppendImageColumn(uiTable *t,
  * @param t uiTable instance.
  * @param name Column title text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param imageModelColumn Column that holds the images to be displayed.\n
  *                         #uiTableValueTypeImage
  * @param textModelColumn Column that holds the text to be displayed.\n
@@ -3662,7 +3662,7 @@ _UI_EXTERN void uiTableAppendImageTextColumn(uiTable *t,
  * @param t uiTable instance.
  * @param name Column title text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param checkboxModelColumn Column that holds the data to be displayed.\n
  *                            #uiTableValueTypeInt `TRUE` for a checked checkbox, `FALSE` otherwise.
  * @param checkboxEditableModelColumn Column that defines whether or not the checkbox is editable.\n
@@ -3682,7 +3682,7 @@ _UI_EXTERN void uiTableAppendCheckboxColumn(uiTable *t,
  * @param t uiTable instance.
  * @param name Column title text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param checkboxModelColumn Column that holds the data to be displayed.\n
  *                            #uiTableValueTypeInt
  *                            `TRUE` for a checked checkbox, `FALSE` otherwise.
@@ -3715,7 +3715,7 @@ _UI_EXTERN void uiTableAppendCheckboxTextColumn(uiTable *t,
  * @param t uiTable instance.
  * @param name Column title text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param progressModelColumn Column that holds the data to be displayed.\n
  *                            #uiTableValueTypeInt Integer in range of `[-1, 100]`, see uiProgressBar
  *                            for details.
@@ -3737,7 +3737,7 @@ _UI_EXTERN void uiTableAppendProgressBarColumn(uiTable *t,
  * @param t uiTable instance.
  * @param name Column title text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
- *             Data is owned by the caller.
+ *             Data is copied internally. Ownership is not transferred.
  * @param buttonModelColumn Column that holds the button text to be displayed.\n
  *                          #uiTableValueTypeString
  * @param buttonClickableModelColumn Column that defines whether or not the button is clickable.\n
@@ -3964,7 +3964,7 @@ struct uiTableSelection
  *
  * @param t uiTable instance.
  * @returns The number of selected rows and corresponding row indices.\n
- *          Data is owned by the caller, make sure to call uiFreeTableSelection().
+ *          Caller is responsible for freeing the data with `uiFreeTableSelection()`.
  *
  * @note For empty selections the `Rows` pointer will be NULL.
  * @memberof uiTable
@@ -3976,7 +3976,7 @@ _UI_EXTERN uiTableSelection* uiTableGetSelection(uiTable *t);
  *
  * @param t uiTable instance.
  * @param sel Table selection.\n
- *            Data is owned by the caller.
+ *            Data is copied internally. Ownership is not transferred.
  *
  * @note Selecting more rows than the selection mode allows for results in nothing happening.
  * @note For empty selections the Rows pointer is never accessed.
