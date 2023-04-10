@@ -14,6 +14,23 @@ struct containerInit {
 	void (*onResize)(uiWindowsControl *);
 };
 
+static HWND parentWithBackground(HWND hwnd)
+{
+	HWND parent;
+	int cls;
+
+	parent = hwnd;
+	for (;;) {
+		parent = parentOf(parent);
+		// skip groupboxes; they're (supposed to be) transparent
+		// skip uiContainers; they don't draw anything
+		cls = windowClassOf(parent, L"button", containerClass, NULL);
+		if (cls != 0 && cls != 1)
+			break;
+	}
+	return parent;
+}
+
 static LRESULT CALLBACK containerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	RECT r;
@@ -27,6 +44,8 @@ static LRESULT CALLBACK containerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	void (*onResize)(uiWindowsControl *);
 	int minwid, minht;
 	LRESULT lResult;
+	HWND hwndParent;
+	HBRUSH bgBrush;
 
 	if (handleParentMessages(hwnd, uMsg, wParam, lParam, &lResult) != FALSE)
 		return lResult;
@@ -50,25 +69,47 @@ static LRESULT CALLBACK containerWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 		mmi->ptMinTrackSize.x = minwid;
 		mmi->ptMinTrackSize.y = minht;
 		return lResult;
+
+	// GDI doesn't support transparency. The Win32 controls way to achieve a similar effect
+	// is to ask the parent control for the appropriate background brush (WM_CTLCOLORSTATIC)
+	// or ask to the parent to render the background for it (WM_PRINTCLIENT).
+	//
+	// Our container control is supposed to be fully transparent. And containers can contain
+	// other containers. So we have to dynamically find the next control that is not a
+	// container itself and retrieve its background brush so we can paint ourselves with it.
+	//
+	// NOTE: Doing "transparency" this way, only works for solid color backgrounds. Supporting
+	// gradients and more is super tricky. Fortunately Microsoft is using solid color backgrounds
+	// since Vista. Probably for this reason.
+	//
+	// Paint ourself with the background brush.
 	case WM_PAINT:
 		dc = BeginPaint(hwnd, &ps);
-		if (dc == NULL) {
-			logLastError(L"error beginning container paint");
-			// bail out; hope DefWindowProc() catches us
+		if(dc == NULL)
 			break;
-		}
-		r = ps.rcPaint;
-		paintContainerBackground(hwnd, dc, &r);
-		EndPaint(hwnd, &ps);
+		hwndParent = parentWithBackground(hwnd);
+		bgBrush = (HBRUSH) SendMessage(hwndParent, WM_CTLCOLORSTATIC, (WPARAM) dc, (LPARAM) hwnd);
+		FillRect(dc, &ps.rcPaint, bgBrush);
+		EndPaint (hwnd, &ps);
 		return 0;
-	// tab controls use this to draw the background of the tab area
+	// Paint the backgrounds of our children if they ask for it.
 	case WM_PRINTCLIENT:
-		uiWindowsEnsureGetClientRect(hwnd, &r);
-		paintContainerBackground(hwnd, (HDC) wParam, &r);
+		dc = (HDC)wParam;
+		GetClientRect(hwnd, &r);
+		hwndParent = parentWithBackground(hwnd);
+		bgBrush = (HBRUSH) SendMessage(hwndParent, WM_CTLCOLORSTATIC, (WPARAM) dc, (LPARAM) hwnd);
+		FillRect(dc, &r, bgBrush);
 		return 0;
+	// Relay the background brush inquiries from our children to our own parent.
+	case WM_CTLCOLORBTN:
+	case WM_CTLCOLORSTATIC:
+		dc = (HDC)wParam;
+		hwndParent = parentWithBackground(hwnd);
+		SetTextColor(dc, GetSysColor(COLOR_WINDOWTEXT));
+		bgBrush = (HBRUSH) SendMessage(hwndParent, WM_CTLCOLORSTATIC, wParam, lParam);
+		return (INT_PTR)bgBrush;
+	// Skip erasing because we paint the whole area anyways.
 	case WM_ERASEBKGND:
-		// avoid some flicker
-		// we draw the whole update area anyway
 		return 1;
 	}
 	return DefWindowProcW(hwnd, uMsg, wParam, lParam);
