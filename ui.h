@@ -15,6 +15,7 @@
  * @defgroup dialogWindow Dialog windows
  * @defgroup menu Menus
  * @defgroup table Tables
+ * @defgroup dragndrop Drag and drop
  */
 
 #ifndef __LIBUI_UI_H__
@@ -96,6 +97,319 @@ _UI_EXTERN void uiFreeText(char *text);
 
 
 /**
+ * @addtogroup dragndrop
+ * @{
+ *
+ * Types and methods for handling drag events.
+ *
+ * To receive drag (and drop) events you need to implement the following:
+ *
+ * 1. Create a new uiDragDestination.
+ * 2. Specify the data types (#uiDragType) your drag destination accepts. See
+ *    uiDragDestinationSetAcceptTypes().
+ * 3. Implement at least the callbacks uiDragDestinationOnEnter() and
+ *    uiDragDestinationOnDrop().
+ * 4. Your *enter* callback specifies what type of #uiDragOperation your
+ *    application wants to perform with the data to display an appropriate
+ *    mouse cursor. You may inspect the data via uiDragContextDragData().
+ * 5. Your *drop* callback implements the data handling via
+ *    uiDragContextDragData() and finalizes the drag and drop operation by
+ *    returning either `TRUE` to signal a successful *drop* or `FALSE` to
+ *    indicate that the *drop* was unsuccessful.
+ * 6. Register your drag destination with a uiControl of your choise. See
+ *    uiControlRegisterDragDestination().
+ *
+ * Important notes:
+ *
+ * - The #uiDragOperation that you return in the Enter/Move callbacks must
+ *   be a drag operation listed in uiDragContextDragOperations()! Not all
+ *   drag sources support all drag operations. Returning an invalid drag
+ *   operation is an error and will abort any further processing.
+ * - If your drag destination supports multiple data types: Make sure to check
+ *   uiDragContextDragTypes() for types supplied within the context before
+ *   calling uiDragContextDragData().
+ *
+ * @}
+ */
+
+
+/**
+ * Drag operations.
+ *
+ * Signals to the operating system what type of drag operation is about to be
+ * performed. This influences the cursor being presented to the user and how
+ * the data being dragged is handled once dropped.
+ *
+ * @enum uiDragOperation
+ * @ingroup dragndrop
+ */
+_UI_ENUM(uiDragOperation) {
+	uiDragOperationNone = 0,      //!< No operation, drag denied
+	uiDragOperationCopy = 1 << 0, //!< Copy operation, source stays intact
+	uiDragOperationLink = 1 << 1, //!< Link operation, source stays intact
+	uiDragOperationMove = 1 << 2, //!< Move operation, source is destroyed
+};
+
+
+/**
+ * Drag content types.
+ *
+ * @enum uiDragType
+ * @ingroup dragndrop
+ */
+_UI_ENUM(uiDragType) {
+	uiDragTypeText  = 1 << 0, //!< Plain text.
+	uiDragTypeURIs  = 1 << 1, //!< List of URIs.
+};
+
+
+/**
+ * Drag data to be transferred.
+ *
+ * @struct uiDragData
+ * @ingroup dragndrop
+ */
+typedef struct uiDragData uiDragData;
+struct uiDragData
+{
+	uiDragType type; //!< Data type.
+	union {
+		//! For uiDragTypeText. A valid, `NUL` terminated UTF-8 string.
+		char *text;
+		struct uiDragDataURIs {
+			int numURIs; //!< Number of URIs.
+			char **URIs; //!< Array of `NUL` terminated strings.
+		} URIs; //!< For uiDragTypeURIs.
+	} data;
+};
+
+/**
+ * Frees the given uiDragData and all its resources.
+ *
+ * @param d uiDragData instance.
+ * @memberof uiDragData
+ */
+_UI_EXTERN void uiFreeDragData(uiDragData* d);
+
+
+/**
+ * Drag context containing supported drag types, drag operations, cursor position, and data.
+ *
+ * @struct uiDragContext
+ * @ingroup dragndrop
+ */
+typedef struct uiDragContext uiDragContext;
+
+/**
+ * Returns the current cursor position of the drag event.
+ *
+ * Coordinates are measured from the top left corner of the control.
+ *
+ * @param dc uiDragContext instance.
+ * @param[out] x X position of the window.
+ * @param[out] y Y position of the window.
+ *
+ * @memberof uiDragContext
+ */
+_UI_EXTERN void uiDragContextPosition(uiDragContext *dc, int *x, int *y);
+
+/**
+ * Returns the drag types supported by the context.
+ *
+ * @param dc uiDragContext instance.
+ * @returns A bit mask of #uiDragType.
+ *
+ * @memberof uiDragContext
+ */
+_UI_EXTERN int uiDragContextDragTypes(uiDragContext *dc);
+
+/**
+ * Returns the drag operations supported by the context.
+ *
+ * @param dc uiDragContext instance.
+ * @returns A bit mask of #uiDragOperation.
+ *
+ * @memberof uiDragContext
+ */
+_UI_EXTERN int uiDragContextDragOperations(uiDragContext *dc);
+
+/**
+ * Returns the drag data.
+ *
+ * @param dc uiDragContext instance.
+ * @param type Data type to retrieve. Make sure this data is supplied by the
+ *             context by calling uiDragContextDragTypes().
+ * @returns Drag event data, or `NULL` on failure.\n
+ *          Data is owned by the caller, make sure to call `uiFreeDragData()`.
+ *
+ * @memberof uiDragContext
+ */
+_UI_EXTERN uiDragData* uiDragContextDragData(uiDragContext *dc, uiDragType type);
+
+
+/**
+ * Drag destination to receive drag and drop events.
+ *
+ * You must at least specify the uiDragDestinationOnEnter() and uiDragDestinationOnDrop()
+ * callback to handle drop events and process the data. All other callbacks are optional.
+ *
+ * Make sure to register the drag destination with a uiControl via
+ * uiControlRegisterDragDestination().
+ *
+ * @struct uiDragDestination
+ * @ingroup dragndrop
+ */
+typedef struct uiDragDestination uiDragDestination;
+
+/**
+ * Registers a callback for when a user drag first enters the drag destination.
+ *
+ * Returning `uiDragOperationNone` will still trigger the *OnMove* callback
+ * to give you the ability to accept/reject depending on cursor position.
+ *
+ * @param dd uiDragDestination instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p dc Drag context.\n
+ *                The pointer is only valid for the duration of the callback.
+ *          @p senderData User data registered with the sender instance.\n
+ *          Return:\n
+ *          A #uiDragOperation to signal if or how to accept the drag. To accept
+ *          choose one of the operations listed in uiDragContextDragOperations()
+ *          or return `uiDragOperationNone` to reject the drop.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiDragDestination
+ */
+_UI_EXTERN void uiDragDestinationOnEnter(uiDragDestination *dd,
+	uiDragOperation (*f)(uiDragDestination *sender, uiDragContext *dc, void *senderData), void *data);
+
+
+/**
+ * Registers a callback for when a user drag moves on the drag destination.
+ *
+ * @note Implementing this callback is optional.
+ *
+ * @param dd uiDragDestination instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p dc Drag context.\n
+ *                The pointer is only valid for the duration of the callback.
+ *          @p senderData User data registered with the sender instance.\n
+ *          Return:\n
+ *          A #uiDragOperation to signal if or how to accept the drag. To accept
+ *          choose one of the operations listed in uiDragContextDragOperations()
+ *          or return `uiDragOperationNone` to reject the drop.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiDragDestination
+ */
+_UI_EXTERN void uiDragDestinationOnMove(uiDragDestination *dd,
+	uiDragOperation (*f)(uiDragDestination *sender, uiDragContext *dc, void *senderData), void *data);
+
+
+/**
+ * Registers a callback for when a user drag exits the drag destination or if aborted.
+ *
+ * Callback to do any cleanup that may be necessary from *OnEnter* and/or *OnMove*.
+ *
+ * This callback gets triggered in one of two cases:
+ *
+ * - The user drag exits the drag destination zone.
+ * - The drag is rejected in *OnEnter* or subsequently in *OnMove* by returning
+ *   `uiDragOperationNone` and the user releasing the drag over the drag
+ *   destination zone.
+ *
+ * This callback is never triggered in conjunction with *OnDrop*.
+ *
+ * @note Implementing this callback is optional.
+ *
+ * @param dd uiDragDestination instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiDragDestination
+ */
+_UI_EXTERN void uiDragDestinationOnExit(uiDragDestination *dd,
+	void (*f)(uiDragDestination *sender, void *senderData), void *data);
+
+/**
+ * Registers a callback for when a user drag is dropped on the drag destination.
+ *
+ * Make sure to also perform any cleanup necessary from *OnEnter* and/or *OnMove*
+ * as the *OnExit* callback will not be triggered.
+ *
+ * @param dd uiDragDestination instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p dc Drag context.\n
+ *                The pointer is only valid for the duration of the callback.
+ *          @p senderData User data registered with the sender instance.\n
+ *          Return:\n
+ *          `TRUE` to accept the drop, `FALSE` to reject the drop.
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiDragDestination
+ */
+_UI_EXTERN void uiDragDestinationOnDrop(uiDragDestination *dd,
+	int (*f)(uiDragDestination *sender, uiDragContext *dc, void *senderData), void *data);
+
+/**
+ * Returns the types accepted by the drag destination.
+ *
+ * @param dd uiDragDestination instance.
+ * @returns A bit mask of #uiDragType. [Default: `0`]
+ *
+ * @memberof uiDragDestination
+ */
+_UI_EXTERN int uiDragDestinationAcceptTypes(uiDragDestination* dd);
+
+/**
+ * Sets the types that are accepted by the drag destination.
+ *
+ * @param dd uiDragDestination instance.
+ * @param typeMask A bit mask of #uiDragType.
+ *
+ * @memberof uiDragDestination
+ */
+_UI_EXTERN void uiDragDestinationSetAcceptTypes(uiDragDestination* dd, int typeMask);
+
+/**
+ * Returns the last drag operation returned by the last drag destination callback called.
+ *
+ * This is a convenience function for you to not have to cache the drag operation
+ * that you returned in your last callback.
+ *
+ * Useful if you need to inspect the data to determine the type of operation to
+ * perform. Do said processing in your onEnter callback, return your desired
+ * operation and simply return uiDragDestinationLastDragOperation() for your
+ * onMove and onDrop callbacks.
+ *
+ * @param dd uiDragDestination instance.
+ * @return The last #uiDragOperation returned by one of your callbacks or
+ *         `uiDragOperationNone` when called form the context of onEnter.
+ *
+ * @memberof uiDragDestination
+ */
+_UI_EXTERN uiDragOperation uiDragDestinationLastDragOperation(uiDragDestination* dd);
+
+/**
+ * Creates a new uiDragDestination.
+ *
+ * @returns A new uiDragDestination instance.
+ *
+ * @memberof uiDragDestination @static
+ */
+_UI_EXTERN uiDragDestination* uiNewDragDestination(void);
+
+
+/**
  * Base class for GUI controls providing common methods.
  *
  * @struct uiControl
@@ -116,6 +430,7 @@ struct uiControl {
 	int (*Enabled)(uiControl *);
 	void (*Enable)(uiControl *);
 	void (*Disable)(uiControl *);
+	uiDragDestination *dragDest;
 };
 // TOOD add argument names to all arguments
 #define uiControl(this) ((uiControl *) (this))
@@ -222,6 +537,18 @@ _UI_EXTERN void uiControlEnable(uiControl *c);
  * @memberof uiControl
  */
 _UI_EXTERN void uiControlDisable(uiControl *c);
+
+/**
+ * Registers a drag destination.
+ *
+ * @param c uiControl instance.
+ * @param dd uiDragDestination instance.\n
+ *           Ownership is transferred to the uiControl.
+ *
+ * @note Only one drag destination can be registered at a time.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlRegisterDragDestination(uiControl *c, uiDragDestination *dd);
 
 /**
  * Allocates a uiControl.
@@ -535,7 +862,6 @@ _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
  * @memberof uiWindow @static
  */
 _UI_EXTERN uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar);
-
 
 /**
  * A control that visually represents a button to be clicked by the user to trigger an action.

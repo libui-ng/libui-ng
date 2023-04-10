@@ -7,6 +7,7 @@ libui_sources += [
 	'common/areaevents.c',
 	'common/control.c',
 	'common/debug.c',
+	'common/dragdestination.c',
 	'common/matrix.c',
 	'common/opentype.c',
 	'common/shouldquit.c',

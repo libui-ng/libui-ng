@@ -102,6 +102,9 @@ const char *uiInit(uiInitOptions *o)
 	if (hollowBrush == NULL)
 		return ieLastErr("getting hollow brush");
 
+	// Drag and Drop
+	OleInitialize(NULL);
+
 	ZeroMemory(&icc, sizeof (INITCOMMONCONTROLSEX));
 	icc.dwSize = sizeof (INITCOMMONCONTROLSEX);
 	icc.dwICC = wantedICCClasses;
@@ -149,6 +152,7 @@ void uiUninit(void)
 	uiprivUninitDrawText();
 	uninitDraw();
 	CoUninitialize();
+	OleUninitialize();
 	if (DeleteObject(hollowBrush) == 0)
 		logLastError(L"error freeing hollow brush");
 	uninitContainer();

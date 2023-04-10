@@ -217,6 +217,42 @@ _UI_EXTERN void uiDarwinNotifyVisibilityChanged(uiDarwinControl *c);
 _UI_EXTERN CGFloat uiDarwinMarginAmount(void *reserved);
 _UI_EXTERN CGFloat uiDarwinPaddingAmount(void *reserved);
 
+/**
+ * uiDragDestination methods to comply with the NSDraggingDestination protocol.
+ *
+ * Every uiControl must call this macro to ensure it can handle drag destination
+ * events.
+ *
+ * @param handlefield Handle to the struct field that inherits from NSView.
+ */
+#define uiDarwinDragDestinationMethods(handlefield) \
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender \
+{ \
+	uiControl *c = uiControl(self->handlefield); \
+	uiDragContext dc = { .info = sender, .view = (NSView*)self }; \
+	c->dragDest->op = uiDragOperationNone; \
+	c->dragDest->op = c->dragDest->onEnter(c->dragDest, &dc, c->dragDest->onEnterData); \
+	return uiprivDragOperationToNSDragOperation(c->dragDest->op); \
+} \
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)sender \
+{ \
+	uiControl *c = uiControl(self->handlefield); \
+	uiDragContext dc = { .info = sender, .view = (NSView*)self }; \
+	c->dragDest->op = c->dragDest->onMove(c->dragDest, &dc, c->dragDest->onMoveData); \
+	return uiprivDragOperationToNSDragOperation(c->dragDest->op); \
+} \
+- (void)draggingExited:(id<NSDraggingInfo>)sender \
+{ \
+	uiControl *c = uiControl(self->handlefield); \
+	c->dragDest->onExit(c->dragDest, c->dragDest->onExitData); \
+} \
+- (BOOL)performDragOperation:(id <NSDraggingInfo>)sender \
+{ \
+	uiControl *c = uiControl(self->handlefield); \
+	uiDragContext dc = { .info = sender, .view = (NSView*)self }; \
+	return c->dragDest->onDrop(c->dragDest, &dc, c->dragDest->onDropData); \
+}
+
 #ifdef __cplusplus
 }
 #endif
