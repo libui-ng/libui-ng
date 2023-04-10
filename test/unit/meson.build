@@ -13,6 +13,7 @@ libui_unit_sources = [
         'radiobuttons.c',
         'entry.c',
         'menu.c',
+        'progressbar.c',
 ]
 
 if libui_OS == 'windows'
