@@ -38,6 +38,8 @@ static void tabRelayout(uiTab *t)
 {
 	struct tabPage *page;
 	RECT r;
+	LONG_PTR controlID;
+	HWND insertAfter;
 
 	// first move the tab control itself
 	uiWindowsEnsureGetClientRect(t->hwnd, &r);
@@ -48,7 +50,10 @@ static void tabRelayout(uiTab *t)
 		return;
 	page = tabPage(t, curpage(t));
 	tabPageRect(t, &r);
+	controlID = 100;
+	insertAfter = NULL;
 	uiWindowsEnsureMoveWindowDuringResize(page->hwnd, r.left, r.top, r.right - r.left, r.bottom - r.top);
+	uiWindowsEnsureAssignControlIDZOrder(page->hwnd, &controlID, &insertAfter);
 }
 
 static void showHidePage(uiTab *t, LRESULT which, int hide)
