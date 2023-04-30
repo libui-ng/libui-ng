@@ -56,6 +56,11 @@ static void msgbox(GtkWindow *parent, const char *title, const char *description
 		type, buttons,
 		"%s", title);
 	gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(md), "%s", description);
+	if (type == GTK_MESSAGE_ERROR) {
+		gtk_message_dialog_set_image(GTK_MESSAGE_DIALOG(md),
+			gtk_image_new_from_icon_name("dialog-warning", GTK_ICON_SIZE_DIALOG));
+		gtk_widget_show_all(md);
+	}
 	gtk_dialog_run(GTK_DIALOG(md));
 	gtk_widget_destroy(md);
 }
