@@ -174,9 +174,20 @@ int uiSpinboxValue(uiSpinbox *s)
 	return [s->spinbox libui_value];
 }
 
+double uiSpinboxValueDouble(uiSpinbox *s)
+{
+	// TODO
+	return 0;
+}
+
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {
 	[s->spinbox libui_setValue:value];
+}
+
+void uiSpinboxSetValueDouble(uiSpinbox *s, double value)
+{
+	// TODO
 }
 
 void uiSpinboxOnChanged(uiSpinbox *s, void (*f)(uiSpinbox *, void *), void *data)
@@ -211,4 +222,9 @@ uiSpinbox *uiNewSpinbox(int min, int max)
 	uiSpinboxOnChanged(s, defaultOnChanged, NULL);
 
 	return s;
+}
+
+uiSpinbox *uiNewSpinboxDouble(double min, double max, int precision)
+{
+	// TODO
 }

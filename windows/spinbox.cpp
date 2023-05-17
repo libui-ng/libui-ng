@@ -9,25 +9,37 @@ struct uiSpinbox {
 	void (*onChanged)(uiSpinbox *, void *);
 	void *onChangedData;
 	BOOL inhibitChanged;
+
+	// The amount to increase by each step
+	double step_size;
+
+	// The current value of the spinbox
+	double value;
+
+	// The number of digits to display - 0 for uiSpinbox
+	int precision;
+
+	// The maximum value
+	double maximum;
+
+	// The minimum value
+	double minimum;
 };
 
 // utility functions
 
-static int value(uiSpinbox *s)
+static double update_value(uiSpinbox *s, double value)
 {
-	BOOL neededCap = FALSE;
-	LRESULT val;
+	wchar_t buf[64];
 
-	// This verifies the value put in, capping it automatically.
-	// We don't need to worry about checking for an error; that flag should really be called "did we have to cap?".
-	// We DO need to set the value in case of a cap though.
-	val = SendMessageW(s->updown, UDM_GETPOS32, 0, (LPARAM) (&neededCap));
-	if (neededCap) {
-		s->inhibitChanged = TRUE;
-		SendMessageW(s->updown, UDM_SETPOS32, 0, (LPARAM) val);
-		s->inhibitChanged = FALSE;
-	}
-	return val;
+	s->value = fmax(s->minimum, fmin(value, s->maximum));
+
+	s->inhibitChanged = TRUE;
+	swprintf(buf, sizeof buf, L"%.*f", s->precision, s->value);
+	SendMessageW(s->edit, WM_SETTEXT, 0, (LPARAM) buf);
+	s->inhibitChanged = FALSE;
+
+	return s->value;
 }
 
 // control implementation
@@ -36,12 +48,19 @@ static int value(uiSpinbox *s)
 static BOOL onWM_COMMAND(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 {
 	uiSpinbox *s = (uiSpinbox *) c;
+	double val;
 	WCHAR *wtext;
+	WCHAR *end;
 
+	if (code == EN_KILLFOCUS) {
+		update_value(s, s->value);
+		return FALSE;
+	}
 	if (code != EN_CHANGE)
 		return FALSE;
 	if (s->inhibitChanged)
 		return FALSE;
+
 	// We want to allow typing negative numbers; the natural way to do so is to start with a -.
 	// However, if we just have the code below, the up-down will catch the bare - and reject it.
 	// Let's fix that.
@@ -51,11 +70,33 @@ static BOOL onWM_COMMAND(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 		uiprivFree(wtext);
 		return TRUE;
 	}
+	val = wcstod(wtext, &end);
+	if (val == 0.0 && wtext == end) {
+		uiprivFree(wtext);
+		return FALSE;
+	}
+	s->value = fmax(s->minimum, fmin(val, s->maximum));
 	uiprivFree(wtext);
-	// value() does the work for us
-	value(s);
 	(*(s->onChanged))(s, s->onChangedData);
 	return TRUE;
+}
+
+static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nmhdr, LRESULT *lResult)
+{
+	uiSpinbox *s = (uiSpinbox *) c;
+	double value;
+	LPNMUPDOWN lpnmud;
+
+	if (nmhdr->code != UDN_DELTAPOS)
+		return FALSE;
+
+	lpnmud = (LPNMUPDOWN )nmhdr;
+	value = s->value + (-(double)lpnmud->iDelta) * s->step_size;
+
+	update_value(s, value);
+
+	(*(s->onChanged))(s, s->onChangedData);
+	return true;
 }
 
 static void uiSpinboxDestroy(uiControl *c)
@@ -63,6 +104,7 @@ static void uiSpinboxDestroy(uiControl *c)
 	uiSpinbox *s = uiSpinbox(c);
 
 	uiWindowsUnregisterWM_COMMANDHandler(s->edit);
+	uiWindowsUnregisterWM_NOTIFYHandler(s->updown);
 	uiWindowsEnsureDestroyWindow(s->updown);
 	uiWindowsEnsureDestroyWindow(s->edit);
 	uiWindowsEnsureDestroyWindow(s->hwnd);
@@ -108,15 +150,7 @@ static void spinboxArrangeChildren(uiSpinbox *s)
 // alas, we have to make a new up/down control each time :(
 static void recreateUpDown(uiSpinbox *s)
 {
-	BOOL preserve = FALSE;
-	int current;
-	// Microsoft's commctrl.h says to use this type
-	INT min, max;
-
 	if (s->updown != NULL) {
-		preserve = TRUE;
-		current = value(s);
-		SendMessageW(s->updown, UDM_GETRANGE32, (WPARAM) (&min), (LPARAM) (&max));
 		uiWindowsEnsureDestroyWindow(s->updown);
 	}
 	s->inhibitChanged = TRUE;
@@ -124,17 +158,15 @@ static void recreateUpDown(uiSpinbox *s)
 		UPDOWN_CLASSW, L"",
 		// no WS_VISIBLE; we set visibility ourselves
 		// up-down control should not be a tab stop
-		WS_CHILD | UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_HOTTRACK | UDS_NOTHOUSANDS | UDS_SETBUDDYINT,
+		WS_CHILD | UDS_ALIGNRIGHT | UDS_ARROWKEYS | UDS_HOTTRACK | UDS_NOTHOUSANDS,
 		// this is important; it's necessary for autosizing to work
 		0, 0, 0, 0,
 		s->hwnd, NULL, hInstance, NULL);
 	if (s->updown == NULL)
 		logLastError(L"error creating updown");
 	SendMessageW(s->updown, UDM_SETBUDDY, (WPARAM) (s->edit), 0);
-	if (preserve) {
-		SendMessageW(s->updown, UDM_SETRANGE32, (WPARAM) min, (LPARAM) max);
-		SendMessageW(s->updown, UDM_SETPOS32, 0, (LPARAM) current);
-	}
+	uiWindowsRegisterWM_NOTIFYHandler(s->updown, onWM_NOTIFY, uiControl(s));
+
 	// preserve the Z-order
 	spinboxArrangeChildren(s);
 	// TODO properly show/enable
@@ -159,13 +191,23 @@ static void defaultOnChanged(uiSpinbox *s, void *data)
 
 int uiSpinboxValue(uiSpinbox *s)
 {
-	return value(s);
+	return (int) s->value;
+}
+
+double uiSpinboxValueDouble(uiSpinbox *s)
+{
+	return s->value;
 }
 
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {
+	uiSpinboxSetValueDouble(s, (double) value);
+}
+
+void uiSpinboxSetValueDouble(uiSpinbox *s, double value)
+{
 	s->inhibitChanged = TRUE;
-	SendMessageW(s->updown, UDM_SETPOS32, 0, (LPARAM) value);
+	update_value(s, value);
 	s->inhibitChanged = FALSE;
 }
 
@@ -180,16 +222,23 @@ static void onResize(uiWindowsControl *c)
 	spinboxRelayout(uiSpinbox(c));
 }
 
-uiSpinbox *uiNewSpinbox(int min, int max)
+uiSpinbox *uiNewSpinboxDouble(double min, double max, int precision)
 {
 	uiSpinbox *s;
-	int temp;
+	double temp;
+	double step;
+	int precision_clamped;
 
 	if (min >= max) {
 		temp = min;
 		min = max;
 		max = temp;
 	}
+
+	precision_clamped = fmax(0, fmin(20, precision));
+	step = 1.0 / pow(10.0, precision_clamped);
+
+	printf("precision %d step size %f min %f max %f\n", precision, step, min, max);
 
 	uiWindowsNewControl(uiSpinbox, s);
 
@@ -198,7 +247,7 @@ uiSpinbox *uiNewSpinbox(int min, int max)
 	s->edit = uiWindowsEnsureCreateControlHWND(WS_EX_CLIENTEDGE,
 		L"edit", L"",
 		// don't use ES_NUMBER; it doesn't allow typing in a leading -
-		ES_AUTOHSCROLL | ES_LEFT | ES_NOHIDESEL | WS_TABSTOP,
+		ES_AUTOHSCROLL | ES_LEFT | WS_TABSTOP,
 		hInstance, NULL,
 		TRUE);
 	uiWindowsEnsureSetParentHWND(s->edit, s->hwnd);
@@ -207,10 +256,22 @@ uiSpinbox *uiNewSpinbox(int min, int max)
 	uiSpinboxOnChanged(s, defaultOnChanged, NULL);
 
 	recreateUpDown(s);
+
 	s->inhibitChanged = TRUE;
-	SendMessageW(s->updown, UDM_SETRANGE32, (WPARAM) min, (LPARAM) max);
-	SendMessageW(s->updown, UDM_SETPOS32, 0, (LPARAM) min);
+
+	s->step_size = fmax(step, 1 / pow(10, 20));
+	s->precision = precision_clamped;
+	s->minimum = min;
+	s->maximum = max;
+
+	update_value(s, 0);
+
 	s->inhibitChanged = FALSE;
 
 	return s;
+}
+
+uiSpinbox *uiNewSpinbox(int min, int max)
+{
+	return uiNewSpinboxDouble((double)min, (double) max, 0);
 }
