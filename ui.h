@@ -1910,11 +1910,35 @@ _UI_EXTERN uiMenu *uiNewMenu(const char *name);
 
 
 /**
+ * File Dialog parameters passed to uiOpenFileWithParams(), uiOpenFolderWithParams(), and uiSaveFileWithParams().
+ *
+ * @struct uiFileDialogParams
+ * @ingroup dataEntry dialogWindow
+ */
+typedef struct uiFileDialogParams uiFileDialogParams;
+struct uiFileDialogParams {
+	/**
+	 * String with default folder path to open in. Set to `NULL` to use the default.
+	 */
+	const char* defaultPath;
+	/**
+	 * String with default file name to suggest. Set to `NULL` to use the default.
+	 */
+	const char* defaultName;
+	/**
+	 * Array of strings with user friendly filter names. List ends with `NULL`. Supports 8 items maximum. Must be the same length as filterExtensions.
+	 */
+	const char** filterNames;
+	/**
+	 * Array of strings with allowed file extensions. Use the format `*.txt`. List ends with `NULL`. Supports 8 items maximum. Must be the same length as filterNames.
+	 */
+	const char** filterExtensions;
+};
+
+/**
  * File chooser dialog window to select a single file.
  *
  * @param parent Parent window.
- * @param defaultPath Path to default directory to open in.
- * @param filter Filter files shown as options to user.
  * @returns File path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
@@ -1922,13 +1946,26 @@ _UI_EXTERN uiMenu *uiNewMenu(const char *name);
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
-_UI_EXTERN char *uiOpenFile(uiWindow *parent, const char *defaultPath, const char *filter);
+_UI_EXTERN char *uiOpenFile(uiWindow *parent);
+
+/**
+ * File chooser dialog window to select a single file.
+ *
+ * @param parent Parent window.
+ * @param params Parameters for open file dialog.
+ * @returns File path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
+_UI_EXTERN char *uiOpenFileWithParams(uiWindow *parent, uiFileDialogParams *params);
 
 /**
  * Folder chooser dialog window to select a single folder.
  *
  * @param parent Parent window.
- * @param defaultPath Path to default directory to open in.
  * @returns Folder path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
@@ -1936,7 +1973,21 @@ _UI_EXTERN char *uiOpenFile(uiWindow *parent, const char *defaultPath, const cha
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
-_UI_EXTERN char *uiOpenFolder(uiWindow *parent, const char *defaultPath);
+_UI_EXTERN char *uiOpenFolder(uiWindow *parent);
+
+/**
+ * Folder chooser dialog window to select a single folder.
+ *
+ * @param parent Parent window.
+ * @param params Parameters for open folder dialog.
+ * @returns Folder path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
+_UI_EXTERN char *uiOpenFolderWithParams(uiWindow *parent, uiFileDialogParams *params);
 
 /**
  * Save file dialog window.
@@ -1945,9 +1996,6 @@ _UI_EXTERN char *uiOpenFolder(uiWindow *parent, const char *defaultPath);
  * file path already exist on the system.
  *
  * @param parent Parent window.
- * @param defaultPath Path to default directory to open in.
- * @param defaultName Default filename to suggest to user.
- * @param filter File extensions allowed for new file.
  * @returns File path, `NULL` on cancel.\n
  *          If path is not `NULL`:\n
  *          TODO: clarify string encoding.
@@ -1955,7 +2003,24 @@ _UI_EXTERN char *uiOpenFolder(uiWindow *parent, const char *defaultPath);
  * @note File paths are separated by the underlying OS file path separator.
  * @ingroup dataEntry dialogWindow
  */
-_UI_EXTERN char *uiSaveFile(uiWindow *parent, const char *defaultPath, const char *defaultName, const char *filter);
+_UI_EXTERN char *uiSaveFile(uiWindow *parent);
+
+/**
+ * Save file dialog window.
+ *
+ * The user is asked to confirm overwriting existing files, should the chosen
+ * file path already exist on the system.
+ *
+ * @param parent Parent window.
+ * @param params Parameters for dialog.
+ * @returns File path, `NULL` on cancel.\n
+ *          If path is not `NULL`:\n
+ *          TODO: clarify string encoding.
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
+ * @note File paths are separated by the underlying OS file path separator.
+ * @ingroup dataEntry dialogWindow
+ */
+_UI_EXTERN char *uiSaveFileWithParams(uiWindow *parent, uiFileDialogParams *params);
 
 /**
  * Message box dialog window.

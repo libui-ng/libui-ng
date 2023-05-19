@@ -166,7 +166,7 @@ static void onOpenFileClicked(uiButton *b, void *data)
 	uiEntry *entry = uiEntry(data);
 	char *filename;
 
-	filename = uiOpenFile(mainwin, NULL, "DS ROM (*.nds)|*.nds;*.srl|Any file|*.*");
+	filename = uiOpenFile(mainwin);
 	if (filename == NULL) {
 		uiEntrySetText(entry, "(cancelled)");
 		return;
@@ -180,7 +180,7 @@ static void onOpenFolderClicked(uiButton *b, void *data)
 	uiEntry *entry = uiEntry(data);
 	char *filename;
 
-	filename = uiOpenFolder(mainwin, NULL);
+	filename = uiOpenFolder(mainwin);
 	if (filename == NULL) {
 		uiEntrySetText(entry, "(cancelled)");
 		return;
@@ -188,13 +188,14 @@ static void onOpenFolderClicked(uiButton *b, void *data)
 	uiEntrySetText(entry, filename);
 	uiFreeText(filename);
 }
+
 
 static void onSaveFileClicked(uiButton *b, void *data)
 {
 	uiEntry *entry = uiEntry(data);
 	char *filename;
 
-	filename = uiSaveFile(mainwin, NULL, "untitled", "melonDS savestate (*.mln)|*.mln");
+	filename = uiSaveFile(mainwin);
 	if (filename == NULL) {
 		uiEntrySetText(entry, "(cancelled)");
 		return;
@@ -202,6 +203,59 @@ static void onSaveFileClicked(uiButton *b, void *data)
 	uiEntrySetText(entry, filename);
 	uiFreeText(filename);
 }
+
+static void onOpenFileWithParamsClicked(uiButton *b, void *data)
+{
+	uiEntry *entry = uiEntry(data);
+	char *filename;
+	uiFileDialogParams fparams;
+
+	fparams.filterNames = (const char *[]){"DS ROM (*.nds)", "Any File", NULL};
+	fparams.filterExtensions = (const char *[]){"*.nds", "*.*", NULL};
+
+	filename = uiOpenFileWithParams(mainwin, &fparams);
+	if (filename == NULL) {
+		uiEntrySetText(entry, "(cancelled)");
+		return;
+	}
+	uiEntrySetText(entry, filename);
+	uiFreeText(filename);
+}
+
+static void onOpenFolderWithParamsClicked(uiButton *b, void *data)
+{
+	uiEntry *entry = uiEntry(data);
+	char *filename;
+
+	filename = uiOpenFolderWithParams(mainwin, NULL);
+	if (filename == NULL) {
+		uiEntrySetText(entry, "(cancelled)");
+		return;
+	}
+	uiEntrySetText(entry, filename);
+	uiFreeText(filename);
+}
+
+static void onSaveFileWithParamsClicked(uiButton *b, void *data)
+{
+	uiEntry *entry = uiEntry(data);
+	char *filename;
+	uiFileDialogParams fparams;
+
+	fparams.defaultPath = NULL;
+	fparams.defaultName = "untitled";
+	fparams.filterNames = (const char *[]){"melonDS savestate (*.mln)", NULL};
+	fparams.filterExtensions = (const char *[]){"*.mln", NULL};
+
+	filename = uiSaveFileWithParams(mainwin, &fparams);
+	if (filename == NULL) {
+		uiEntrySetText(entry, "(cancelled)");
+		return;
+	}
+	uiEntrySetText(entry, filename);
+	uiFreeText(filename);
+}
+
 
 static void onMsgBoxClicked(uiButton *b, void *data)
 {
@@ -295,10 +349,43 @@ static uiControl *makeDataChoosersPage(void)
 		1, 2, 1, 1,
 		1, uiAlignFill, 0, uiAlignFill);
 
+	button = uiNewButton("  Open File with Params  ");
+	entry = uiNewEntry();
+	uiEntrySetReadOnly(entry, 1);
+	uiButtonOnClicked(button, onOpenFileWithParamsClicked, entry);
+	uiGridAppend(grid, uiControl(button),
+		0, 3, 1, 1,
+		0, uiAlignFill, 0, uiAlignFill);
+	uiGridAppend(grid, uiControl(entry),
+		1, 3, 1, 1,
+		1, uiAlignFill, 0, uiAlignFill);
+
+	button = uiNewButton("Open Folder with Params");
+	entry = uiNewEntry();
+	uiEntrySetReadOnly(entry, 1);
+	uiButtonOnClicked(button, onOpenFolderWithParamsClicked, entry);
+	uiGridAppend(grid, uiControl(button),
+		0, 4, 1, 1,
+		0, uiAlignFill, 0, uiAlignFill);
+	uiGridAppend(grid, uiControl(entry),
+		1, 4, 1, 1,
+		1, uiAlignFill, 0, uiAlignFill);
+
+	button = uiNewButton("  Save File with Params  ");
+	entry = uiNewEntry();
+	uiEntrySetReadOnly(entry, 1);
+	uiButtonOnClicked(button, onSaveFileWithParamsClicked, entry);
+	uiGridAppend(grid, uiControl(button),
+		0, 5, 1, 1,
+		0, uiAlignFill, 0, uiAlignFill);
+	uiGridAppend(grid, uiControl(entry),
+		1, 5, 1, 1,
+		1, uiAlignFill, 0, uiAlignFill);
+
 	msggrid = uiNewGrid();
 	uiGridSetPadded(msggrid, 1);
 	uiGridAppend(grid, uiControl(msggrid),
-		0, 3, 2, 1,
+		0, 6, 2, 1,
 		0, uiAlignCenter, 0, uiAlignStart);
 
 	button = uiNewButton("Message Box");
@@ -357,7 +444,7 @@ static void openClicked(uiMenuItem *item, uiWindow *w, void *data)
 {
 	char *filename;
 
-	filename = uiOpenFile(mainwin, NULL, "DS ROM (*.nds)|*.nds;*.srl|Any file|*.*");
+	filename = uiOpenFile(mainwin);
 	if (filename == NULL) {
 		uiMsgBoxError(mainwin, "No file selected", "Don't be alarmed!");
 		return;
@@ -370,7 +457,7 @@ static void openFolderClicked(uiMenuItem *item, uiWindow *w, void *data)
 {
 	char *filename;
 
-	filename = uiOpenFolder(mainwin, NULL);
+	filename = uiOpenFolder(mainwin);
 	if (filename == NULL) {
 		uiMsgBoxError(mainwin, "No folder selected", "Don't be alarmed!");
 		return;
@@ -383,7 +470,7 @@ static void saveClicked(uiMenuItem *item, uiWindow *w, void *data)
 {
 	char *filename;
 
-	filename = uiSaveFile(mainwin, NULL, "untitled", "melonDS savestate (*.mln)|*.mln");
+	filename = uiSaveFile(mainwin);
 	if (filename == NULL) {
 		uiMsgBoxError(mainwin, "No file selected", "Don't be alarmed!");
 		return;

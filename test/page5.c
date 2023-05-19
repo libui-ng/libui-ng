@@ -7,7 +7,7 @@ static void openFile(uiButton *b, void *data)
 {
 	char *fn;
 
-	fn = uiOpenFile(parent, NULL, "DS ROM (*.nds)|*.nds;*.srl|Any file|*.*");
+	fn = uiOpenFile(parent);
 	if (fn == NULL)
 		uiLabelSetText(uiLabel(data), "(cancelled)");
 	else {
@@ -20,7 +20,7 @@ static void openFolder(uiButton *b, void *data)
 {
 	char *fn;
 
-	fn = uiOpenFolder(parent, NULL);
+	fn = uiOpenFolder(parent);
 	if (fn == NULL)
 		uiLabelSetText(uiLabel(data), "(cancelled)");
 	else {
@@ -33,7 +33,56 @@ static void saveFile(uiButton *b, void *data)
 {
 	char *fn;
 
-	fn = uiSaveFile(parent, NULL, "untitled", "melonDS savestate (*.mln)|*.mln");
+	fn = uiSaveFile(parent);
+	if (fn == NULL)
+		uiLabelSetText(uiLabel(data), "(cancelled)");
+	else {
+		uiLabelSetText(uiLabel(data), fn);
+		uiFreeText(fn);
+	}
+}
+
+static void openFileWithParams(uiButton *b, void *data)
+{
+	char *fn;
+	uiFileDialogParams fparams;
+
+	fparams.filterNames = (const char *[]){"DS ROM (*.nds)", "Any File", NULL};
+	fparams.filterExtensions = (const char *[]){"*.nds", "*.*", NULL};
+
+	fn = uiOpenFileWithParams(parent, &fparams);
+	if (fn == NULL)
+		uiLabelSetText(uiLabel(data), "(cancelled)");
+	else {
+		uiLabelSetText(uiLabel(data), fn);
+		uiFreeText(fn);
+	}
+}
+
+static void openFolderWithParams(uiButton *b, void *data)
+{
+	char *fn;
+
+	fn = uiOpenFolderWithParams(parent, NULL);
+	if (fn == NULL)
+		uiLabelSetText(uiLabel(data), "(cancelled)");
+	else {
+		uiLabelSetText(uiLabel(data), fn);
+		uiFreeText(fn);
+	}
+}
+
+static void saveFileWithParams(uiButton *b, void *data)
+{
+	char *fn;
+	uiFileDialogParams fparams;
+
+	fparams.defaultPath = NULL;
+	fparams.defaultName = "untitled";
+	fparams.filterNames = (const char *[]){"melonDS savestate (*.mln)", NULL};
+	fparams.filterExtensions = (const char *[]){"*.mln", NULL};
+
+	fn = uiSaveFileWithParams(parent, &fparams);
 	if (fn == NULL)
 		uiLabelSetText(uiLabel(data), "(cancelled)");
 	else {
@@ -101,6 +150,9 @@ uiBox *makePage5(uiWindow *pw)
 	D("Open File", openFile);
 	D("Open Folder", openFolder);
 	D("Save File", saveFile);
+	D("Open File with Params", openFileWithParams);
+	D("Open Folder with Params", openFolderWithParams);
+	D("Save File with Params", saveFileWithParams);
 
 	title = uiNewEntry();
 	uiEntrySetText(title, "Title");

@@ -7,18 +7,13 @@
 #define windowWindow(w) (GTK_WINDOW(uiControlHandle(uiControl(w))))
 
 static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gchar *confirm,
-			const char *defaultPath, const char *defaultName, const char *filter)
+			uiFileDialogParams *params)
 {
 	GtkWidget *fcd;
 	GtkFileChooser *fc;
 	gint response;
 	char *filename;
 
-	gchar _filter[256];
-	gchar *fp = &_filter[0];
-	gchar *fname;
-	gchar *j;
-	int i;
 	int s;
 
 	fcd = gtk_file_chooser_dialog_new(NULL, parent, mode,
@@ -27,33 +22,17 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 		NULL);
 	fc = GTK_FILE_CHOOSER(fcd);
 
-	for (i = s = 0; i < 255; i++) {
-		if (filter[i] == '|' || filter[i] == '\0') {
-			_filter[i] = '\0';
-			if (s & 1) {
-				GtkFileFilter *filter = gtk_file_filter_new();
-				gtk_file_filter_set_name(filter, fname);
-				for (j = fp; ; j++) {
-					if (*j == ';') {
-						*j = '\0';
-						gtk_file_filter_add_pattern(filter, fp);
-						fp = j + 1;
-					} else if (*j == '\0') {
-						gtk_file_filter_add_pattern(filter, fp);
-						break;
-					}
-				}
-				gtk_file_chooser_add_filter(fc, filter);
-			} else {
-				fname = fp;
-			}
-			fp = &_filter[i + 1];
-			s++;
-			if (s >= 8) break;
-			if (filter[i] == '\0') break;
-		} else {
-			_filter[i] = filter[i];
+	if (params != NULL) {
+		for (s = 0; s < 8 && params->filterNames[s] && params->filterExtensions[s]; s++) {
+			GtkFileFilter *filter = gtk_file_filter_new();
+			gtk_file_filter_set_name(filter, params->filterNames[s]);
+			gtk_file_filter_add_pattern(filter, params->filterExtensions[s]);
+			gtk_file_chooser_add_filter(fc, filter);
 		}
+		if (params->defaultPath != NULL && strlen(params->defaultPath) > 0)
+			gtk_file_chooser_set_current_folder(fc, params->defaultPath);
+		if (params->defaultName != NULL && strlen(params->defaultName) > 0)
+			gtk_file_chooser_set_current_name(fc, params->defaultName);
 	}
 
 	gtk_file_chooser_set_local_only(fc, FALSE);
@@ -61,10 +40,6 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 	gtk_file_chooser_set_show_hidden(fc, TRUE);
 	gtk_file_chooser_set_do_overwrite_confirmation(fc, TRUE);
 	gtk_file_chooser_set_create_folders(fc, TRUE);
-	if (defaultPath != NULL && strlen(defaultPath) > 0)
-		gtk_file_chooser_set_current_folder(fc, defaultPath);
-	if (defaultName != NULL && strlen(defaultName) > 0)
-		gtk_file_chooser_set_current_name(fc, defaultName);
 
 	response = gtk_dialog_run(GTK_DIALOG(fcd));
 	if (response != GTK_RESPONSE_ACCEPT) {
@@ -76,22 +51,40 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 	return filename;
 }
 
-char *uiOpenFile(uiWindow *parent, const char *defaultPath, const char *filter)
+char *uiOpenFileWithParams(uiWindow *parent, uiFileDialogParams *params)
 {
 	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_OPEN, "_Open",
-			  defaultPath, NULL, filter);
+			  params);
 }
 
-char *uiOpenFolder(uiWindow *parent, const char *defaultPath)
+char *uiOpenFolderWithParams(uiWindow *parent, uiFileDialogParams *params)
 {
 	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "_Open",
-			  defaultPath, NULL, NULL);
+			  params);
 }
 
-char *uiSaveFile(uiWindow *parent, const char *defaultPath, const char *defaultName, const char *filter)
+char *uiSaveFileWithParams(uiWindow *parent, uiFileDialogParams *params)
 {
 	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_SAVE, "_Save",
-			  defaultPath, defaultName, filter);
+			  params);
+}
+
+char *uiOpenFile(uiWindow *parent)
+{
+	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_OPEN, "_Open",
+			  NULL);
+}
+
+char *uiOpenFolder(uiWindow *parent)
+{
+	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, "_Open",
+			  NULL);
+}
+
+char *uiSaveFile(uiWindow *parent)
+{
+	return filedialog(windowWindow(parent), GTK_FILE_CHOOSER_ACTION_SAVE, "_Save",
+			  NULL);
 }
 
 static void msgbox(GtkWindow *parent, const char *title, const char *description, GtkMessageType type, GtkButtonsType buttons)
