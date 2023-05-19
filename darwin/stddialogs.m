@@ -32,7 +32,7 @@ static char *runSavePanel(NSWindow *parent, NSSavePanel *s)
 	return filename;
 }
 
-char *uiOpenFile(uiWindow *parent, const char *defaultPath, const char *filter)
+char *uiOpenFile(uiWindow *parent)
 {
 	NSOpenPanel *o;
 
@@ -46,7 +46,7 @@ char *uiOpenFile(uiWindow *parent, const char *defaultPath, const char *filter)
 	return runSavePanel(windowWindow(parent), o);
 }
 
-char *uiOpenFolder(uiWindow *parent, const char *defaultPath)
+char *uiOpenFolder(uiWindow *parent)
 {
 	NSOpenPanel *o;
 
@@ -60,7 +60,7 @@ char *uiOpenFolder(uiWindow *parent, const char *defaultPath)
 	return runSavePanel(windowWindow(parent), o);
 }
 
-char *uiSaveFile(uiWindow *parent, const char *defaultPath, const char *defaultName, const char *filter)
+char *uiSaveFile(uiWindow *parent)
 {
 	NSSavePanel *s;
 
@@ -68,6 +68,21 @@ char *uiSaveFile(uiWindow *parent, const char *defaultPath, const char *defaultN
 	setupSavePanel(s);
 	// panel is autoreleased
 	return runSavePanel(windowWindow(parent), s);
+}
+
+char *uiOpenFileWithParams(uiWindow *parent, uiFileDialogParams *params)
+{
+	// TODO
+}
+
+char *uiOpenFolderWithParams(uiWindow *parent, uiFileDialogParams *params)
+{
+	// TODO
+}
+
+char *uiSaveFileWithParams(uiWindow *parent, uiFileDialogParams *params)
+{
+	// TODO
 }
 
 // I would use a completion handler for NSAlert as well, but alas NSAlert's are 10.9 and higher only
