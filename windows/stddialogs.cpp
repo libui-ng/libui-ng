@@ -26,18 +26,41 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 	char *name = NULL;
 	HRESULT hr;
 
-	COMDLG_FILTERSPEC filterspec[8];
-	int s = 0;
+	hr = CoCreateInstance(clsid,
+		NULL, CLSCTX_INPROC_SERVER,
+		iid, (LPVOID *) (&d));
+	if (hr != S_OK) {
+		logHRESULT(L"error creating common item dialog", hr);
+		// always return NULL on error
+		goto out;
+	}
+
 
 	if (params != NULL) {
-		// Loop over filter names
-		for (s = 0; s < sizeof filterspec && params->filterNames[s] != NULL && params->filterExtensions[s] != NULL; s++) {
-			filterspec[s].pszName = params->filterNames[s];
-			filterspec[s].pszSpec = params->filterExtensions[s];
+		COMDLG_FILTERSPEC filterspec[8];
+		wchar_t* filter_strings[8][2];
+		int s = 0;
+		int i = 0;
+
+		// Loop over filters and convert to UTF16
+		for (s = 0; s < 8; s++) {
+			if (params->filterNames[s] == NULL || params->filterExtensions[s] == NULL) break;
+			wprintf(L"%s\t%s\n", params->filterNames[s], params->filterExtensions[s]);
+			filter_strings[s][0] = toUTF16(params->filterNames[s]);
+			filter_strings[s][1] = toUTF16(params->filterExtensions[s]);
+			filterspec[s].pszName = filter_strings[s][0];
+			filterspec[s].pszSpec = filter_strings[s][1];
 		}
+
 		// TODO: assert that filterNames/filterExtensions end at the same time
 		// params->filterNames[s] == NULL && params->filterExtensions == NULL
 		d->SetFileTypes(s, filterspec);
+
+		// Free UTF16 strings
+		for (i = 0; i < s; i++) {
+			uiprivFree(filter_strings[i][0]);
+			uiprivFree(filter_strings[i][1]);
+		}
 
 		if (params->defaultName != NULL && strlen(params->defaultName) > 0) {
 			WCHAR *wName = toUTF16(params->defaultName);
@@ -47,15 +70,6 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 
 		// TODO: implement defaultPath
 
-	}
-
-	hr = CoCreateInstance(clsid,
-		NULL, CLSCTX_INPROC_SERVER,
-		iid, (LPVOID *) (&d));
-	if (hr != S_OK) {
-		logHRESULT(L"error creating common item dialog", hr);
-		// always return NULL on error
-		goto out;
 	}
 
 	hr = d->GetOptions(&opts);
@@ -118,7 +132,7 @@ char *uiOpenFileWithParams(uiWindow *parent, uiFileDialogParams *params)
 		| FOS_NOTESTFILECREATE
 		| FOS_FORCESHOWHIDDEN
 		| FOS_DEFAULTNOMINIMODE,
-		uiFileDialogParams params);
+		params);
 	enableAllWindowsExcept(parent);
 	return res;
 }
@@ -168,7 +182,6 @@ char *uiSaveFileWithParams(uiWindow *parent, uiFileDialogParams *params)
 char *uiOpenFile(uiWindow *parent)
 {
 	char *res;
-	uiFileDialogParams params = { NULL };
 
 	disableAllWindowsExcept(parent);
 	res = commonItemDialog(windowHWND(parent),
@@ -182,7 +195,7 @@ char *uiOpenFile(uiWindow *parent)
 		| FOS_NOTESTFILECREATE
 		| FOS_FORCESHOWHIDDEN
 		| FOS_DEFAULTNOMINIMODE,
-		uiFileDialogParams params);
+		NULL);
 	enableAllWindowsExcept(parent);
 	return res;
 }
@@ -190,7 +203,6 @@ char *uiOpenFile(uiWindow *parent)
 char *uiOpenFolder(uiWindow *parent)
 {
 	char *res;
-	uiFileDialogParams params = { NULL };
 
 	disableAllWindowsExcept(parent);
 	res = commonItemDialog(windowHWND(parent),
@@ -205,7 +217,7 @@ char *uiOpenFolder(uiWindow *parent)
 		| FOS_NODEREFERENCELINKS
 		| FOS_FORCESHOWHIDDEN
 		| FOS_DEFAULTNOMINIMODE,
-		params);
+		NULL);
 	enableAllWindowsExcept(parent);
 	return res;
 }
@@ -213,7 +225,6 @@ char *uiOpenFolder(uiWindow *parent)
 char *uiSaveFile(uiWindow *parent)
 {
 	char *res;
-	uiFileDialogParams params = { NULL };
 
 	disableAllWindowsExcept(parent);
 	res = commonItemDialog(windowHWND(parent),
@@ -226,7 +237,7 @@ char *uiSaveFile(uiWindow *parent)
 		| FOS_NOTESTFILECREATE
 		| FOS_FORCESHOWHIDDEN
 		| FOS_DEFAULTNOMINIMODE,
-		params);
+		NULL);
 	enableAllWindowsExcept(parent);
 	return res;
 }
