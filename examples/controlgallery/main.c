@@ -210,8 +210,11 @@ static void onOpenFileWithParamsClicked(uiButton *b, void *data)
 	char *filename;
 	uiFileDialogParams fparams;
 
-	fparams.filterNames = (const char *[]){"DS ROM (*.nds)", "Any File", NULL};
-	fparams.filterExtensions = (const char *[]){"*.nds", "*.*", NULL};
+	fparams.filterCount = 2;
+	fparams.filters = (uiFileDialogParamsFilter[]){
+	{"DS ROM (*.nds)", 1, (const char *[]){"*.nds"}},
+	{"Any File", 1, (const char *[]){"*.*"}},
+	};
 
 	filename = uiOpenFileWithParams(mainwin, &fparams);
 	if (filename == NULL) {
@@ -244,8 +247,10 @@ static void onSaveFileWithParamsClicked(uiButton *b, void *data)
 
 	fparams.defaultPath = NULL;
 	fparams.defaultName = "untitled";
-	fparams.filterNames = (const char *[]){"melonDS savestate (*.mln)", NULL};
-	fparams.filterExtensions = (const char *[]){"*.mln", NULL};
+	fparams.filterCount = 1;
+	fparams.filters = (uiFileDialogParamsFilter[]){
+	{"melonDS savestate (*.mln)", 1, (const char *[]){"*.mln"}},
+	};
 
 	filename = uiSaveFileWithParams(mainwin, &fparams);
 	if (filename == NULL) {

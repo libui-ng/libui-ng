@@ -1908,6 +1908,27 @@ _UI_EXTERN void uiMenuAppendSeparator(uiMenu *m);
  */
 _UI_EXTERN uiMenu *uiNewMenu(const char *name);
 
+/**
+ * File Filter struct to be passed to uiOpenFileWithParams(), uiOpenFolderWithParams(), and uiSaveFileWithParams().
+ *
+ * @struct uiFileDialogParams
+ * @ingroup dataEntry dialogWindow
+ */
+typedef struct uiFileDialogParamsFilter uiFileDialogParamsFilter;
+struct uiFileDialogParamsFilter {
+	/**
+	 * The string presented to the user describing the filter.
+	 */
+	const char *name;
+	/**
+	 * The number of patterns pointed to by patterns. Must be greater than 0.
+	 */
+	size_t patternCount;
+	/**
+	 * Used to match filenames in file dialogs.
+	 */
+	const char **patterns;
+};
 
 /**
  * File Dialog parameters passed to uiOpenFileWithParams(), uiOpenFolderWithParams(), and uiSaveFileWithParams().
@@ -1925,14 +1946,15 @@ struct uiFileDialogParams {
 	 * String with default file name to suggest. Set to `NULL` to use the default.
 	 */
 	const char* defaultName;
+
 	/**
-	 * Array of strings with user friendly filter names. List ends with `NULL`. Supports 8 items maximum. Must be the same length as filterExtensions.
+	 * The number of filters pointed to by filters. If filters is `NULL`, this must be 0.
 	 */
-	const char** filterNames;
+	size_t filterCount;
 	/**
-	 * Array of strings with allowed file extensions. Use the format `*.txt`. List ends with `NULL`. Supports 8 items maximum. Must be the same length as filterNames.
+	 * Pointer to list of file filters. Set to `NULL` to use the default.
 	 */
-	const char** filterExtensions;
+	const uiFileDialogParamsFilter* filters;
 };
 
 /**

@@ -23,10 +23,17 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 	fc = GTK_FILE_CHOOSER(fcd);
 
 	if (params != NULL) {
-		for (s = 0; s < 8 && params->filterNames[s] && params->filterExtensions[s]; s++) {
+		for (s = 0; s < params->filterCount; s++) {
+			int pattern;
+
 			GtkFileFilter *filter = gtk_file_filter_new();
-			gtk_file_filter_set_name(filter, params->filterNames[s]);
-			gtk_file_filter_add_pattern(filter, params->filterExtensions[s]);
+			gtk_file_filter_set_name(filter, params->filters[s].name);
+
+			// Add all of the patterns for this filter
+			for (pattern = 0; pattern < params->filters[s].patternCount; pattern++) {
+				gtk_file_filter_add_pattern(filter, params->filters[s].patterns[pattern]);
+			}
+
 			gtk_file_chooser_add_filter(fc, filter);
 		}
 		if (params->defaultPath != NULL && strlen(params->defaultPath) > 0)

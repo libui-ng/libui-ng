@@ -37,29 +37,47 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 
 
 	if (params != NULL) {
-		COMDLG_FILTERSPEC filterspec[8];
-		wchar_t* filter_strings[8][2];
+		COMDLG_FILTERSPEC* filterspec;
+		wchar_t** filternames;
+		wchar_t** filterpatterns;
 		int s = 0;
 		int i = 0;
 
+		filterspec = (COMDLG_FILTERSPEC *) uiprivAlloc((sizeof (COMDLG_FILTERSPEC)) * params->filterCount, "COMDLG_FILTERSPEC[]");
+		filternames = (wchar_t **) uiprivAlloc((sizeof(  wchar_t * )) * params->filterCount, "wchar_t *[]");
+		filterpatterns = (wchar_t **) uiprivAlloc((sizeof ( wchar_t * )) * params->filterCount, "wchar_t *[]");
+
 		// Loop over filters and convert to UTF16
-		for (s = 0; s < 8; s++) {
-			if (params->filterNames[s] == NULL || params->filterExtensions[s] == NULL) break;
-			wprintf(L"%s\t%s\n", params->filterNames[s], params->filterExtensions[s]);
-			filter_strings[s][0] = toUTF16(params->filterNames[s]);
-			filter_strings[s][1] = toUTF16(params->filterExtensions[s]);
-			filterspec[s].pszName = filter_strings[s][0];
-			filterspec[s].pszSpec = filter_strings[s][1];
+		for (s = 0; s < params->filterCount; s++) {
+			int pattern = 0;
+			int patternSum = 0;
+			uiFileDialogParamsFilter filter = params->filters[s];
+
+			// assert(filter.patternCount > 0);
+
+			filterpatterns[s] = toUTF16(filter.patterns[pattern]);
+			for (pattern = 0; pattern < filter.patternCount; pattern++) {
+				wchar_t *old;
+
+				old = filterpatterns[s];
+				filterpatterns[s] = strf(L"%s;%s", filterpatterns[s], filter.patterns[pattern]);
+				uiprivFree(old);
+			}
+
+			filternames[s] = toUTF16(filter.name);
+			filterspec[s].pszName = filternames[s];
+			filterspec[s].pszSpec = filterpatterns[s];
 		}
 
 		// TODO: assert that filterNames/filterExtensions end at the same time
 		// params->filterNames[s] == NULL && params->filterExtensions == NULL
 		d->SetFileTypes(s, filterspec);
 
-		// Free UTF16 strings
+		// Free temporary memory
+		uiprivFree(filterspec);
 		for (i = 0; i < s; i++) {
-			uiprivFree(filter_strings[i][0]);
-			uiprivFree(filter_strings[i][1]);
+			uiprivFree(filternames[i]);
+			uiprivFree(filterpatterns[i]);
 		}
 
 		if (params->defaultName != NULL && strlen(params->defaultName) > 0) {
