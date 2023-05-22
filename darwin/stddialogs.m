@@ -73,6 +73,8 @@ char *uiSaveFile(uiWindow *parent)
 char *uiOpenFileWithParams(uiWindow *parent, uiFileDialogParams *params)
 {
 	// TODO
+	uiprivImplBug("Not yet implemented.");
+	return NULL;
 }
 
 char *uiOpenFolderWithParams(uiWindow *parent, uiFileDialogParams *params)

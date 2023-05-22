@@ -155,7 +155,7 @@ uiBox *makePage5(uiWindow *pw)
 	D("Open File", openFile);
 	D("Open Folder", openFolder);
 	D("Save File", saveFile);
-	D("Open File with Params", openFileWithParams);
+	D("Open File (Advanced)", openFileWithParams);
 	D("Open Folder with Params", openFolderWithParams);
 	D("Save File with Params", saveFileWithParams);
 
