@@ -14,7 +14,7 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 	gint response;
 	char *filename;
 
-	int s;
+	size_t s;
 
 	fcd = gtk_file_chooser_dialog_new(NULL, parent, mode,
 		"_Cancel", GTK_RESPONSE_CANCEL,
@@ -23,18 +23,24 @@ static char *filedialog(GtkWindow *parent, GtkFileChooserAction mode, const gcha
 	fc = GTK_FILE_CHOOSER(fcd);
 
 	if (params != NULL) {
-		for (s = 0; s < params->filterCount; s++) {
-			int pattern;
+		if (params->filters != NULL) {
+			for (s = 0; s < params->filterCount; s++) {
+				size_t pattern;
 
-			GtkFileFilter *filter = gtk_file_filter_new();
-			gtk_file_filter_set_name(filter, params->filters[s].name);
+				GtkFileFilter *filter = gtk_file_filter_new();
+				gtk_file_filter_set_name(filter, params->filters[s].name);
 
-			// Add all of the patterns for this filter
-			for (pattern = 0; pattern < params->filters[s].patternCount; pattern++) {
-				gtk_file_filter_add_pattern(filter, params->filters[s].patterns[pattern]);
+				// Add all of the patterns for this filter
+				for (pattern = 0; pattern < params->filters[s].patternCount; pattern++) {
+					gtk_file_filter_add_pattern(filter, params->filters[s].patterns[pattern]);
+				}
+
+				gtk_file_chooser_add_filter(fc, filter);
 			}
-
-			gtk_file_chooser_add_filter(fc, filter);
+		} else {
+			if (params->filterCount != 0) {
+				uiprivUserBug("Filter count must be 0 (not %d) if the filters list is NULL.", params->filterCount);
+			}
 		}
 		if (params->defaultPath != NULL && strlen(params->defaultPath) > 0)
 			gtk_file_chooser_set_current_folder(fc, params->defaultPath);
