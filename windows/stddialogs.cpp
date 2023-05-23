@@ -47,6 +47,10 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 		filternames = (wchar_t **) uiprivAlloc((sizeof(  wchar_t * )) * params->filterCount, "wchar_t *[]");
 		filterpatterns = (wchar_t **) uiprivAlloc((sizeof ( wchar_t * )) * params->filterCount, "wchar_t *[]");
 
+		if (params->filter == NULL && params->filterCount != 0) {
+			uiprivUserBug("Filter count must be 0 (not %d) if the filters list is NULL.", params->filterCount);
+		}
+
 		// Loop over filters and convert to UTF16
 		for (s = 0; s < params->filterCount; s++) {
 			int pattern = 0;
@@ -69,8 +73,6 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 			filterspec[s].pszSpec = filterpatterns[s];
 		}
 
-		// TODO: assert that filterNames/filterExtensions end at the same time
-		// params->filterNames[s] == NULL && params->filterExtensions == NULL
 		d->SetFileTypes(s, filterspec);
 
 		// Free temporary memory
@@ -86,8 +88,28 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 			uiprivFree(wName);
 		}
 
-		// TODO: implement defaultPath
+		if (params->defaultPath != NULL && strlen(params->defaultPath) > 0) {
+			IShellItem *folder;
+			HRESULT result;
+			wchar_t *defaultPath = toUTF16(params->defaultPath);
 
+			// uiprivImplBug("Default path not yet implemented for windows");
+			SHCreateItemFromParsingName(defaultPath, NULL, IID_PPV_ARGS(&folder));
+
+			if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) || result == HRESULT_FROM_WIN32(ERROR_INVALID_DRIVE))
+			{
+				uiprivFree(defaultPath);
+			}
+
+			if (!SUCCEEDED(result))
+			{
+				logHRESULT("error setting default path", result);
+			}
+
+			d->SetDefaultFolder(folder);
+			uiprivFree(defaultPath);
+			folder->Release();
+		}
 	}
 
 	hr = d->GetOptions(&opts);
