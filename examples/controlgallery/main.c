@@ -232,7 +232,11 @@ static void onOpenFolderWithParamsClicked(uiButton *b, void *data)
 	char *filename;
 	uiFileDialogParams fparams = {0};
 
+	#ifdef _WIN32
+	fparams.defaultPath = "C:\\";
+	#else
 	fparams.defaultPath = "/";
+	#endif
 
 	filename = uiOpenFolderWithParams(mainwin, &fparams);
 	if (filename == NULL) {

@@ -43,37 +43,39 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 		int s = 0;
 		int i = 0;
 
-		filterspec = (COMDLG_FILTERSPEC *) uiprivAlloc((sizeof (COMDLG_FILTERSPEC)) * params->filterCount, "COMDLG_FILTERSPEC[]");
-		filternames = (wchar_t **) uiprivAlloc((sizeof(  wchar_t * )) * params->filterCount, "wchar_t *[]");
-		filterpatterns = (wchar_t **) uiprivAlloc((sizeof ( wchar_t * )) * params->filterCount, "wchar_t *[]");
+		if (params->filters != NULL) {
+			filterspec = (COMDLG_FILTERSPEC *) uiprivAlloc((sizeof (COMDLG_FILTERSPEC)) * params->filterCount, "COMDLG_FILTERSPEC[]");
+			filternames = (wchar_t **) uiprivAlloc((sizeof(  wchar_t * )) * params->filterCount, "wchar_t *[]");
+			filterpatterns = (wchar_t **) uiprivAlloc((sizeof ( wchar_t * )) * params->filterCount, "wchar_t *[]");
 
-		if (params->filter == NULL && params->filterCount != 0) {
-			uiprivUserBug("Filter count must be 0 (not %d) if the filters list is NULL.", params->filterCount);
-		}
+			// Loop over filters and convert to UTF16
+			for (s = 0; s < params->filterCount; s++) {
+				int pattern = 0;
+				int patternSum = 0;
+				uiFileDialogParamsFilter filter = params->filters[s];
 
-		// Loop over filters and convert to UTF16
-		for (s = 0; s < params->filterCount; s++) {
-			int pattern = 0;
-			int patternSum = 0;
-			uiFileDialogParamsFilter filter = params->filters[s];
+				// assert(filter.patternCount > 0);
 
-			// assert(filter.patternCount > 0);
+				filterpatterns[s] = toUTF16(filter.patterns[pattern]);
+				for (pattern = 0; pattern < filter.patternCount; pattern++) {
+					wchar_t *old;
 
-			filterpatterns[s] = toUTF16(filter.patterns[pattern]);
-			for (pattern = 0; pattern < filter.patternCount; pattern++) {
-				wchar_t *old;
+					old = filterpatterns[s];
+					filterpatterns[s] = strf(L"%s;%s", filterpatterns[s], filter.patterns[pattern]);
+					uiprivFree(old);
+				}
 
-				old = filterpatterns[s];
-				filterpatterns[s] = strf(L"%s;%s", filterpatterns[s], filter.patterns[pattern]);
-				uiprivFree(old);
+				filternames[s] = toUTF16(filter.name);
+				filterspec[s].pszName = filternames[s];
+				filterspec[s].pszSpec = filterpatterns[s];
 			}
 
-			filternames[s] = toUTF16(filter.name);
-			filterspec[s].pszName = filternames[s];
-			filterspec[s].pszSpec = filterpatterns[s];
+			d->SetFileTypes(s, filterspec);
+		} else {
+			if (params->filterCount != 0) {
+				uiprivUserBug("Filter count must be 0 (not %d) if the filters list is NULL.", params->filterCount);
+			}
 		}
-
-		d->SetFileTypes(s, filterspec);
 
 		// Free temporary memory
 		uiprivFree(filterspec);
@@ -90,20 +92,14 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 
 		if (params->defaultPath != NULL && strlen(params->defaultPath) > 0) {
 			IShellItem *folder;
-			HRESULT result;
 			wchar_t *defaultPath = toUTF16(params->defaultPath);
 
-			// uiprivImplBug("Default path not yet implemented for windows");
-			SHCreateItemFromParsingName(defaultPath, NULL, IID_PPV_ARGS(&folder));
+			hr = SHCreateItemFromParsingName(defaultPath, NULL, IID_IShellItem, (void **) &folder);
 
-			if (result == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND) || result == HRESULT_FROM_WIN32(ERROR_INVALID_DRIVE))
-			{
+			if (hr != S_OK) {
+				logHRESULT(L"error parsing default path", hr);
 				uiprivFree(defaultPath);
-			}
-
-			if (!SUCCEEDED(result))
-			{
-				logHRESULT("error setting default path", result);
+				goto out;
 			}
 
 			d->SetDefaultFolder(folder);
