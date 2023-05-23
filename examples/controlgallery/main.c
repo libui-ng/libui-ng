@@ -210,7 +210,7 @@ static void onOpenFileWithParamsClicked(uiButton *b, void *data)
 	char *filename;
 	uiFileDialogParams fparams = {0};
 
-	fparams.filterCount = 2;
+	fparams.filterCount = 3;
 	fparams.filters = (uiFileDialogParamsFilter[]){
 		{"Text File (*.txt)", 1, (const char *[]){"*.txt"}},
 		{"JPEG File (*.jpg, *.jpeg)", 2, (const char *[]){"*.jpg", "*.jpeg"}},
