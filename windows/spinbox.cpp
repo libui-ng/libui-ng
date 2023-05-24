@@ -201,11 +201,18 @@ double uiSpinboxValueDouble(uiSpinbox *s)
 
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {
-	uiSpinboxSetValueDouble(s, (double) value);
+	s->inhibitChanged = TRUE;
+	update_value(s, value);
+	s->inhibitChanged = FALSE;
 }
 
 void uiSpinboxSetValueDouble(uiSpinbox *s, double value)
 {
+	if (s->precision == 0)
+	{
+		uiprivUserBug("Setting value to double while spinbox is in int mode is not supported.");
+		return;
+	}
 	s->inhibitChanged = TRUE;
 	update_value(s, value);
 	s->inhibitChanged = FALSE;
