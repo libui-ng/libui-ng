@@ -6,7 +6,7 @@
 // - properly hide selection when not focused (or switch on LVS_SHOWSELALWAYS and draw that state)
 
 // TODO maybe split this into item and subitem structs?
-struct drawState {
+struct tableDrawState {
 	uiTable *t;
 	uiTableModel *model;
 	uiprivTableColumnParams *p;
@@ -25,7 +25,7 @@ struct drawState {
 	BOOL freeTextBrush;
 };
 
-static HRESULT drawBackgrounds(HRESULT hr, struct drawState *s)
+static HRESULT drawBackgrounds(HRESULT hr, struct tableDrawState *s)
 {
 	if (hr != S_OK)
 		return hr;
@@ -62,7 +62,7 @@ static void centerImageRect(RECT *image, RECT *space)
 	image->bottom += yoff;
 }
 
-static HRESULT drawImagePart(HRESULT hr, struct drawState *s)
+static HRESULT drawImagePart(HRESULT hr, struct tableDrawState *s)
 {
 	uiTableValue *value;
 	IWICBitmap *wb;
@@ -116,7 +116,7 @@ static HRESULT drawImagePart(HRESULT hr, struct drawState *s)
 // - https://blogs.msdn.microsoft.com/oldnewthing/20171129-00/?p=97485
 // - https://blogs.msdn.microsoft.com/oldnewthing/20171201-00/?p=97505
 
-static HRESULT drawUnthemedCheckbox(struct drawState *s, int checked, int enabled)
+static HRESULT drawUnthemedCheckbox(struct tableDrawState *s, int checked, int enabled)
 {
 	RECT r;
 	UINT state;
@@ -146,7 +146,7 @@ static HRESULT drawUnthemedCheckbox(struct drawState *s, int checked, int enable
 	return S_OK;
 }
 
-static HRESULT drawThemedCheckbox(struct drawState *s, HTHEME theme, int checked, int enabled)
+static HRESULT drawThemedCheckbox(struct tableDrawState *s, HTHEME theme, int checked, int enabled)
 {
 	RECT r;
 	SIZE size;
@@ -183,7 +183,7 @@ static HRESULT drawThemedCheckbox(struct drawState *s, HTHEME theme, int checked
 	return S_OK;
 }
 
-static HRESULT drawCheckboxPart(HRESULT hr, struct drawState *s)
+static HRESULT drawCheckboxPart(HRESULT hr, struct tableDrawState *s)
 {
 	uiTableValue *value;
 	int checked, enabled;
@@ -217,7 +217,7 @@ static HRESULT drawCheckboxPart(HRESULT hr, struct drawState *s)
 	return S_OK;
 }
 
-static HRESULT drawTextPart(HRESULT hr, struct drawState *s)
+static HRESULT drawTextPart(HRESULT hr, struct tableDrawState *s)
 {
 	COLORREF prevText;
 	int prevMode;
@@ -272,7 +272,7 @@ static HRESULT drawTextPart(HRESULT hr, struct drawState *s)
 // much of this is to imitate what shell32.dll's CDrawProgressBar does
 #define indeterminateSegments 8
 
-static HRESULT drawProgressBarPart(HRESULT hr, struct drawState *s)
+static HRESULT drawProgressBarPart(HRESULT hr, struct tableDrawState *s)
 {
 	int progress;
 	LONG indeterminatePos;
@@ -385,7 +385,7 @@ fail:
 	return hr;
 }
 
-static HRESULT drawButtonPart(HRESULT hr, struct drawState *s)
+static HRESULT drawButtonPart(HRESULT hr, struct tableDrawState *s)
 {
 	uiTableValue *value;
 	WCHAR *wstr;
@@ -479,7 +479,7 @@ fail:
 	return hr;
 }
 
-static HRESULT freeDrawState(struct drawState *s)
+static HRESULT freeDrawState(struct tableDrawState *s)
 {
 	HRESULT hrret;
 
@@ -523,11 +523,11 @@ static COLORREF blend(COLORREF base, double r, double g, double b, double a)
 		(BYTE) (bb * 255));
 }
 
-static HRESULT fillDrawState(struct drawState *s, uiTable *t, NMLVCUSTOMDRAW *nm, uiprivTableColumnParams *p)
+static HRESULT fillDrawState(struct tableDrawState *s, uiTable *t, NMLVCUSTOMDRAW *nm, uiprivTableColumnParams *p)
 {
 	HRESULT hr;
 
-	ZeroMemory(s, sizeof (struct drawState));
+	ZeroMemory(s, sizeof (struct tableDrawState));
 	s->t = t;
 	s->model = t->model;
 	s->p = p;
@@ -621,7 +621,7 @@ static HRESULT updateAndDrawFocusRects(HRESULT hr, uiTable *t, HDC dc, int iItem
 // TODO only compute the background brushes once?
 HRESULT uiprivTableHandleNM_CUSTOMDRAW(uiTable *t, NMLVCUSTOMDRAW *nm, LRESULT *lResult)
 {
-	struct drawState s;
+	struct tableDrawState s;
 	uiprivTableColumnParams *p;
 	NMLVCUSTOMDRAW b;
 	size_t i, n;
