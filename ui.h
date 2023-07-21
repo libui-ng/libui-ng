@@ -2062,7 +2062,7 @@ _UI_EXTERN uiArea *uiNewScrollingArea(uiAreaHandler *ah, int width, int height);
  * @returns pointer to the user data structure.
  * @memberof uiArea
  */
-void* uiAreaGetUserData(uiArea *m);
+_UI_EXTERN void* uiAreaGetUserData(uiArea *m);
 
 /**
  * Sets the user data associated with the uiTableModel.
@@ -2071,7 +2071,7 @@ void* uiAreaGetUserData(uiArea *m);
  * @param userData pointer to the user data structure.
  * @memberof uiArea
  */
-void uiAreaSetUserData(uiArea *a, void *userData);
+_UI_EXTERN void uiAreaSetUserData(uiArea *a, void *userData);
 
 struct uiAreaDrawParams {
 	uiDrawContext *Context;
@@ -3435,7 +3435,7 @@ typedef struct uiTableModel uiTableModel;
  * @returns pointer to the user data structure.
  * @memberof uiTableModel
  */
-void* uiTableModelGetUserData(uiTableModel *m);
+_UI_EXTERN void* uiTableModelGetUserData(uiTableModel *m);
 
 /**
  * Sets the user data associated with the uiTableModel.
@@ -3444,7 +3444,7 @@ void* uiTableModelGetUserData(uiTableModel *m);
  * @param userData pointer to the user data structure.
  * @memberof uiTableModel
  */
-void uiTableModelSetUserData(uiTableModel *m, void *userData);
+_UI_EXTERN void uiTableModelSetUserData(uiTableModel *m, void *userData);
 
 /**
  * Developer defined methods for data retrieval and setting.
