@@ -204,3 +204,13 @@ uiArea *uiNewScrollingArea(uiAreaHandler *ah, int width, int height)
 
 	return a;
 }
+
+void* uiAreaGetUserData(uiArea *a)
+{
+	return a->userData;
+}
+
+void uiAreaSetUserData(uiArea *a, void *userData)
+{
+	a->userData = userData;
+}

@@ -456,3 +456,13 @@ void uiTableColumnSetWidth(uiTable *t, int column, int width)
 	else
 		[tc setWidth: width];
 }
+
+void* uiTableModelGetUserData(uiTableModel *m)
+{
+	return m->userData;
+}
+
+void uiTableModelSetUserData(uiTableModel *m, void *userData)
+{
+	m->userData = userData;
+}

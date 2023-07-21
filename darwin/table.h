@@ -8,6 +8,7 @@ struct uiTableModel {
 	uiTableModelHandler *mh;
 	uiprivTableModel *m;
 	NSMutableArray *tables;
+	void *userData;
 };
 struct uiTable {
 	uiDarwinControl c;

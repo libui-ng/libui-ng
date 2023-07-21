@@ -26,6 +26,8 @@ struct uiArea {
 	BOOL tracking;
 
 	ID2D1HwndRenderTarget *rt;
+
+	void *userData;
 };
 
 // areadraw.cpp

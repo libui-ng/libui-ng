@@ -8,6 +8,7 @@
 struct uiTableModel {
 	uiTableModelHandler *mh;
 	std::vector<uiTable *> *tables;
+	void *userData;
 };
 typedef struct uiprivTableColumnParams uiprivTableColumnParams;
 struct uiprivTableColumnParams {

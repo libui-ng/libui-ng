@@ -33,6 +33,8 @@ struct uiArea {
 	uiAreaHandler *ah;
 	BOOL scrolling;
 	NSEvent *dragevent;
+
+	void *userData;
 };
 
 @implementation areaView
@@ -493,4 +495,14 @@ uiArea *uiNewScrollingArea(uiAreaHandler *ah, int width, int height)
 	a->view = a->sv;
 
 	return a;
+}
+
+void* uiAreaGetUserData(uiArea *a)
+{
+	return a->userData;
+}
+
+void uiAreaSetUserData(uiArea *a, void *userData)
+{
+	a->userData = userData;
 }

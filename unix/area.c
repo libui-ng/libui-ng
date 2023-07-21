@@ -49,6 +49,8 @@ struct uiArea {
 
 	// for user window drags
 	GdkEventButton *dragevent;
+
+	void *userData;
 };
 
 G_DEFINE_TYPE(areaWidget, areaWidget, GTK_TYPE_DRAWING_AREA)
@@ -634,4 +636,14 @@ uiArea *uiNewScrollingArea(uiAreaHandler *ah, int width, int height)
 	gtk_widget_show(a->areaWidget);
 
 	return a;
+}
+
+void* uiAreaGetUserData(uiArea *a)
+{
+	return a->userData;
+}
+
+void uiAreaSetUserData(uiArea *a, void *userData)
+{
+	a->userData = userData;
 }

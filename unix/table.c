@@ -900,3 +900,12 @@ void uiTableSetSelectionMode(uiTable *t, uiTableSelectionMode mode)
 	g_signal_handler_unblock(selection, t->onSelectionChangedSignal);
 }
 
+void* uiTableModelGetUserData(uiTableModel *m)
+{
+	return m->userData;
+}
+
+void uiTableModelSetUserData(uiTableModel *m, void *userData)
+{
+	m->userData = userData;
+}

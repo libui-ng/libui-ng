@@ -13,6 +13,7 @@ struct uiTableModel {
 	GObject parent_instance;
 	gint stamp;
 	uiTableModelHandler *mh;
+	void *userData;
 };
 struct uiTableModelClass {
 	GObjectClass parent_class;

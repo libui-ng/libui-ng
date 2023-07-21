@@ -106,6 +106,9 @@ struct uiControl {
 	int (*Enabled)(uiControl *);
 	void (*Enable)(uiControl *);
 	void (*Disable)(uiControl *);
+
+	void (*onFree)(uiControl *, void *);
+	void *onFreeData;
 };
 // TOOD add argument names to all arguments
 #define uiControl(this) ((uiControl *) (this))
@@ -208,6 +211,20 @@ _UI_EXTERN void uiControlEnable(uiControl *c);
  * @memberof uiControl
  */
 _UI_EXTERN void uiControlDisable(uiControl *c);
+
+/**
+ * Registers a callback for when the control is about to be freed.
+ *
+ * @param c uiControl instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlOnFree(uiControl *w, void (*f)(uiControl *sender, void *senderData), void *data);
 
 /**
  * Allocates a uiControl.
@@ -2001,6 +2018,8 @@ struct uiAreaHandler {
 	void (*MouseCrossed)(uiAreaHandler *, uiArea *, int left);
 	void (*DragBroken)(uiAreaHandler *, uiArea *);
 	int (*KeyEvent)(uiAreaHandler *, uiArea *, uiAreaKeyEvent *);
+
+	void *userData;
 };
 
 // TODO RTL layouts?
@@ -2035,6 +2054,24 @@ _UI_EXTERN void uiAreaBeginUserWindowMove(uiArea *a);
 _UI_EXTERN void uiAreaBeginUserWindowResize(uiArea *a, uiWindowResizeEdge edge);
 _UI_EXTERN uiArea *uiNewArea(uiAreaHandler *ah);
 _UI_EXTERN uiArea *uiNewScrollingArea(uiAreaHandler *ah, int width, int height);
+
+/**
+ * Returns the user data associated with the uiTableModel.
+ *
+ * @param a Area to read.
+ * @returns pointer to the user data structure.
+ * @memberof uiArea
+ */
+void* uiAreaGetUserData(uiArea *m);
+
+/**
+ * Sets the user data associated with the uiTableModel.
+ *
+ * @param a uiArea to configure.
+ * @param userData pointer to the user data structure.
+ * @memberof uiArea
+ */
+void uiAreaSetUserData(uiArea *a, void *userData);
 
 struct uiAreaDrawParams {
 	uiDrawContext *Context;
@@ -3392,6 +3429,24 @@ _UI_ENUM(uiSortIndicator) {
 typedef struct uiTableModel uiTableModel;
 
 /**
+ * Returns the user data associated with the uiTableModel.
+ *
+ * @param m Table model to read.
+ * @returns pointer to the user data structure.
+ * @memberof uiTableModel
+ */
+void* uiTableModelGetUserData(uiTableModel *m);
+
+/**
+ * Sets the user data associated with the uiTableModel.
+ *
+ * @param m Table model to configure.
+ * @param userData pointer to the user data structure.
+ * @memberof uiTableModel
+ */
+void uiTableModelSetUserData(uiTableModel *m, void *userData);
+
+/**
  * Developer defined methods for data retrieval and setting.
  *
  * These methods get called whenever the associated uiTableModel needs to
@@ -3456,6 +3511,8 @@ struct uiTableModelHandler {
 	 * set by a uiTable.
 	 */
 	void (*SetCellValue)(uiTableModelHandler *, uiTableModel *, int, int, const uiTableValue *);
+
+	void *userData;
 };
 
 /**

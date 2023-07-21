@@ -883,3 +883,13 @@ void uiTableColumnSetWidth(uiTable *t, int column, int width)
 
 	SendMessageW(t->hwnd, LVM_SETCOLUMNWIDTH, (WPARAM) column, (LPARAM) width);
 }
+
+void* uiTableModelGetUserData(uiTableModel *m)
+{
+	return m->userData;
+}
+
+void uiTableModelSetUserData(uiTableModel *m, void *userData)
+{
+	m->userData = userData;
+}
