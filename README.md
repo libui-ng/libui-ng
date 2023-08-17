@@ -39,7 +39,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 
 libui-ng mainly uses [the standard Meson build options](https://mesonbuild.com/Builtin-options.html).
 
-```
+```shell-session
 $ # in the top-level libui-ng directory run:
 $ meson setup build [options]
 $ ninja -C build
@@ -67,6 +67,30 @@ The Meson website and documentation has more in-depth usage instructions.
 For the sake of completeness, I should note that the default value of `--layout` is `flat`, not the usual `mirror`. This is done both to make creating the release archives easier as well as to reduce the chance that shared library builds will fail to start on Windows because the DLL is in another directory. You can always specify this manually if you want.
 
 Backends other than `ninja` should work, but are untested by me.
+
+### Zig
+
+An alternative to using meson is to use the zig compiler and toolchain. The specific version used is `zig 0.11.0`.
+
+```shell-session
+$ # in the top-level libui-ng directory run:
+$ zig build
+$ # this should build the library and put it in ./zig-out/lib
+$ # the examples will be located in ./zig-out/bin
+$ # to compile for a specific platform:
+$ zig build -Dtarget=x86_64-windows # note that this will require rc.exe on Windows or wrc on non-Windows systems
+$ # to change the optimization mode, use -Doptimize:
+$ zig build -Doptimize=ReleaseSafe
+```
+
+#### Requirements
+On all hosts, [zig 0.11.0](https://ziglang.org/download/) must be installed.
+
+To compile for Linux, `gtk+-3.0` and `pkg-config` must be installed.
+
+To compile for Windows, a Windows resource compiler must be installed. The build.zig will default to `rc.exe` on Windows and `wrc` on non-Windows systems. This can be overriden by passing `-Dresource-compiler=<path to resource compiler executable>`.
+
+To compile for MacOS, you will need the MacOS sdk installed. As far as I know, this requires an Apple device.
 
 ## Testing
 
