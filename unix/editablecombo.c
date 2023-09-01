@@ -54,6 +54,22 @@ void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiEditableComb
 	c->onChangedData = data;
 }
 
+char *uiEditableComboboxPlaceholder(uiEditableCombobox *c)
+{
+	GtkEntry *e;
+	// since there isn't a gtk_combo_box_get_placeholder_text()...
+	e = GTK_ENTRY(gtk_bin_get_child(c->bin));
+	return uiUnixStrdupText(gtk_entry_get_placeholder_text(e));
+}
+
+void uiEditableComboboxSetPlaceholder(uiEditableCombobox *c, const char *text)
+{
+	GtkEntry *e;
+	// since there isn't a gtk_combo_box_set_placeholder_text()...
+	e = GTK_ENTRY(gtk_bin_get_child(c->bin));
+	gtk_entry_set_placeholder_text(e, text);
+}
+
 uiEditableCombobox *uiNewEditableCombobox(void)
 {
 	uiEditableCombobox *c;

@@ -134,6 +134,16 @@ void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiEditableComb
 	c->onChangedData = data;
 }
 
+char *uiEditableComboboxPlaceholder(uiEditableCombobox *c)
+{
+	return uiDarwinNSStringToText([c->cb.cell placeholderString]);
+}
+
+void uiEditableComboboxSetPlaceholder(uiEditableCombobox *c, const char *text)
+{
+	[c->cb.cell setPlaceholderString:uiprivToNSString(text)];
+}
+
 static void defaultOnChanged(uiEditableCombobox *c, void *data)
 {
 	// do nothing
