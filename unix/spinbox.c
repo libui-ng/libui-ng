@@ -48,8 +48,7 @@ void uiSpinboxSetValue(uiSpinbox *s, int value)
 
 void uiSpinboxSetValueDouble(uiSpinbox *s, double value)
 {
-	if (s->precision == 0)
-	{
+	if (s->precision == 0) {
 		uiprivUserBug("Setting value to double while spinbox is in int mode is not supported.");
 		return;
 	}
@@ -91,14 +90,9 @@ uiSpinbox *uiNewSpinboxDouble(double min, double max, int precision)
 	s->spinButton = GTK_SPIN_BUTTON(s->widget);
 
 	precision_clamped = fmax(0, fmin(20, precision));
-	if (precision_clamped == 0)
-	{
-		gtk_spin_button_set_digits(s->spinButton, 0);
-	}
-	else
-	{
+	gtk_spin_button_set_digits(s->spinButton, precision_clamped);
+	if (precision_clamped != 0) {
 		step = 1.0 / pow(10.0, precision_clamped);
-		gtk_spin_button_set_digits(s->spinButton, precision_clamped);
 		gtk_spin_button_set_increments(s->spinButton, step, step * 10);
 	}
 	s->precision = precision_clamped;
