@@ -36,6 +36,10 @@ double uiSpinboxValueDouble(uiSpinbox *s)
 	return gtk_spin_button_get_value(s->spinButton);
 }
 
+char *uiSpinboxValueText(uiSpinbox *s)
+{
+	return uiUnixStrdupText(gtk_entry_get_text(s->entry));
+}
 
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {

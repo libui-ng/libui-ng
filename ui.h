@@ -1143,6 +1143,28 @@ _UI_EXTERN int uiSpinboxValue(uiSpinbox *s);
 _UI_EXTERN double uiSpinboxValueDouble(uiSpinbox *s);
 
 /**
+ * Returns the spinbox value as a string.
+ *
+ * @param s uiSpinbox instance.
+ * @returns The text of the spinbox's entry.
+ *          A `NUL` terminated string.\n
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
+ * @memberof uiSpinbox
+ */
+_UI_EXTERN char* uiSpinboxValueText(uiSpinbox *s);
+
+/**
+ * Returns the spinbox value as a string.
+ *
+ * @param s uiSpinbox instance.
+ * @returns The text of the spinbox's entry.
+ *          A `NUL` terminated string.\n
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
+ * @memberof uiSpinbox
+ */
+_UI_EXTERN char* uiSpinboxValueText(uiSpinbox *s);
+
+/**
  * Sets the spinbox value.
  *
  * @param s uiSpinbox instance.
