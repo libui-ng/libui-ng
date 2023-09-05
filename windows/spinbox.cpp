@@ -208,8 +208,7 @@ void uiSpinboxSetValue(uiSpinbox *s, int value)
 
 void uiSpinboxSetValueDouble(uiSpinbox *s, double value)
 {
-	if (s->precision == 0)
-	{
+	if (s->precision == 0) {
 		uiprivUserBug("Setting value to double while spinbox is in int mode is not supported.");
 		return;
 	}
@@ -244,8 +243,6 @@ uiSpinbox *uiNewSpinboxDouble(double min, double max, int precision)
 
 	precision_clamped = fmax(0, fmin(20, precision));
 	step = 1.0 / pow(10.0, precision_clamped);
-
-	printf("precision %d step size %f min %f max %f\n", precision, step, min, max);
 
 	uiWindowsNewControl(uiSpinbox, s);
 
