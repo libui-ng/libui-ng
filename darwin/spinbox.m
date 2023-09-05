@@ -15,6 +15,7 @@
 - (id)initWithFrame:(NSRect)r spinbox:(uiSpinbox *)sb;
 // see https://github.com/andlabs/ui/issues/82
 - (double)libui_value;
+- (NSString*)libui_text;
 - (void)libui_setValue:(double)val;
 - (void)setMinimum:(double)min;
 - (void)setMaximum:(double)max;
@@ -132,6 +133,11 @@ static CGFloat stepperYDelta(void)
 	return self->value;
 }
 
+- (NSString*)libui_text
+{
+	return [self->tf stringValue];
+}
+
 - (void)libui_setValue:(double)val
 {
 	self->value = val;
@@ -181,6 +187,11 @@ int uiSpinboxValue(uiSpinbox *s)
 double uiSpinboxValueDouble(uiSpinbox *s)
 {
 	return [s->spinbox libui_value];
+}
+
+char *uiSpinboxValueText(uiSpinbox *s)
+{
+	return uiDarwinNSStringToText([s->spinbox libui_text]);
 }
 
 void uiSpinboxSetValue(uiSpinbox *s, int value)

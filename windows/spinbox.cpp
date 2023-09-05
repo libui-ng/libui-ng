@@ -199,6 +199,11 @@ double uiSpinboxValueDouble(uiSpinbox *s)
 	return s->value;
 }
 
+char* uiSpinboxValueText(uiSpinbox *s)
+{
+	return uiWindowsWindowText(s->edit);
+}
+
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {
 	s->inhibitChanged = TRUE;
