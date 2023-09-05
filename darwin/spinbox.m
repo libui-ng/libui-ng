@@ -6,18 +6,18 @@
 	NSNumberFormatter *formatter;
 	NSStepper *stepper;
 
-	NSInteger value;
-	NSInteger minimum;
-	NSInteger maximum;
+	double value;
+	double minimum;
+	double maximum;
 
 	uiSpinbox *spinbox;
 }
 - (id)initWithFrame:(NSRect)r spinbox:(uiSpinbox *)sb;
 // see https://github.com/andlabs/ui/issues/82
-- (NSInteger)libui_value;
-- (void)libui_setValue:(NSInteger)val;
-- (void)setMinimum:(NSInteger)min;
-- (void)setMaximum:(NSInteger)max;
+- (double)libui_value;
+- (void)libui_setValue:(double)val;
+- (void)setMinimum:(double)min;
+- (void)setMaximum:(double)max;
 - (IBAction)stepperClicked:(id)sender;
 - (void)controlTextDidChange:(NSNotification *)note;
 @end
@@ -27,6 +27,7 @@ struct uiSpinbox {
 	libui_spinbox *spinbox;
 	void (*onChanged)(uiSpinbox *, void *);
 	void *onChangedData;
+	int precision;
 };
 
 // yes folks, this varies by operating system! woo!
@@ -54,14 +55,17 @@ static CGFloat stepperYDelta(void)
 		[self->formatter setLocalizesFormat:NO];
 		[self->formatter setUsesGroupingSeparator:NO];
 		[self->formatter setHasThousandSeparators:NO];
-		[self->formatter setAllowsFloats:NO];
+		[self->formatter setMinimumFractionDigits:sb->precision];
+		[self->formatter setMaximumFractionDigits:sb->precision];
 		[self->tf setFormatter:self->formatter];
 
 		self->stepper = [[NSStepper alloc] initWithFrame:NSZeroRect];
-		[self->stepper setIncrement:1];
 		[self->stepper setValueWraps:NO];
 		[self->stepper setAutorepeat:YES];              // hold mouse button to step repeatedly
 		[self->stepper setTranslatesAutoresizingMaskIntoConstraints:NO];
+
+		double step = 1.0 / pow(10.0, sb->precision);
+		[self->stepper setIncrement:step];
 
 		[self->tf setDelegate:self];
 		[self->stepper setTarget:self];
@@ -123,45 +127,45 @@ static CGFloat stepperYDelta(void)
 	[super dealloc];
 }
 
-- (NSInteger)libui_value
+- (double)libui_value
 {
 	return self->value;
 }
 
-- (void)libui_setValue:(NSInteger)val
+- (void)libui_setValue:(double)val
 {
 	self->value = val;
 	if (self->value < self->minimum)
 		self->value = self->minimum;
 	if (self->value > self->maximum)
 		self->value = self->maximum;
-	[self->tf setIntegerValue:self->value];
-	[self->stepper setIntegerValue:self->value];
+	[self->tf setDoubleValue:self->value];
+	[self->stepper setDoubleValue:self->value];
 }
 
-- (void)setMinimum:(NSInteger)min
+- (void)setMinimum:(double)min
 {
 	self->minimum = min;
-	[self->formatter setMinimum:[NSNumber numberWithInteger:self->minimum]];
-	[self->stepper setMinValue:((double) (self->minimum))];
+	[self->formatter setMinimum:[NSNumber numberWithDouble:self->minimum]];
+	[self->stepper setMinValue:(self->minimum)];
 }
 
-- (void)setMaximum:(NSInteger)max
+- (void)setMaximum:(double)max
 {
 	self->maximum = max;
-	[self->formatter setMaximum:[NSNumber numberWithInteger:self->maximum]];
-	[self->stepper setMaxValue:((double) (self->maximum))];
+	[self->formatter setMaximum:[NSNumber numberWithDouble:self->maximum]];
+	[self->stepper setMaxValue:(self->maximum)];
 }
 
 - (IBAction)stepperClicked:(id)sender
 {
-	[self libui_setValue:[self->stepper integerValue]];
+	[self libui_setValue:[self->stepper doubleValue]];
 	(*(self->spinbox->onChanged))(self->spinbox, self->spinbox->onChangedData);
 }
 
 - (void)controlTextDidChange:(NSNotification *)note
 {
-	[self libui_setValue:[self->tf integerValue]];
+	[self libui_setValue:[self->tf doubleValue]];
 	(*(self->spinbox->onChanged))(self->spinbox, self->spinbox->onChangedData);
 }
 
@@ -171,23 +175,26 @@ uiDarwinControlAllDefaults(uiSpinbox, spinbox)
 
 int uiSpinboxValue(uiSpinbox *s)
 {
-	return [s->spinbox libui_value];
+	return (int)[s->spinbox libui_value];
 }
 
 double uiSpinboxValueDouble(uiSpinbox *s)
 {
-	// TODO
-	return 0;
+	return [s->spinbox libui_value];
 }
 
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {
-	[s->spinbox libui_setValue:value];
+	[s->spinbox libui_setValue:(double)value];
 }
 
 void uiSpinboxSetValueDouble(uiSpinbox *s, double value)
 {
-	// TODO
+	if (s->precision == 0) {
+		uiprivUserBug("Setting value to double while spinbox is in int mode is not supported.");
+		return;
+	}
+	[s->spinbox libui_setValue:value];
 }
 
 void uiSpinboxOnChanged(uiSpinbox *s, void (*f)(uiSpinbox *, void *), void *data)
@@ -203,8 +210,13 @@ static void defaultOnChanged(uiSpinbox *s, void *data)
 
 uiSpinbox *uiNewSpinbox(int min, int max)
 {
+	return uiNewSpinboxDouble((double)min, (double)max, 0);
+}
+
+uiSpinbox *uiNewSpinboxDouble(double min, double max, int precision)
+{
 	uiSpinbox *s;
-	int temp;
+	double temp;
 
 	if (min >= max) {
 		temp = min;
@@ -214,6 +226,8 @@ uiSpinbox *uiNewSpinbox(int min, int max)
 
 	uiDarwinNewControl(uiSpinbox, s);
 
+	s->precision = fmax(0, fmin(20, precision));
+
 	s->spinbox = [[libui_spinbox alloc] initWithFrame:NSZeroRect spinbox:s];
 	[s->spinbox setMinimum:min];
 	[s->spinbox setMaximum:max];
@@ -222,9 +236,4 @@ uiSpinbox *uiNewSpinbox(int min, int max)
 	uiSpinboxOnChanged(s, defaultOnChanged, NULL);
 
 	return s;
-}
-
-uiSpinbox *uiNewSpinboxDouble(double min, double max, int precision)
-{
-	// TODO
 }
