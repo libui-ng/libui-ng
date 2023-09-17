@@ -113,7 +113,7 @@ static BOOL stepsIsRunning;
 	CFStringRef path = CFURLCopyFileSystemPath (url, kCFURLPOSIXPathStyle);
 	CFRelease(url);
 
-	if (!CFStringHasSuffix(path, @".app")) {
+	if (!CFStringHasSuffix(path, CFSTR(".app"))) {
 		// don't use setActivationPolicy outside this function
 		// or the menu bar won't work properly on macOS 10.15
 		// see https://github.com/libui-ng/libui-ng/issues/225
