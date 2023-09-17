@@ -170,22 +170,22 @@ static int setPlaceholder(HWND hwnd, const char *text, UINT msg)
 	return len;
 }
 
-char *uiWindowsEntryPlaceholder(HWND hwnd, int len)
+char *uiprivEntryPlaceholder(HWND hwnd, int len)
 {
 	return getPlaceholder(hwnd, len, EM_GETCUEBANNER);
 }
 
-int uiWindowsSetEntryPlaceholder(HWND hwnd, const char *text)
+int uiprivSetEntryPlaceholder(HWND hwnd, const char *text)
 {
 	return setPlaceholder(hwnd, text, EM_SETCUEBANNER);
 }
 
-char *uiWindowsComboboxPlaceholder(HWND hwnd, int len)
+char *uiprivComboboxPlaceholder(HWND hwnd, int len)
 {
 	return getPlaceholder(hwnd, len, CB_GETCUEBANNER);
 }
 
-int uiWindowsSetComboboxPlaceholder(HWND hwnd, const char *text)
+int uiprivSetComboboxPlaceholder(HWND hwnd, const char *text)
 {
 	return setPlaceholder(hwnd, text, CB_SETCUEBANNER);
 }

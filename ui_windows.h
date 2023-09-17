@@ -215,14 +215,6 @@ _UI_EXTERN int uiWindowsWindowTextWidth(HWND hwnd);
 _UI_EXTERN int uiWindowsWindowTextHeight(HWND hwnd);
 
 // TODO document
-_UI_EXTERN char *uiWindowsEntryPlaceholder(HWND hwnd, int len);
-_UI_EXTERN int uiWindowsSetEntryPlaceholder(HWND hwnd, const char *text);
-
-// TODO document
-_UI_EXTERN char *uiWindowsComboboxPlaceholder(HWND hwnd, int len);
-_UI_EXTERN int uiWindowsSetComboboxPlaceholder(HWND hwnd, const char *text);
-
-// TODO document
 // TODO point out this should only be used in a resize cycle
 _UI_EXTERN void uiWindowsEnsureMoveWindowDuringResize(HWND hwnd, int x, int y, int width, int height);
 

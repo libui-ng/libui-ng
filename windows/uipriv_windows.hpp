@@ -83,6 +83,10 @@ extern void invalidateRect(HWND hwnd, RECT *r, BOOL erase);
 extern WCHAR *windowTextAndLen(HWND hwnd, LRESULT *len);
 extern WCHAR *windowText(HWND hwnd);
 extern void setWindowText(HWND hwnd, WCHAR *wtext);
+extern char *uiprivEntryPlaceholder(HWND hwnd, int len);
+extern int uiprivSetEntryPlaceholder(HWND hwnd, const char *text);
+extern char *uiprivComboboxPlaceholder(HWND hwnd, int len);
+extern int uiprivSetComboboxPlaceholder(HWND hwnd, const char *text);
 
 // init.cpp
 extern HINSTANCE hInstance;

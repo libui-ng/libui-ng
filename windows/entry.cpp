@@ -93,13 +93,13 @@ void uiEntrySetReadOnly(uiEntry *e, int readonly)
 
 char *uiEntryPlaceholder(uiEntry *e)
 {
-	return uiWindowsEntryPlaceholder(e->hwnd, e->placeholderLen);
+	return uiprivEntryPlaceholder(e->hwnd, e->placeholderLen);
 }
 
 void uiEntrySetPlaceholder(uiEntry *e, const char *text)
 {
 	// This won't work for read-only entries.
-	e->placeholderLen = uiWindowsSetEntryPlaceholder(e->hwnd, text);
+	e->placeholderLen = uiprivSetEntryPlaceholder(e->hwnd, text);
 }
 
 static uiEntry *finishNewEntry(DWORD style)

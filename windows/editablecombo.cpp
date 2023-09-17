@@ -101,12 +101,12 @@ void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiEditableComb
 
 char *uiEditableComboboxPlaceholder(uiEditableCombobox *c)
 {
-	return uiWindowsComboboxPlaceholder(c->hwnd, c->placeholderLen);
+	return uiprivComboboxPlaceholder(c->hwnd, c->placeholderLen);
 }
 
 void uiEditableComboboxSetPlaceholder(uiEditableCombobox *c, const char *text)
 {
-	c->placeholderLen = uiWindowsSetComboboxPlaceholder(c->hwnd, text);
+	c->placeholderLen = uiprivSetComboboxPlaceholder(c->hwnd, text);
 }
 
 uiEditableCombobox *uiNewEditableCombobox(void)
