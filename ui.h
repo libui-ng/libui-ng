@@ -830,7 +830,7 @@ _UI_EXTERN char *uiEntryPlaceholder(uiEntry *e);
  * @param text Placeholder text.\n
  *             A valid, `NUL` terminated UTF-8 string.\n
  *             Data is copied internally. Ownership is not transferred.
- * @warning Read-only entries can't not display the placeholder on Windows
+ * @warning Read only entries do not display the placeholder text on Windows.
  * @memberof uiEntry
  */
 _UI_EXTERN void uiEntrySetPlaceholder(uiEntry *e, const char *text);
