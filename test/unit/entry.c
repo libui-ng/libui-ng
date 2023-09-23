@@ -51,6 +51,16 @@ static void entrySetTextNoCallback(void **state)
 	uiEntrySetText(*e, "Text 2");
 }
 
+static void entryPlaceholderDefault(void **state)
+{
+	uiEntry **e = uiEntryPtrFromState(state);
+	const char *text = "";
+	char *rv;
+	rv = uiEntryPlaceholder(*e);
+	assert_string_equal(rv, text);
+	uiFreeText(rv);
+}
+
 static void entrySetPlaceholder(void **state)
 {
 	uiEntry **e = uiEntryPtrFromState(state);
@@ -140,6 +150,7 @@ int entryRunUnitTests(void)
 		entryUnitTests(entryTextDefault),
 		entryUnitTests(entrySetText),
 		entryUnitTests(entrySetTextNoCallback),
+		entryUnitTests(entryPlaceholderDefault),
 		entryUnitTests(entrySetPlaceholder),
 		entryUnitTests(entryReadOnlyDefault),
 		entryUnitTests(entrySetReadOnly),

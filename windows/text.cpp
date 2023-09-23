@@ -139,10 +139,9 @@ void uiWindowsSetWindowText(HWND hwnd, const char *text)
 static char *getPlaceholder(HWND hwnd, int len, UINT msg)
 {
 	len += 1;
-	WCHAR *wtext = (wchar_t*)uiprivAlloc(len * sizeof(wchar_t), "wchar_t[] wtext");
+	WCHAR *wtext = (WCHAR*)uiprivAlloc(len * sizeof(WCHAR), "WCHAR[]");
 
 	if (!SendMessageW(hwnd, msg, (WPARAM)wtext, len)) {
-		logLastError(L"error getting placeholder text");
 		// on error, return an empty string to be safe
 		*wtext = L'\0';
 	}

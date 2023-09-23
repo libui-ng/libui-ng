@@ -113,6 +113,7 @@ static uiEntry *finishNewEntry(DWORD style)
 		style | ES_AUTOHSCROLL | ES_LEFT | ES_NOHIDESEL | WS_TABSTOP,
 		hInstance, NULL,
 		TRUE);
+	e->placeholderLen = 0;
 
 	uiWindowsRegisterWM_COMMANDHandler(e->hwnd, onWM_COMMAND, uiControl(e));
 	uiEntryOnChanged(e, defaultOnChanged, NULL);

@@ -152,7 +152,10 @@ void uiEntrySetReadOnly(uiEntry *e, int readonly)
 
 char *uiEntryPlaceholder(uiEntry *e)
 {
-	return uiDarwinNSStringToText([e->textfield.cell placeholderString]);
+	NSString* text = [e->textfield.cell placeholderString];
+	if (!text)
+		return uiDarwinNSStringToText(@"");
+	return uiDarwinNSStringToText(text);
 }
 
 void uiEntrySetPlaceholder(uiEntry *e, const char *text)
