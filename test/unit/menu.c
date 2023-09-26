@@ -8,6 +8,7 @@ static void menuNew(void **state)
 	uiMenu *m;
 
 	m = uiNewMenu("Menu");
+	(void)m;
 }
 
 static void menuNewInitTwice(void **state)
@@ -21,6 +22,8 @@ static void menuNewInitTwice(void **state)
 	menuTestSetup(state);
 	m = uiNewMenu("Menu 2");
 	menuTestTeardown(state);
+
+	(void)m;
 }
 
 static void menuNewEmptyString(void **_state)
@@ -28,6 +31,7 @@ static void menuNewEmptyString(void **_state)
 	uiMenu *m;
 
 	m = uiNewMenu("");
+	(void)m;
 }
 
 static void menuAppendItem(void **_state)
