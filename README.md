@@ -68,7 +68,7 @@ For the sake of completeness, I should note that the default value of `--layout`
 
 Backends other than `ninja` should work, but are untested by me.
 
-### Zig
+### Build with Zig Toolchain
 
 An alternative to using meson is to use the zig compiler and toolchain. The specific version used is `zig 0.11.0`.
 
@@ -86,11 +86,11 @@ $ zig build -Doptimize=ReleaseSafe
 #### Requirements
 On all hosts, [zig 0.11.0](https://ziglang.org/download/) must be installed.
 
-To compile for Linux, `gtk+-3.0` and `pkg-config` must be installed.
+To compile for Unix platforms, `gtk+-3.0` and `pkg-config` packages must be installed.
 
 To compile for Windows, a Windows resource compiler must be installed. The build.zig will default to `rc.exe` on Windows and `wrc` on non-Windows systems. This can be overriden by passing `-Dresource-compiler=<path to resource compiler executable>`.
 
-To compile for MacOS, you will need the MacOS sdk installed. As far as I know, this requires an Apple device.
+Cross compilation for macOS targets from other platforms is not supported at this time. Apple macOS SDK is only licensed for use from Apple devices.
 
 ## Testing
 
