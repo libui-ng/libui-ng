@@ -48,7 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - uiLoadControlFont() API
 - Doxygen documentation generator
 - GitHub Actions CI
-- build.zig
+- Cross compilation with Zig toolchain
 
 ### Removed
 - AppVeyor and Azure Pipelines CI
