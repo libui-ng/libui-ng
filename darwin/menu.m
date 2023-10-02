@@ -53,6 +53,12 @@ enum uiprivMenuItemType {
 
 - (IBAction)onClicked:(id)sender
 {
+	// System menu item (Quit/Preferences/About) that has not been user created (yet)
+	if (self->item == NULL) {
+		uiprivImplBug("Clicked nonexistent uiMenuItem which should be impossible");
+		return;
+	}
+
 	switch (self->item->type) {
 	case typeQuit:
 		if (uiprivShouldQuit())
@@ -62,9 +68,6 @@ enum uiprivMenuItemType {
 		uiMenuItemSetChecked(self->item, !uiMenuItemChecked(self->item));
 		// fall through
 	default:
-		// System menu items that may have no user callback (Preferences/About)
-		if (self->item == NULL)
-			break;
 		// use the key window as the source of the menu event; it's the active window
 		(*(self->item->onClicked))(self->item, uiprivWindowFromNSWindow([uiprivNSApp() keyWindow]),
 			self->item->onClickedData);
