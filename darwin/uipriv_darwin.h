@@ -33,6 +33,7 @@ void uiprivNSTextFieldSetStyleSearchEntry(NSTextField *t);
 @public
 	uiMenuItem *item;
 }
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
 @end
 @interface uiprivMenuManager : NSObject {
 	BOOL hasQuit;
@@ -44,8 +45,6 @@ void uiprivNSTextFieldSetStyleSearchEntry(NSTextField *t);
 @property (unsafe_unretained) uiprivMenuItem *quitItem;
 @property (unsafe_unretained) uiprivMenuItem *preferencesItem;
 @property (unsafe_unretained) uiprivMenuItem *aboutItem;
-// NSMenuValidation is only informal
-- (BOOL)validateMenuItem:(NSMenuItem *)item;
 - (NSMenu *)makeMenubar;
 - (BOOL)finalized;
 - (void)finalize;
