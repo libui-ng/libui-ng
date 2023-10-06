@@ -53,6 +53,12 @@ enum uiprivMenuItemType {
 
 - (IBAction)onClicked:(id)sender
 {
+	// System menu item (Quit/Preferences/About) that has not been user created (yet)
+	if (self->item == NULL) {
+		uiprivImplBug("Clicked nonexistent uiMenuItem which should be impossible");
+		return;
+	}
+
 	switch (self->item->type) {
 	case typeQuit:
 		if (uiprivShouldQuit())
@@ -62,9 +68,6 @@ enum uiprivMenuItemType {
 		uiMenuItemSetChecked(self->item, !uiMenuItemChecked(self->item));
 		// fall through
 	default:
-		// System menu items that may have no user callback (Preferences/About)
-		if (self->item == NULL)
-			break;
 		// use the key window as the source of the menu event; it's the active window
 		(*(self->item->onClicked))(self->item, uiprivWindowFromNSWindow([uiprivNSApp() keyWindow]),
 			self->item->onClickedData);
@@ -75,6 +78,18 @@ enum uiprivMenuItemType {
 - (void)setUiMenuItem:(uiMenuItem *)i
 {
 	self->item = i;
+}
+
+// Manually enable/disable menu items
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+	uiprivMenuItem *i = (uiprivMenuItem *)menuItem;
+
+	// System menu item (Quit/Preferences/About) that has not been user created (yet)
+	if (i->item == NULL)
+		return NO;
+
+	return !i->item->disabled;
 }
 
 @end
@@ -128,26 +143,6 @@ enum uiprivMenuItemType {
 		self->hasAbout = YES;
 		break;
 	}
-}
-
-// on OS X there are two ways to handle menu items being enabled or disabled: automatically and manually
-// unfortunately, the application menu requires automatic menu handling for the Hide, Hide Others, and Show All items to work correctly
-// therefore, we have to handle enabling of the other options ourselves
-- (BOOL)validateMenuItem:(NSMenuItem *)item
-{
-	// disable the special items if they aren't present
-	if (item == self.quitItem && !self->hasQuit)
-		return NO;
-	if (item == self.preferencesItem && !self->hasPreferences)
-		return NO;
-	if (item == self.aboutItem && !self->hasAbout)
-		return NO;
-	// then poll the item's enabled/disabled state
-	if ([item isKindOfClass:[uiprivMenuItem class]]) {
-		uiprivMenuItem *mi = (uiprivMenuItem *)item;
-		return !mi->item->disabled;
-	}
-	return NO;
 }
 
 // Cocoa constructs the default application menu by hand for each program; that's what MainMenu.[nx]ib does
