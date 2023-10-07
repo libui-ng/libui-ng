@@ -68,7 +68,10 @@ void uiEntrySetText(uiEntry *e, const char *text)
 	e->inhibitChanged = TRUE;
 	uiWindowsSetWindowText(e->hwnd, text);
 	l = (int)strlen(text);
-	Edit_SetSel(e->hwnd, l, l);
+	// Only set the cursor if the entry has focus to avoid weird scrolling upon window
+	// creation. Cursor placement is otherwise determined by mouse position upon click.
+	if (GetFocus() == e->hwnd)
+		Edit_SetSel(e->hwnd, l, l);
 	e->inhibitChanged = FALSE;
 	// don't queue the control for resize; entry sizes are independent of their contents
 }
