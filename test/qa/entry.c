@@ -175,3 +175,26 @@ uiControl* entryLongText()
 	return uiControl(vbox);
 }
 
+const char *entryOverflowTextGuide() {
+	return
+	"1.\tYou should see a text entry box containing text that overflows.\n"
+	"\tThe left most side of the entry should read `aaaabbbbccccddd...`.\n"
+	"\tYou should not see the end of the text `...xxxyyyyzzzz` without\n"
+	"\tscrolling manually.\n"
+	;
+}
+
+uiControl* entryOverflowText()
+{
+	uiBox *vbox;
+	uiEntry *entry;
+
+	vbox = uiNewVerticalBox();
+	entry = uiNewEntry();
+	uiEntrySetText(entry, "aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllll"
+		"mmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz");
+	uiBoxAppend(vbox, uiControl(entry), 0);
+
+	return uiControl(vbox);
+}
+
