@@ -154,3 +154,24 @@ uiControl* searchEntryOnChanged()
 	return uiControl(vbox);
 }
 
+const char *entryLongTextGuide() {
+	return
+	"1.\tYou should see a text entry box containing the text\n"
+	"\t`abcdefghijklmnopqrstuvwxyz`. No scrolling on your part should be\n"
+	"\tnecessary to see the entire string.\n"
+	;
+}
+
+uiControl* entryLongText()
+{
+	uiBox *vbox;
+	uiEntry *entry;
+
+	vbox = uiNewVerticalBox();
+	entry = uiNewEntry();
+	uiEntrySetText(entry, "abcdefghijklmnopqrstuvwxyz");
+	uiBoxAppend(vbox, uiControl(entry), 0);
+
+	return uiControl(vbox);
+}
+

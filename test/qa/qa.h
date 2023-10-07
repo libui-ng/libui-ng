@@ -17,6 +17,7 @@ QA_DECLARE_TEST(checkboxOnToggled);
 QA_DECLARE_TEST(entryOnChanged);
 QA_DECLARE_TEST(passwordEntryOnChanged);
 QA_DECLARE_TEST(searchEntryOnChanged);
+QA_DECLARE_TEST(entryLongText);
 
 QA_DECLARE_TEST(labelMultiLine);
 
