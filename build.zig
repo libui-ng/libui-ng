@@ -5,13 +5,6 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const resource_compiler_opt = b.option([]const u8, "resource-compiler", "Path to the resource compiler to use");
-    const resource_compiler = if (resource_compiler_opt) |resource_compiler|
-        resource_compiler
-    else switch (builtin.os.tag) {
-        .windows => "rc.exe",
-        else => "wrc",
-    };
     const is_dynamic = b.option(bool, "shared", "Build libui as a dynamically linked library") orelse false;
 
     const lib = if (is_dynamic)
@@ -135,17 +128,10 @@ pub fn build(b: *std.Build) void {
 
         // Compile
         if (is_dynamic) {
-            const rc_command = b.addSystemCommand(&.{resource_compiler});
-            // options
-            rc_command.addArgs(&.{ "/:auto-includes", "gnu" });
-
-            // input file
-            rc_command.addArg("windows/resources.rc");
-            // output file
-            const output = rc_command.addOutputFileArg("resources.res");
-
-            lib.addObjectFile(output);
-            lib.step.dependOn(&rc_command.step);
+            lib.addWin32ResourceFile(.{
+                .file = .{ .path = "windows/resources.rc" },
+                .flags = &.{},
+            });
         }
 
         lib.addCSourceFiles(.{
@@ -212,7 +198,7 @@ pub fn build(b: *std.Build) void {
                 "windows/winpublic.cpp",
                 "windows/winutil.cpp",
             },
-            .flags = &.{},
+            .flags = if (is_dynamic) &.{} else &.{"-D_UI_STATIC"},
         });
     } else {
         // assume unix/*.c backend
@@ -300,18 +286,10 @@ pub fn build(b: *std.Build) void {
         });
         exe.linkLibrary(lib);
         if (target.isWindows()) {
-            const rc_command = b.addSystemCommand(&.{resource_compiler});
-            // options
-            rc_command.addArgs(&.{ "/:auto-includes", "gnu" });
-            if (!is_dynamic) rc_command.addArgs(&.{ "/d", "_UI_STATIC" });
-
-            // input file
-            rc_command.addArg("examples/resources.rc");
-            // output file
-            const output = rc_command.addOutputFileArg("resources.res");
-
-            exe.addObjectFile(output);
-            exe.step.dependOn(&rc_command.step);
+            exe.addWin32ResourceFile(.{
+                .file = .{ .path = "examples/resources.rc" },
+                .flags = if (is_dynamic) &.{} else &.{ "/d", "_UI_STATIC" },
+            });
         }
         b.installArtifact(exe);
     }
@@ -329,18 +307,10 @@ pub fn build(b: *std.Build) void {
         exe.linkLibCpp();
 
         if (target.isWindows()) {
-            const rc_command = b.addSystemCommand(&.{resource_compiler});
-            // options
-            rc_command.addArgs(&.{ "/:auto-includes", "gnu" });
-            if (!is_dynamic) rc_command.addArgs(&.{ "/d", "_UI_STATIC" });
-
-            // input file
-            rc_command.addArg("examples/resources.rc");
-            // output file
-            const output = rc_command.addOutputFileArg("resources.res");
-
-            exe.addObjectFile(output);
-            exe.step.dependOn(&rc_command.step);
+            exe.addWin32ResourceFile(.{
+                .file = .{ .path = "examples/resources.rc" },
+                .flags = if (is_dynamic) &.{} else &.{ "/d", "_UI_STATIC" },
+            });
         }
 
         b.installArtifact(exe);
