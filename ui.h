@@ -1308,7 +1308,7 @@ typedef struct uiSeparator uiSeparator;
 #define uiSeparator(this) ((uiSeparator *) (this))
 
 /**
- * Creates a new horizontal separator.
+ * Creates a new horizontal separator to separate controls being stacked vertically.
  *
  * @returns A new uiSeparator instance.
  * @memberof uiSeparator @static
@@ -1316,7 +1316,7 @@ typedef struct uiSeparator uiSeparator;
 _UI_EXTERN uiSeparator *uiNewHorizontalSeparator(void);
 
 /**
- * Creates a new vertical separator.
+ * Creates a new vertical separator to separate controls being stacked horizontally.
  *
  * @returns A new uiSeparator instance.
  * @memberof uiSeparator @static
