@@ -1,7 +1,7 @@
 // 14 august 2015
 #import "uipriv_darwin.h"
 
-@interface libui_spinbox : NSView<NSTextFieldDelegate> {
+@interface libui_spinbox : NSView<NSTextFieldDelegate, NSDraggingDestination> {
 	NSTextField *tf;
 	NSNumberFormatter *formatter;
 	NSStepper *stepper;
@@ -41,6 +41,8 @@ static CGFloat stepperYDelta(void)
 }
 
 @implementation libui_spinbox
+
+uiDarwinDragDestinationMethods(spinbox)
 
 - (id)initWithFrame:(NSRect)r spinbox:(uiSpinbox *)sb
 {

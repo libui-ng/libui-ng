@@ -11,7 +11,7 @@
 - (NSView *)view;
 @end
 
-@interface boxView : NSView {
+@interface boxView : NSView<NSDraggingDestination> {
 	uiBox *b;
 	NSMutableArray *children;
 	BOOL vertical;
@@ -61,6 +61,8 @@ struct uiBox {
 @end
 
 @implementation boxView
+
+uiDarwinDragDestinationMethods(b)
 
 - (id)initWithVertical:(BOOL)vert b:(uiBox *)bb
 {

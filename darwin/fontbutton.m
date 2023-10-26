@@ -2,7 +2,7 @@
 #import "uipriv_darwin.h"
 #import "attrstr.h"
 
-@interface uiprivFontButton : NSButton {
+@interface uiprivFontButton : NSButton<NSDraggingDestination> {
 	uiFontButton *libui_b;
 	NSFont *libui_font;
 }
@@ -26,6 +26,8 @@ struct uiFontButton {
 };
 
 @implementation uiprivFontButton
+
+uiDarwinDragDestinationMethods(libui_b)
 
 - (id)initWithFrame:(NSRect)frame libuiFontButton:(uiFontButton *)b
 {

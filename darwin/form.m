@@ -19,7 +19,7 @@
 - (NSView *)view;
 @end
 
-@interface formView : NSView {
+@interface formView : NSView<NSDraggingDestination> {
 	uiForm *f;
 	NSMutableArray *children;
 	int padded;
@@ -116,6 +116,8 @@ struct uiForm {
 @end
 
 @implementation formView
+
+uiDarwinDragDestinationMethods(f)
 
 - (id)initWithF:(uiForm *)ff
 {

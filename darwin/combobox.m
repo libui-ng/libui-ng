@@ -12,7 +12,7 @@ struct uiCombobox {
 	void *onSelectedData;
 };
 
-@interface uiprivCombobox : NSPopUpButton {
+@interface uiprivCombobox : NSPopUpButton<NSDraggingDestination> {
 	uiCombobox *combobox;
 }
 - (id)initWithFrame:(NSRect)frame uiCombobox:(uiCombobox *)c;
@@ -20,6 +20,8 @@ struct uiCombobox {
 @end
 
 @implementation uiprivCombobox
+
+uiDarwinDragDestinationMethods(combobox)
 
 - (id)initWithFrame:(NSRect)frame uiCombobox:(uiCombobox *)c
 {
