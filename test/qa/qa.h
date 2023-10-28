@@ -21,6 +21,7 @@ QA_DECLARE_TEST(searchEntryOnChanged);
 QA_DECLARE_TEST(labelMultiLine);
 
 QA_DECLARE_TEST(progressBarValues);
+QA_DECLARE_TEST(progressBarIndeterminate);
 
 QA_DECLARE_TEST(windowFullscreen);
 QA_DECLARE_TEST(windowBorderless);

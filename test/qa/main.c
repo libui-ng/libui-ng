@@ -39,6 +39,7 @@ struct controlTestCase labelTestCases[] = {
 
 struct controlTestCase progressBarTestCases[] = {
 	QA_TEST("1. Progress Bar Values", progressBarValues),
+	QA_TEST("2. Progress Bar Indeterminate Start/Stop Animation", progressBarIndeterminate),
 	{NULL, NULL, NULL}
 };
 
