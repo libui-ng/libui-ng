@@ -10,6 +10,32 @@ struct uiSeparator {
 	NSBox *box;
 };
 
+@interface uiprivNSBoxSeparator : NSBox<NSDraggingDestination> {
+	uiSeparator *separator;
+}
+- (id)initWithFrame:(NSRect)frame uiSeparator:(uiSeparator *)s;
+@end
+
+@implementation uiprivNSBoxSeparator
+
+uiDarwinDragDestinationMethods(separator)
+
+- (id)initWithFrame:(NSRect)frame uiSeparator:(uiSeparator *)s
+{
+	self = [super initWithFrame:frame];
+	if (self) {
+		self->separator = s;
+
+		[self setBoxType:NSBoxSeparator];
+		[self setBorderType:NSGrooveBorder];
+		[self setTransparent:NO];
+		[self setTitlePosition:NSNoTitle];
+	}
+	return self;
+}
+
+@end
+
 uiDarwinControlAllDefaults(uiSeparator, box)
 
 uiSeparator *uiNewHorizontalSeparator(void)
@@ -19,11 +45,7 @@ uiSeparator *uiNewHorizontalSeparator(void)
 	uiDarwinNewControl(uiSeparator, s);
 
 	// make the initial width >= initial height to force horizontal
-	s->box = [[NSBox alloc] initWithFrame:NSMakeRect(0, 0, 100, 1)];
-	[s->box setBoxType:NSBoxSeparator];
-	[s->box setBorderType:NSGrooveBorder];
-	[s->box setTransparent:NO];
-	[s->box setTitlePosition:NSNoTitle];
+	s->box = [[uiprivNSBoxSeparator alloc] initWithFrame:NSMakeRect(0, 0, 100, 1) uiSeparator:s];
 
 	return s;
 }
@@ -35,11 +57,7 @@ uiSeparator *uiNewVerticalSeparator(void)
 	uiDarwinNewControl(uiSeparator, s);
 
 	// make the initial height >= initial width to force vertical
-	s->box = [[NSBox alloc] initWithFrame:NSMakeRect(0, 0, 1, 100)];
-	[s->box setBoxType:NSBoxSeparator];
-	[s->box setBorderType:NSGrooveBorder];
-	[s->box setTransparent:NO];
-	[s->box setTitlePosition:NSNoTitle];
+	s->box = [[uiprivNSBoxSeparator alloc] initWithFrame:NSMakeRect(0, 0, 1, 100) uiSeparator:s];
 
 	return s;
 }
