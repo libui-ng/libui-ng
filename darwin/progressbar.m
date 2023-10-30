@@ -37,6 +37,9 @@ int uiProgressBarValue(uiProgressBar *p)
 void uiProgressBarSetValue(uiProgressBar *p, int value)
 {
 	if (value == -1) {
+		if ([p->pi isIndeterminate])
+			return;
+
 		[p->pi setIndeterminate:YES];
 		// Display to ensure a moving progress bar animation if a value
 		// has previously been set. Otherwise the bar will simply flash
