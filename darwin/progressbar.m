@@ -50,8 +50,12 @@ void uiProgressBarSetValue(uiProgressBar *p, int value)
 	}
 
 	if ([p->pi isIndeterminate]) {
+		// Kill thread to stop animation and set new value instantly
+		// and not only after a ~1 second delay.
+		[p->pi setUsesThreadedAnimation:NO];
 		[p->pi setIndeterminate:NO];
 		[p->pi stopAnimation:p->pi];
+		[p->pi setUsesThreadedAnimation:YES];
 	}
 
 	if (value < 0 || value > 100)
