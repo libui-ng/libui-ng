@@ -13,6 +13,32 @@ struct uiGroup {
 	NSLayoutPriority vertHuggingPri;
 };
 
+@interface uiprivGroupBox : NSBox<NSDraggingDestination> {
+	uiGroup *group;
+}
+- (id)initWithFrame:(NSRect)frame uiGroup:(uiGroup *)g;
+@end
+
+@implementation uiprivGroupBox
+
+uiDarwinDragDestinationMethods(group)
+
+- (id)initWithFrame:(NSRect)frame uiGroup:(uiGroup *)g
+{
+	self = [super initWithFrame:frame];
+	if (self) {
+		self->group = g;
+
+		[self setBoxType:NSBoxPrimary];
+		[self setBorderType:NSLineBorder];
+		[self setTransparent:NO];
+		[self setTitlePosition:NSAtTop];
+	}
+	return self;
+}
+
+@end
+
 static void removeConstraints(uiGroup *g)
 {
 	// set to contentView instead of to the box itself, otherwise we get clipping underneath the label
@@ -177,12 +203,8 @@ uiGroup *uiNewGroup(const char *title)
 
 	uiDarwinNewControl(uiGroup, g);
 
-	g->box = [[NSBox alloc] initWithFrame:NSZeroRect];
-	[g->box setTitle:uiprivToNSString(title)];
-	[g->box setBoxType:NSBoxPrimary];
-	[g->box setBorderType:NSLineBorder];
-	[g->box setTransparent:NO];
-	[g->box setTitlePosition:NSAtTop];
+	g->box = [[uiprivGroupBox alloc] initWithFrame:NSZeroRect uiGroup:g];
+	uiGroupSetTitle(g, title);
 	// we can't use uiDarwinSetControlFont() because the selector is different
 	[g->box setTitleFont:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]]];
 
