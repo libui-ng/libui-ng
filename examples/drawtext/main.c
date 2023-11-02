@@ -1,7 +1,6 @@
-// 10 march 2018
 #include <stdio.h>
 #include <string.h>
-#include "../../ui.h"
+#include <ui.h>
 
 uiWindow *mainwin;
 uiArea *area;
