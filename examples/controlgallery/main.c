@@ -1,7 +1,6 @@
-// 2 september 2015
 #include <stdio.h>
 #include <string.h>
-#include "../../ui.h"
+#include <ui.h>
 
 static int onClosing(uiWindow *w, void *data)
 {
