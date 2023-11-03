@@ -3,11 +3,15 @@
 uiControl* qaMakeGuide(uiControl *c, const char *text)
 {
 	uiBox *hbox;
+	uiBox *vbox;
 	uiMultilineEntry *guide;
 
 	hbox = uiNewHorizontalBox();
 	uiBoxSetPadded(hbox, 1);
-	uiBoxAppend(hbox, c, 1);
+
+	vbox = uiNewVerticalBox();
+	uiBoxAppend(vbox, c, 0);
+	uiBoxAppend(hbox, uiControl(vbox), 1);
 
 	guide = uiNewMultilineEntry();
 	uiMultilineEntrySetText(guide, text);
