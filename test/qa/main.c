@@ -29,6 +29,8 @@ struct controlTestCase entryTestCases[] = {
 	QA_TEST("1. Entry OnChanged Callback", entryOnChanged),
 	QA_TEST("2. Password Entry OnChanged Callback", passwordEntryOnChanged),
 	QA_TEST("3. Search Entry OnChanged Callback", searchEntryOnChanged),
+	QA_TEST("4. Entry Long Text", entryLongText),
+	QA_TEST("5. Entry Overflow Text", entryOverflowText),
 	{NULL, NULL, NULL}
 };
 
