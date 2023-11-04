@@ -197,4 +197,3 @@ uiControl* entryOverflowText()
 
 	return uiControl(vbox);
 }
-
