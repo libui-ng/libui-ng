@@ -70,7 +70,7 @@ Backends other than `ninja` should work, but are untested by me.
 
 ### Build with Zig Toolchain
 
-An alternative to using meson is to use the zig compiler and toolchain. The specific version used is `zig 0.11.0`.
+An alternative to using meson is to use the zig compiler and toolchain. The version used is a nighly build of zig `0.12.0`, specifically `0.12.0-dev.1391+ae6df9e96`.
 
 ```shell-session
 $ # in the top-level libui-ng directory run:
@@ -78,17 +78,17 @@ $ zig build
 $ # this should build the library and put it in ./zig-out/lib
 $ # the examples will be located in ./zig-out/bin
 $ # to compile for a specific platform:
-$ zig build -Dtarget=x86_64-windows # note that this will require rc.exe on Windows or wrc on non-Windows systems
+$ zig build -Dtarget=x86_64-windows
 $ # to change the optimization mode, use -Doptimize:
 $ zig build -Doptimize=ReleaseSafe
 ```
 
 #### Requirements
-On all hosts, [zig 0.11.0](https://ziglang.org/download/) must be installed.
+On all hosts, a [zig 0.12.0 nightly build](https://ziglang.org/download/) must be installed.
 
 To compile for Unix platforms, `gtk+-3.0` and `pkg-config` packages must be installed.
 
-To compile for Windows, a Windows resource compiler must be installed. The build.zig will default to `rc.exe` on Windows and `wrc` on non-Windows systems. This can be overriden by passing `-Dresource-compiler=<path to resource compiler executable>`.
+Cross compilation for windows should work from all platforms where zig is supported due to the built-in resource compiler.
 
 Cross compilation for macOS targets from other platforms is not supported at this time. Apple macOS SDK is only licensed for use from Apple devices.
 
