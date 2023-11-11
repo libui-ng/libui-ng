@@ -116,6 +116,9 @@ struct uiControl {
 	int (*Enabled)(uiControl *);
 	void (*Enable)(uiControl *);
 	void (*Disable)(uiControl *);
+
+	void (*onFree)(uiControl *, void *);
+	void *onFreeData;
 };
 // TOOD add argument names to all arguments
 #define uiControl(this) ((uiControl *) (this))
@@ -222,6 +225,20 @@ _UI_EXTERN void uiControlEnable(uiControl *c);
  * @memberof uiControl
  */
 _UI_EXTERN void uiControlDisable(uiControl *c);
+
+/**
+ * Registers a callback for when the control is about to be freed.
+ *
+ * @param c uiControl instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.\n
+ * @param data User data to be passed to the callback.
+ *
+ * @note Only one callback can be registered at a time.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlOnFree(uiControl *w, void (*f)(uiControl *sender, void *senderData), void *data);
 
 /**
  * Allocates a uiControl.

@@ -32,10 +32,18 @@ int unitTestSetup(void **_state)
 	return 0;
 }
 
+void unitControlOnFree(uiControl *c, void *data)
+{
+	assert_non_null(c);
+	assert_non_null(data);
+	assert_ptr_equal(c, ((struct state *)data)->w);
+}
+
 int unitTestTeardown(void **_state)
 {
 	struct state *state = *_state;
 
+	uiControlOnFree(uiControl(state->w), unitControlOnFree, state);
 	uiWindowSetChild(state->w, uiControl(state->c));
 	uiControlShow(uiControl(state->w));
 	//uiMain();
