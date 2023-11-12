@@ -57,12 +57,15 @@ char *commonItemDialog(HWND parent, REFCLSID clsid, REFIID iid, FILEOPENDIALOGOP
 				// assert(filter.patternCount > 0);
 
 				filterpatterns[s] = toUTF16(filter.patterns[pattern]);
-				for (pattern = 0; pattern < filter.patternCount; pattern++) {
+				for (pattern = 1; pattern < filter.patternCount; pattern++) {
 					wchar_t *old;
+					wchar_t *next;
 
 					old = filterpatterns[s];
-					filterpatterns[s] = strf(L"%s;%s", filterpatterns[s], filter.patterns[pattern]);
+					next = toUTF16(filter.patterns[pattern]);
+					filterpatterns[s] = strf(L"%ls;%ls", old, next);
 					uiprivFree(old);
+					uiprivFree(next);
 				}
 
 				filternames[s] = toUTF16(filter.name);
