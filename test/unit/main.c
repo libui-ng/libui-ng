@@ -27,7 +27,7 @@ int unitTestSetup(void **_state)
 	uiInitOptions o = {0};
 
 	assert_null(uiInit(&o));
-	state->w = uiNewWindow("Unit Test", UNIT_TEST_WINDOW_WIDTH, UNIT_TEST_WINDOW_HEIGHT, 0);
+	state->w = uiNewWindow(UNIT_TEST_WINDOW_TITLE, UNIT_TEST_WINDOW_WIDTH, UNIT_TEST_WINDOW_HEIGHT, 0);
 	uiWindowOnClosing(state->w, unitWindowOnClosingQuit, NULL);
 	return 0;
 }
