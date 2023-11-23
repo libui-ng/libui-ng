@@ -14,6 +14,7 @@
  * Unit test run functions.
  */
 int initRunUnitTests(void);
+int windowRunUnitTests(void);
 int sliderRunUnitTests(void);
 int spinboxRunUnitTests(void);
 int labelRunUnitTests(void);
