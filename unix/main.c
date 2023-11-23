@@ -19,6 +19,10 @@ const char *uiInit(uiInitOptions *o)
 	uiprivInitAlloc();
 	uiprivLoadFutures();
 	timers = g_hash_table_new(g_direct_hash, g_direct_equal);
+
+	// Run the event loop manually by default to ensure we can run uiMainStep()
+	// internally to make asynchronous GTK calls appear synchronous.
+	uiMainSteps();
 	return NULL;
 }
 
