@@ -393,6 +393,10 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	// show everything in the vbox, but not the GtkWindow itself
 	gtk_widget_show_all(w->vboxWidget);
 
+	// create resources to return the correct content size after creation
+	// but before display
+	gtk_widget_realize(w->widget);
+
 	// and connect our events
 	g_signal_connect(w->widget, "delete-event", G_CALLBACK(onClosing), w);
 	g_signal_connect(w->childHolderWidget, "size-allocate", G_CALLBACK(onSizeAllocate), w);
