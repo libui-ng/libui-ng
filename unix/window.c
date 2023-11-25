@@ -362,6 +362,11 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	w->container = GTK_CONTAINER(w->widget);
 	w->window = GTK_WINDOW(w->widget);
 
+	w->cachedPosX = 0;
+	w->cachedPosY = 0;
+	w->cachedWidth = width;
+	w->cachedHeight = height;
+
 	gtk_window_set_title(w->window, title);
 	gtk_window_resize(w->window, width, height);
 
