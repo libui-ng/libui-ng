@@ -199,10 +199,14 @@ void uiWindowSetPosition(uiWindow *w, int x, int y)
 {
 	w->changingPosition = TRUE;
 	gtk_window_move(w->window, x, y);
-	// gtk_window_move() is asynchronous. Wait for the configure-event
-	while (w->changingPosition)
+	// gtk_window_move() is asynchronous. Run the event loop manually.
+	while (gtk_events_pending())
 		if (!uiMainStep(1))
 			break;
+
+	// Hidden windows do not trigger the "configure-event".
+	// TODO log failure for visible windows.
+	w->changingPosition = FALSE;
 }
 
 void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
