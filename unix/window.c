@@ -253,10 +253,14 @@ void uiWindowSetContentSize(uiWindow *w, int width, int height)
 
 	w->changingSize = TRUE;
 	gtk_window_resize(w->window, winWidth, winHeight);
-	// gtk_window_resize may be asynchronous. Wait for the size-allocate event.
-	while (w->changingSize)
+	// gtk_window_resize() is asynchronous. Run the event loop manually.
+	while (gtk_events_pending())
 		if (!uiMainStep(1))
 			break;
+
+	// Hidden windows do not trigger the "size-allocate.
+	// TODO log failure for visible windows.
+	w->changingSize = FALSE;
 }
 
 int uiWindowFullscreen(uiWindow *w)
