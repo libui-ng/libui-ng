@@ -217,11 +217,7 @@ void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void 
 
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
 {
-	GtkAllocation allocation;
-
-	gtk_widget_get_allocation(w->childHolderWidget, &allocation);
-	*width = allocation.width;
-	*height = allocation.height;
+	gtk_window_get_size(w->window, width, height);
 }
 
 void uiWindowSetContentSize(uiWindow *w, int width, int height)
