@@ -132,6 +132,7 @@ Ruby | [libui-ruby](https://github.com/jamescook/libui-ruby), [LibUI](https://gi
 Rust | [libui-ng-sys](https://github.com/norepimorphism/libui-ng-sys), [boing](https://github.com/norepimorphism/boing), [libui-rs](https://github.com/rust-native-ui/libui-rs), [libui](https://github.com/libui-rs/libui)
 Scala | [scalaui](https://github.com/lolgab/scalaui)
 Swift | [libui-swift](https://github.com/sclukey/libui-swift)
+Zig | [zig-libui-ng](https://github.com/desttinghim/zig-libui-ng)
 
 ## Frequently Asked Questions
 
