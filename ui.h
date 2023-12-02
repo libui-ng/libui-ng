@@ -4008,6 +4008,18 @@ _UI_EXTERN void uiTableSetSelection(uiTable *t, uiTableSelection *sel);
  */
 _UI_EXTERN void uiFreeTableSelection(uiTableSelection* s);
 
+/**
+ * Sets the control tooltip.
+ *
+ * @param c uiControl instance.
+ * @param tooltip Control tooltip.\n
+ *             A valid, `NULL` terminated UTF-8 string.\n
+ *             Data is copied internally. Ownership is not transferred.
+ * @note Setting `NULL` resets the tooltip to the default value.
+ * @memberof uiControl
+ */
+_UI_EXTERN void uiControlSetTooltip(uiControl *c, const char *tooltip);
+
 #ifdef __cplusplus
 }
 #endif

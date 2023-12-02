@@ -20,6 +20,7 @@ struct uiWindowsControl {
 	// TODO this should be int on both os x and windows
 	BOOL enabled;
 	BOOL visible;
+	void *tooltip;
 	void (*SyncEnableState)(uiWindowsControl *, int);
 	void (*SetParentHWND)(uiWindowsControl *, HWND);
 	void (*MinimumSize)(uiWindowsControl *, int *, int *);
@@ -185,7 +186,9 @@ _UI_EXTERN void uiWindowsControlChildVisibilityChanged(uiWindowsControl *);
 	uiWindowsControl(var)->AssignControlIDZOrder = type ## AssignControlIDZOrder; \
 	uiWindowsControl(var)->ChildVisibilityChanged = type ## ChildVisibilityChanged; \
 	uiWindowsControl(var)->visible = 1; \
-	uiWindowsControl(var)->enabled = 1;
+	uiWindowsControl(var)->enabled = 1; \
+	uiWindowsControl(var)->tooltip = NULL;
+
 // TODO document
 _UI_EXTERN uiWindowsControl *uiWindowsAllocControl(size_t n, uint32_t typesig, const char *typenamestr);
 
