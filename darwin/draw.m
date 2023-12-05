@@ -452,3 +452,68 @@ void uiDrawRestore(uiDrawContext *c)
 {
 	CGContextRestoreGState(c->c);
 }
+
+// ImageBuffer API
+
+uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha)
+{
+	uiImageBuffer *buf;
+	CGColorSpaceRef color_space;
+	uint32_t alpha_info;
+
+	buf = uiprivNew(uiImageBuffer);
+	color_space = CGColorSpaceCreateDeviceRGB();
+	alpha_info = alpha ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
+
+	buf->buf = CGBitmapContextCreate(NULL,
+		width, height,
+		8, width * 4, color_space,
+		alpha_info | kCGBitmapByteOrder32Little);
+	buf->img = CGBitmapContextCreateImage(buf->buf);
+	buf->Width = width;
+	buf->Height = height;
+	buf->Stride = width * 4;
+
+	CFRelease(color_space);
+	return buf;
+}
+
+void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
+{
+	uint8_t *src = (uint8_t *) data;
+	uint8_t *dst = (uint8_t *) CGBitmapContextGetData(buf->buf);
+	dst += buf->Stride * (buf->Height - 1);  // Flip vertically
+	for (int y = 0; y < buf->Height; y++) {
+		memcpy(dst, src, buf->Stride);
+		src += buf->Stride;
+		dst -= buf->Stride;
+	}
+
+	CGImageRelease(buf->img);
+	buf->img = CGBitmapContextCreateImage(buf->buf);
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, int filter)
+{
+	CGFloat sx = dstrect->Width / (CGFloat) srcrect->Width;
+	CGFloat sy = dstrect->Height / (CGFloat) srcrect->Height;
+	CGRect clip_rect = CGRectMake(dstrect->X, dstrect->Y, dstrect->Width, dstrect->Height);
+	CGRect draw_rect = CGRectMake(
+		dstrect->X - srcrect->X * sx,
+		dstrect->Y - srcrect->Y * sy,
+		buf->Width * sx,
+		buf->Height * sy);
+
+	CGContextSaveGState(c->c);
+	CGContextSetInterpolationQuality(c->c, filter ? kCGInterpolationMedium : kCGInterpolationLow);
+	CGContextClipToRect(c->c, clip_rect);
+	CGContextDrawImage(c->c, draw_rect, buf->img);
+	CGContextRestoreGState(c->c);
+}
+
+void uiFreeImageBuffer(uiImageBuffer *buf)
+{
+	CGImageRelease(buf->img);
+	CGContextRelease(buf->buf);
+	uiprivFree(buf);
+}
