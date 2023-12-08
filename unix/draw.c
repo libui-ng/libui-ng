@@ -184,6 +184,9 @@ void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 
 void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, int filter)
 {
+	if (srcrect->Width == 0 || srcrect->Height == 0)
+		return;  // avoid deviding by zero
+
 	cairo_save(c->cr);
 	cairo_rectangle(c->cr, dstrect->X, dstrect->Y, dstrect->Width, dstrect->Height);
 
