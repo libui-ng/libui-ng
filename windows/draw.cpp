@@ -531,7 +531,7 @@ uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alp
 	D2D1_BITMAP_PROPERTIES bp2 = D2D1::BitmapProperties();
 	bp2.dpiX = 0;
 	bp2.dpiY = 0;
-	bp2.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
+	bp2.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM,
 				alpha ? D2D1_ALPHA_MODE_PREMULTIPLIED : D2D1_ALPHA_MODE_IGNORE);
 
 	//c->rt->BeginDraw();

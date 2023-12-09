@@ -164,19 +164,29 @@ uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alp
 
 void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 {
-	unsigned char *src = data;
+	unsigned char *src = (unsigned char *) data;
 	unsigned char *dst = cairo_image_surface_get_data(buf->buf);
-	int y;
+	int x, y;
 
-	if (buf->Stride == buf->Width * 4) {
-		// stride 'good', can just directly copy
-		memcpy(dst, src, buf->Stride * buf->Height);
-	} else {
-		for (y = 0; y < buf->Height; y++) {
-			memcpy(dst, src, buf->Width * 4);
-			src += buf->Width * 4;
-			dst += buf->Stride;
+	// convert RGBA to BGRA
+	for (y = 0; y < buf->Height; y++) {
+		for (x = 0; x < buf->Width * 4; x += 4) {
+			union {
+				uint32_t v32;
+				uint8_t v8[4];
+			} v;
+
+			v.v32 = ((uint32_t) (src[x + 3])) << 24;
+			v.v32 |= ((uint32_t) (src[x])) << 16;
+			v.v32 |= ((uint32_t) (src[x + 1])) << 8;
+			v.v32 |= ((uint32_t) (src[x + 2]));
+			dst[x] = v.v8[0];
+			dst[x + 1] = v.v8[1];
+			dst[x + 2] = v.v8[2];
+			dst[x + 3] = v.v8[3];
 		}
+		src += buf->Width * 4;
+		dst += buf->Stride;
 	}
 
 	cairo_surface_mark_dirty(buf->buf);

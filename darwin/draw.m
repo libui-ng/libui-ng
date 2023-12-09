@@ -482,10 +482,27 @@ void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 {
 	uint8_t *src = (uint8_t *) data;
 	uint8_t *dst = (uint8_t *) CGBitmapContextGetData(buf->buf);
-	dst += buf->Stride * (buf->Height - 1);  // Flip vertically
-	for (int y = 0; y < buf->Height; y++) {
-		memcpy(dst, src, buf->Stride);
-		src += buf->Stride;
+	int x, y;
+
+	// convert RGBA to BGRA and flip vertically
+	dst += buf->Stride * (buf->Height - 1);
+	for (y = 0; y < buf->Height; y++) {
+		for (x = 0; x < buf->Width * 4; x += 4) {
+			union {
+				uint32_t v32;
+				uint8_t v8[4];
+			} v;
+
+			v.v32 = ((uint32_t) (src[x + 3])) << 24;
+			v.v32 |= ((uint32_t) (src[x])) << 16;
+			v.v32 |= ((uint32_t) (src[x + 1])) << 8;
+			v.v32 |= ((uint32_t) (src[x + 2]));
+			dst[x] = v.v8[0];
+			dst[x + 1] = v.v8[1];
+			dst[x + 2] = v.v8[2];
+			dst[x + 3] = v.v8[3];
+		}
+		src += buf->Width * 4;
 		dst -= buf->Stride;
 	}
 
