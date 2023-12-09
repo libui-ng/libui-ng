@@ -19,6 +19,24 @@ static void windowNew(void **state)
 	uiUninit();
 }
 
+static void windowDefaultMargined(void **state)
+{
+	uiWindow *w = uiWindowFromState(state);
+
+	assert_int_equal(uiWindowMargined(w), 0);
+}
+
+static void windowMargined(void **state)
+{
+	uiWindow *w = uiWindowFromState(state);
+
+	uiWindowSetMargined(w, 1);
+	assert_int_equal(uiWindowMargined(w), 1);
+
+	uiWindowSetMargined(w, 0);
+	assert_int_equal(uiWindowMargined(w), 0);
+}
+
 static void windowDefaultTitle(void **state)
 {
 	uiWindow *w = uiWindowFromState(state);
@@ -79,6 +97,26 @@ static void windowSetContentSize(void **state)
 	assert_int_equal(height, UNIT_TEST_WINDOW_HEIGHT + 10);
 }
 
+static void windowMarginedSetContentSize(void **state)
+{
+	uiWindow *w = uiWindowFromState(state);
+	int width, height;
+
+	uiWindowSetMargined(w, 0);
+	uiWindowSetContentSize(w, UNIT_TEST_WINDOW_WIDTH + 10, UNIT_TEST_WINDOW_HEIGHT + 10);
+
+	uiWindowContentSize(w, &width, &height);
+	assert_int_equal(width, UNIT_TEST_WINDOW_WIDTH + 10);
+	assert_int_equal(height, UNIT_TEST_WINDOW_HEIGHT + 10);
+
+	uiWindowSetMargined(w, 1);
+	uiWindowSetContentSize(w, UNIT_TEST_WINDOW_WIDTH + 10, UNIT_TEST_WINDOW_HEIGHT + 10);
+
+	uiWindowContentSize(w, &width, &height);
+	assert_int_equal(width, UNIT_TEST_WINDOW_WIDTH + 10);
+	assert_int_equal(height, UNIT_TEST_WINDOW_HEIGHT + 10);
+}
+
 void onContentSizeChangedNoCall(uiWindow *w, void *data)
 {
 	function_called();
@@ -118,11 +156,14 @@ int windowRunUnitTests(void)
 {
 	const struct CMUnitTest tests[] = {
 		cmocka_unit_test(windowNew),
+		windowUnitTest(windowDefaultMargined),
+		windowUnitTest(windowMargined),
 		windowUnitTest(windowDefaultTitle),
 		windowUnitTest(windowDefaultContentSize),
 		windowUnitTest(windowSetTitle),
 		windowUnitTest(windowSetPosition),
 		windowUnitTest(windowSetContentSize),
+		windowUnitTest(windowMarginedSetContentSize),
 		windowUnitTest(windowSetContentSizeNoCallback),
 		windowUnitTest(windowSetPositionNoCallback),
 	};
