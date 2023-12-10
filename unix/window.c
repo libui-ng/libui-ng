@@ -222,33 +222,8 @@ void uiWindowContentSize(uiWindow *w, int *width, int *height)
 
 void uiWindowSetContentSize(uiWindow *w, int width, int height)
 {
-	GtkAllocation childAlloc;
-	gint winWidth, winHeight;
-
-	// we need to resize the child holder widget to the given size
-	// we can't resize that without running the event loop
-	// but we can do gtk_window_set_size()
-	// so how do we deal with the differences in sizes?
-	// simple arithmetic, of course!
-
-	// from what I can tell, the return from gtk_widget_get_allocation(w->window) and gtk_window_get_size(w->window) will be the same
-	// this is not affected by Wayland and not affected by GTK+ builtin CSD
-	// so we can safely juse use them to get the real window size!
-	// since we're using gtk_window_resize(), use the latter
-	gtk_window_get_size(w->window, &winWidth, &winHeight);
-
-	// now get the child holder widget's current allocation
-	gtk_widget_get_allocation(w->childHolderWidget, &childAlloc);
-	// and punch that out of the window size
-	winWidth -= childAlloc.width;
-	winHeight -= childAlloc.height;
-
-	// now we just need to add the new size back in
-	winWidth += width;
-	winHeight += height;
-
 	w->changingSize = TRUE;
-	gtk_window_resize(w->window, winWidth, winHeight);
+	gtk_window_resize(w->window, width, height);
 	// gtk_window_resize() is asynchronous. Run the event loop manually.
 	while (gtk_events_pending())
 		if (!uiMainStep(1))
