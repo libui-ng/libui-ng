@@ -487,7 +487,7 @@ _UI_EXTERN void uiWindowSetChild(uiWindow *w, uiControl *child);
  * Returns whether or not the window has a margin.
  *
  * @param w uiWindow instance.
- * @returns `TRUE` if window has a margin, `FALSE` otherwise. [Default: `TODO`]
+ * @returns `TRUE` if window has a margin, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiWindow
  */
 _UI_EXTERN int uiWindowMargined(uiWindow *w);
