@@ -58,5 +58,4 @@ libui_deps += [
 	meson.get_compiler('c').find_library('dl',
 		required: false),
 ]
-libui_soversion = '0'
 libui_rpath = '$ORIGIN'

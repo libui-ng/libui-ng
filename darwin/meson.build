@@ -60,6 +60,5 @@ libui_deps += [
 		modules: ['Foundation', 'AppKit'],
 		required: true),
 ]
-libui_soversion = 'A'
 # the / is required by some older versions of OS X
 libui_rpath = '@executable_path/'
