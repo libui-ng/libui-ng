@@ -7,10 +7,10 @@ const char *imageBufferTransformGuide() {
 	"1.\tThe first image should be a tiny yellow icon in the top left corner.\n"
 	"\n"
 	"2.\tThe second image should be twice larger than the first one.\n"
-    "\tAnd it should be rotated by 45 degrees clockwise.\n"
+	"\tAnd it should be rotated by 45 degrees clockwise.\n"
 	"\n"
-    "3.\tThe third image should be the same as the second one,\n"
-    "\tbut it should also have black edges.\n"
+	"3.\tThe third image should be the same as the second one,\n"
+	"\tbut it should also have black edges.\n"
 	;
 }
 
@@ -86,88 +86,90 @@ static const uint8_t dat0[] = {
 // helper to quickly set a brush color
 static void SetSolidBrush(uiDrawBrush *brush, uint32_t color, double alpha)
 {
-    uint8_t component;
+	uint8_t component;
 
-    brush->Type = uiDrawBrushTypeSolid;
-    component = (uint8_t) ((color >> 16) & 0xFF);
-    brush->R = ((double) component) / 255;
-    component = (uint8_t) ((color >> 8) & 0xFF);
-    brush->G = ((double) component) / 255;
-    component = (uint8_t) (color & 0xFF);
-    brush->B = ((double) component) / 255;
-    brush->A = alpha;
+	brush->Type = uiDrawBrushTypeSolid;
+	component = (uint8_t) ((color >> 16) & 0xFF);
+	brush->R = ((double) component) / 255;
+	component = (uint8_t) ((color >> 8) & 0xFF);
+	brush->G = ((double) component) / 255;
+	component = (uint8_t) (color & 0xFF);
+	brush->B = ((double) component) / 255;
+	brush->A = alpha;
 }
 
 static void handlerDraw(uiAreaHandler *a, uiArea *area, uiAreaDrawParams *p)
 {
-    // fill the area
-    uiDrawPath *path;
-    uiDrawBrush brush;
-    SetSolidBrush(&brush, 0xFFFFFF, 1.0);
-    path = uiDrawNewPath(uiDrawFillModeWinding);
-    uiDrawPathAddRectangle(path, 0, 0, p->AreaWidth, p->AreaHeight);
-    uiDrawPathEnd(path);
-    uiDrawFill(p->Context, path, &brush);
-    uiDrawFreePath(path);
+	// fill the area
+	uiDrawPath *path;
+	uiDrawBrush brush;
+	SetSolidBrush(&brush, 0xFFFFFF, 1.0);
+	path = uiDrawNewPath(uiDrawFillModeWinding);
+	uiDrawPathAddRectangle(path, 0, 0, p->AreaWidth, p->AreaHeight);
+	uiDrawPathEnd(path);
+	uiDrawFill(p->Context, path, &brush);
+	uiDrawFreePath(path);
 
-    uiImageBuffer* image = uiNewImageBuffer(p->Context, 16, 16, 1);
-    uiImageBufferUpdate(image, dat0);
-    uiRect src_rect = { 0, 0, 16, 16 };
+	uiImageBuffer* image = uiNewImageBuffer(p->Context, 16, 16, 1);
+	uiImageBufferUpdate(image, dat0);
+	uiRect src_rect = { 0, 0, 16, 16 };
 
-    // first image
-    uiRect dst_rect = { 0, 0, 16, 16 };
-    uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect, 1);
+	// first image
+	uiImageBufferDraw(p->Context, image, &src_rect, &src_rect, 1);
 
-    // second image (test with uiDrawTransform)
-    uiDrawSave(p->Context);
+	// second image (test with uiDrawTransform)
+	uiDrawSave(p->Context);
 
-    uiDrawMatrix m;
-    uiDrawMatrixSetIdentity(&m);
-    uiDrawMatrixRotate(&m, 48, 24, uiPi / 4);
-    uiDrawTransform(p->Context, &m);
+	uiDrawMatrix tm, rm;
+	uiDrawMatrixSetIdentity(&tm);
+	uiDrawMatrixTranslate(&tm, 32, 4);
+	uiDrawTransform(p->Context, &tm);
+	uiDrawMatrixSetIdentity(&rm);
+	uiDrawMatrixRotate(&rm, 16, 16, uiPi / 4);
+	uiDrawTransform(p->Context, &rm);
 
-    uiRect dst_rect2 = { 32, 8, 32, 32 };
-    uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect2, 1);
+	uiRect dst_rect = { 0, 8, 32, 32 };
+	uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect, 1);
 
-    uiDrawRestore(p->Context);
+	uiDrawRestore(p->Context);
 
-    // third image (test if uiImageBufferDraw has the same transformation as uiDrawPath)
-    uiDrawMatrixSetIdentity(&m);
-    uiDrawMatrixRotate(&m, 96, 24, uiPi / 4);
-    uiDrawTransform(p->Context, &m);
+	// third image (test if uiImageBufferDraw has the same transformation as uiDrawPath)
+	uiDrawMatrixSetIdentity(&tm);
+	uiDrawMatrixTranslate(&tm, 80, 4);
+	uiDrawTransform(p->Context, &tm);
+	uiDrawTransform(p->Context, &rm);
 
-    SetSolidBrush(&brush, 0x000000, 1.0);
-    path = uiDrawNewPath(uiDrawFillModeWinding);
-    uiDrawPathAddRectangle(path, 78, 6, 36, 36);
-    uiDrawPathEnd(path);
-    uiDrawFill(p->Context, path, &brush);
-    uiDrawFreePath(path);
+	SetSolidBrush(&brush, 0x000000, 1.0);
+	path = uiDrawNewPath(uiDrawFillModeWinding);
+	uiDrawPathAddRectangle(path, -2, 6, 36, 36);
+	uiDrawPathEnd(path);
+	uiDrawFill(p->Context, path, &brush);
+	uiDrawFreePath(path);
 
-    uiRect dst_rect3 = { 80, 8, 32, 32 };
-    uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect3, 1);
+	uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect, 1);
 
-    uiFreeImageBuffer(image);
+	uiFreeImageBuffer(image);
 }
 
 static void handlerMouseEvent(uiAreaHandler *a, uiArea *area, uiAreaMouseEvent *e)
 {
-    // do nothing
+	// do nothing
 }
 
 static void handlerMouseCrossed(uiAreaHandler *ah, uiArea *a, int left)
 {
-    // do nothing
+	// do nothing
 }
 
 static void handlerDragBroken(uiAreaHandler *ah, uiArea *a)
 {
-    // do nothing
+	// do nothing
 }
 
 static int handlerKeyEvent(uiAreaHandler *ah, uiArea *a, uiAreaKeyEvent *e)
 {
-    // reject all keys
-    return 0;
+	// reject all keys
+	return 0;
 }
 
 uiControl* imageBufferTransform()
@@ -179,14 +181,14 @@ uiControl* imageBufferTransform()
 	vbox = uiNewVerticalBox();
 	uiBoxSetPadded(vbox, 1);
 
-    handler.Draw = handlerDraw;
-    handler.MouseEvent = handlerMouseEvent;
-    handler.MouseCrossed = handlerMouseCrossed;
-    handler.DragBroken = handlerDragBroken;
-    handler.KeyEvent = handlerKeyEvent;
+	handler.Draw = handlerDraw;
+	handler.MouseEvent = handlerMouseEvent;
+	handler.MouseCrossed = handlerMouseCrossed;
+	handler.DragBroken = handlerDragBroken;
+	handler.KeyEvent = handlerKeyEvent;
 
-    uiArea *area = uiNewArea(&handler);
-    uiBoxAppend(vbox, uiControl(area), 1);
+	uiArea *area = uiNewArea(&handler);
+	uiBoxAppend(vbox, uiControl(area), 1);
 
 	label = uiNewLabel("\n\n\n");  // It can make space for uiArea
 	uiBoxAppend(vbox, uiControl(label), 1);
