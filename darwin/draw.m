@@ -510,7 +510,16 @@ void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 	buf->img = CGBitmapContextCreateImage(buf->buf);
 }
 
-void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, int filter)
+static CGInterpolationQuality getCGInterpQuality(uiInterpMode interpMode)
+{
+	if (interpMode == uiInterpModeSpeed)
+		return kCGInterpolationLow;
+	else if (interpMode == uiInterpModeBalanced)
+		return kCGInterpolationMedium;
+	return kCGInterpolationHigh;
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, uiInterpMode interpMode)
 {
 	if (srcrect->Width == 0 || srcrect->Height == 0)
 		return;  // avoid dividing by zero
@@ -525,7 +534,7 @@ void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, ui
 		buf->Height * sy);
 
 	CGContextSaveGState(c->c);
-	CGContextSetInterpolationQuality(c->c, filter ? kCGInterpolationMedium : kCGInterpolationLow);
+	CGContextSetInterpolationQuality(c->c, getCGInterpQuality(interpMode));
 	CGContextClipToRect(c->c, clip_rect);
 	CGContextDrawImage(c->c, draw_rect, buf->img);
 	CGContextRestoreGState(c->c);

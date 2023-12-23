@@ -98,7 +98,7 @@ static void handlerDrawDefault(uiAreaHandler *a, uiArea *area, uiAreaDrawParams 
 {
 	uiImageBuffer* image = uiNewImageBuffer(p->Context, 16, 16, 1);
 	uiRect rect = { 0, 0, 16, 16 };
-	uiImageBufferDraw(p->Context, image, &rect, &rect, 1);
+	uiImageBufferDraw(p->Context, image, &rect, &rect, uiInterpModeSpeed);
 	uiFreeImageBuffer(image);
 }
 
@@ -114,7 +114,7 @@ static void handlerDrawUpdate(uiAreaHandler *a, uiArea *area, uiAreaDrawParams *
 	uiImageBuffer* image = uiNewImageBuffer(p->Context, 16, 16, 1);
 	uiRect rect = { 0, 0, 16, 16 };
 	uiImageBufferUpdate(image, dat0);
-	uiImageBufferDraw(p->Context, image, &rect, &rect, 1);
+	uiImageBufferDraw(p->Context, image, &rect, &rect, uiInterpModeSpeed);
 	uiFreeImageBuffer(image);
 }
 
@@ -131,8 +131,8 @@ static void handlerDrawZeroSizedRect(uiAreaHandler *a, uiArea *area, uiAreaDrawP
 	uiImageBufferUpdate(image, dat0);
 	uiRect rect = { 0, 0, 16, 16 };
 	uiRect zero_rect = { 0, 0, 0, 0 };
-	uiImageBufferDraw(p->Context, image, &rect, &zero_rect, 1);
-	uiImageBufferDraw(p->Context, image, &zero_rect, &rect, 1);
+	uiImageBufferDraw(p->Context, image, &rect, &zero_rect, uiInterpModeSpeed);
+	uiImageBufferDraw(p->Context, image, &zero_rect, &rect, uiInterpModeSpeed);
 	uiFreeImageBuffer(image);
 }
 
