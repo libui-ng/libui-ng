@@ -513,7 +513,7 @@ void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, int filter)
 {
 	if (srcrect->Width == 0 || srcrect->Height == 0)
-		return;  // avoid deviding by zero
+		return;  // avoid dividing by zero
 
 	CGFloat sx = dstrect->Width / (CGFloat) srcrect->Width;
 	CGFloat sy = dstrect->Height / (CGFloat) srcrect->Height;

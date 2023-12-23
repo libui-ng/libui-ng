@@ -38,7 +38,7 @@ ID2D1HwndRenderTarget *makeHWNDRenderTarget(HWND hwnd)
 		logLastError(L"error getting DC to find DPI");
 
 	ZeroMemory(&props, sizeof (D2D1_RENDER_TARGET_PROPERTIES));
-	props.type = D2D1_RENDER_TARGET_TYPE_HARDWARE;
+	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
 	props.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 	props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
 	props.dpiX = GetDeviceCaps(dc, LOGPIXELSX);
@@ -62,16 +62,8 @@ ID2D1HwndRenderTarget *makeHWNDRenderTarget(HWND hwnd)
 		&props,
 		&hprops,
 		&rt);
-	if (hr != S_OK) {
-		props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
-		hr = d2dfactory->CreateHwndRenderTarget(
-			&props,
-			&hprops,
-			&rt);
-		if (hr != S_OK)
-			logHRESULT(L"error creating HWND render target", hr);
-	}
-
+	if (hr != S_OK)
+		logHRESULT(L"error creating HWND render target", hr);
 	return rt;
 }
 
@@ -534,13 +526,9 @@ uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alp
 	bp2.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM,
 				alpha ? D2D1_ALPHA_MODE_PREMULTIPLIED : D2D1_ALPHA_MODE_IGNORE);
 
-	//c->rt->BeginDraw();
-
 	hr = c->rt->CreateBitmap(D2D1::SizeU(width,height), NULL, 0, &bp2, &buf->buf);
 	if (hr != S_OK)
 		logHRESULT(L"error creating ImageBuffer", hr);
-
-	//c->rt->EndDraw();
 
 	buf->Width = width;
 	buf->Height = height;

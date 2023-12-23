@@ -175,7 +175,6 @@ static int handlerKeyEvent(uiAreaHandler *ah, uiArea *a, uiAreaKeyEvent *e)
 uiControl* imageBufferTransform()
 {
 	uiBox *vbox;
-	uiBox *hbox;
 	uiLabel *label;
 
 	vbox = uiNewVerticalBox();
