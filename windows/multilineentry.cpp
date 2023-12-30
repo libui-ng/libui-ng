@@ -45,9 +45,21 @@ static void uiMultilineEntryMinimumSize(uiWindowsControl *c, int *width, int *he
 	uiMultilineEntry *e = uiMultilineEntry(c);
 	uiWindowsSizing sizing;
 	int x, y;
+	int dpi;
 
+#if (WINVER >= 0x0605)
+	// the DPI of the monitor where this window is located
+	dpi = GetDpiForWindow(e->hwnd);
+	if (dpi <= 0)
+		logLastError(L"error getting monitor DPI");
+
+	// scale by the ratio of the window DPI to Windows' assumed DPI (96)
+	x = MulDiv(entryWidth, dpi, 96);
+	y = MulDiv(entryHeight, dpi, 96);
+#else
 	x = entryWidth;
 	y = entryHeight;
+#endif
 	uiWindowsGetSizing(e->hwnd, &sizing);
 	uiWindowsSizingDlgUnitsToPixels(&sizing, &x, &y);
 	*width = x;
