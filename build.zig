@@ -43,7 +43,7 @@ pub fn build(b: *std.Build) void {
         .flags = &.{},
     });
 
-    if (target.isDarwin()) {
+    if (target.result.isDarwin()) {
         // use darwin/*.m backend
         lib.installHeader("ui_darwin.h", "ui_darwin.h");
         lib.addIncludePath(.{ .path = "darwin" });
@@ -105,7 +105,7 @@ pub fn build(b: *std.Build) void {
             },
             .flags = &.{},
         });
-    } else if (target.isWindows()) {
+    } else if (target.result.os.tag == .windows) {
         // use windows/*.cpp backend
         lib.installHeader("ui_windows.h", "ui_windows.h");
         lib.subsystem = .Windows;
@@ -282,10 +282,13 @@ pub fn build(b: *std.Build) void {
             .name = name,
             .target = target,
             .optimize = optimize,
-            .root_source_file = .{ .path = example },
+        });
+        exe.addCSourceFile(.{
+            .file = .{ .path = example },
+            .flags = &.{},
         });
         exe.linkLibrary(lib);
-        if (target.isWindows()) {
+        if (target.result.os.tag == .windows) {
             exe.addWin32ResourceFile(.{
                 .file = .{ .path = "examples/resources.rc" },
                 .flags = if (is_dynamic) &.{} else &.{ "/d", "_UI_STATIC" },
@@ -301,12 +304,15 @@ pub fn build(b: *std.Build) void {
             .name = "cpp-multithread",
             .target = target,
             .optimize = optimize,
-            .root_source_file = .{ .path = "examples/cpp-multithread/main.cpp" },
+        });
+        exe.addCSourceFile(.{
+            .file = .{ .path = "examples/cpp-multithread/main.cpp" },
+            .flags = &.{},
         });
         exe.linkLibrary(lib);
         exe.linkLibCpp();
 
-        if (target.isWindows()) {
+        if (target.result.os.tag == .windows) {
             exe.addWin32ResourceFile(.{
                 .file = .{ .path = "examples/resources.rc" },
                 .flags = if (is_dynamic) &.{} else &.{ "/d", "_UI_STATIC" },
