@@ -5,7 +5,9 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const is_dynamic = b.option(bool, "shared", "Build libui as a dynamically linked library") orelse false;
+    const LibraryType = enum { static, shared };
+    const library_type = b.option(LibraryType, "libtype", "Build libui as a dynamically linked library") orelse .static;
+    const is_dynamic = library_type == .shared;
 
     const lib = if (is_dynamic)
         b.addSharedLibrary(.{

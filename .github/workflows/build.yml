@@ -181,3 +181,46 @@ jobs:
             ui_darwin.h
             ui.h
             builddir/meson-logs/*.txt
+
+  zig-linux:
+    strategy:
+      fail-fast: false
+      matrix:
+        # ubuntu-18.04, ubuntu-latest (ubuntu-20.04)
+        os: [ubuntu-latest]
+        # x86, x64
+        arch: [x64]
+        libtype: [static, shared]
+        # debug, debugoptimized, release
+        buildtype: [Debug]
+    runs-on: ${{ matrix.os }}
+    name: Ubuntu-Zig-${{ matrix.arch }}-${{ matrix.libtype }}
+    steps:
+      - name: Install minisign
+        run: |
+          wget https://github.com/jedisct1/minisign/releases/download/0.11/minisign-0.11-linux.tar.gz
+          tar -xf minisign-0.11-linux.tar.gz --directory=/tmp/
+          echo "/tmp/minisign-linux/x86_64/" >> $GITHUB_PATH
+      - name: Install Zig
+        run: |
+          wget https://pkg.machengine.org/zig/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz
+          wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz.minisig
+          minisign -Vm zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz -P RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U
+          tar -xf zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz --directory=/tmp/
+          echo "/tmp/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9" >> $GITHUB_PATH
+      - name: Install Ubuntu Deps
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libgtk-3-dev xvfb
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Zig Build
+        run: zig build -Doptimize=${{ matrix.buildtype }} -Dlibtype=${{ matrix.libtype }}
+      # - name: Run Tests # TODO: write build.zig for tests
+      #   run: xvfb-run meson test -C builddir --verbose
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: Ubuntu-Zig-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
+          # lib + header + examples + test + build-log
+          path: zig-out/
