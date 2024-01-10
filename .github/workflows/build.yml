@@ -196,18 +196,10 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: Ubuntu-Zig-${{ matrix.arch }}-${{ matrix.libtype }}
     steps:
-      - name: Install minisign
-        run: |
-          wget https://github.com/jedisct1/minisign/releases/download/0.11/minisign-0.11-linux.tar.gz
-          tar -xf minisign-0.11-linux.tar.gz --directory=/tmp/
-          echo "/tmp/minisign-linux/x86_64/" >> $GITHUB_PATH
-      - name: Install Zig
-        run: |
-          wget https://pkg.machengine.org/zig/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz
-          wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz.minisig
-          minisign -Vm zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz -P RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U
-          tar -xf zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz --directory=/tmp/
-          echo "/tmp/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9" >> $GITHUB_PATH
+      - name: Setup Zig
+        uses: goto-bus-stop/setup-zig@v2
+        with:
+          version: 0.12.0-dev.2063+804cee3b9
       - name: Install Ubuntu Deps
         run: |
           sudo apt-get update -y
