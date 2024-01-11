@@ -203,13 +203,15 @@ jobs:
       - name: Install Ubuntu Deps
         run: |
           sudo apt-get update -y
-          sudo apt-get install -y libgtk-3-dev xvfb
+          sudo apt-get install -y libgtk-3-dev xvfb libcmocka-dev
       - name: Checkout
         uses: actions/checkout@v3
       - name: Zig Build
         run: zig build -Doptimize=${{ matrix.buildtype }} -Dlibtype=${{ matrix.libtype }}
-      # - name: Run Tests # TODO: write build.zig for tests
-      #   run: xvfb-run meson test -C builddir --verbose
+      - name: Zig Build Tests
+        run: zig build tests -Doptimize=${{ matrix.buildtype }} -Dlibtype=${{ matrix.libtype }}
+      - name: Run Tests
+        run: xvfb-run ./zig-out/test/unit
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
