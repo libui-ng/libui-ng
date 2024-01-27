@@ -27,6 +27,7 @@ static void uiEntryDestroy(uiControl *c)
 	uiEntry *e = uiEntry(c);
 
 	uiWindowsUnregisterWM_COMMANDHandler(e->hwnd);
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(e->hwnd);
 	uiFreeControl(uiControl(e));
 }

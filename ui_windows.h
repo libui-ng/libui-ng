@@ -43,6 +43,7 @@ _UI_EXTERN void uiWindowsControlChildVisibilityChanged(uiWindowsControl *);
 #define uiWindowsControlDefaultDestroy(type) \
 	static void type ## Destroy(uiControl *c) \
 	{ \
+		uiprivDestroyTooltip(c); \
 		uiWindowsEnsureDestroyWindow(type(c)->hwnd); \
 		uiFreeControl(c); \
 	}

@@ -102,6 +102,7 @@ static void uiTabDestroy(uiControl *c)
 	}
 	delete t->pages;
 	uiWindowsUnregisterWM_NOTIFYHandler(t->tabHWND);
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(t->tabHWND);
 	uiWindowsEnsureDestroyWindow(t->hwnd);
 	uiFreeControl(uiControl(t));
