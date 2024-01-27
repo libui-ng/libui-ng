@@ -1,7 +1,8 @@
 #include "uipriv_windows.hpp"
 
 // This doesn't work for containers
-static HWND createTooltipForControl(HWND hparent, const wchar_t* text) {
+static HWND createTooltipForControl(HWND hparent, const wchar_t* text)
+{
 	HWND hwndTT = CreateWindowEx(NULL, TOOLTIPS_CLASS, NULL,
 		WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
@@ -33,22 +34,67 @@ static HWND createTooltipForControl(HWND hparent, const wchar_t* text) {
 	return hwndTT;
 }
 
-void uiControlSetTooltip(uiControl *c, const char *tooltip) {
-	uiprivDestroyTooltip(c);
+static void addTooltipToControl(HWND hparent,
+	const wchar_t *wtext, std::vector<HWND> *tooltips)
+{
+	HWND tt = createTooltipForControl(hparent, wtext);
+	if (tt)
+		tooltips->push_back(tt);
+}
 
+static HWND addTooltipToChild(HWND hparent, HWND child_after,
+	const wchar_t *class_name, const wchar_t *wtext, std::vector<HWND> *tooltips)
+{
+	HWND child;
+	HWND tt;
+	child = FindWindowExW(hparent, child_after, class_name, NULL);
+	if (!child) return NULL;
+
+	addTooltipToControl(child, wtext, tooltips);
+	return child;
+}
+
+void uiControlSetTooltip(uiControl *c, const char *tooltip)
+{
+	uiprivDestroyTooltip(c);
+	
 	if (tooltip == NULL) return;
 
 	wchar_t *wtext = toUTF16(tooltip);
-	void *ptr = createTooltipForControl((HWND) uiControlHandle(c), wtext);
-	uiprivFree(wtext);
+	HWND hparent = (HWND) uiControlHandle(c);
+	HWND child = NULL;
+	std::vector<HWND> *tooltips = new std::vector<HWND>(0);
 
-	uiWindowsControl(c)->tooltip = ptr;
+	switch (c->TypeSignature) {
+	case uiEditableComboboxSignature:
+	case uiSpinboxSignature:
+		child = addTooltipToChild(hparent, NULL, L"edit", wtext, tooltips);
+		break;
+	case uiRadioButtonsSignature:
+		// This works only for existing buttons.
+		// You should run uiRadioButtonsAppend before calling uiControlSetTooltip.
+		do {
+			child = addTooltipToChild(hparent, child, L"button", wtext, tooltips);
+		} while (child);
+		break;
+	default:
+		addTooltipToControl(hparent, wtext, tooltips);
+	}
+
+	uiprivFree(wtext);
+	uiWindowsControl(c)->tooltips = tooltips;
 }
 
-void uiprivDestroyTooltip(uiControl* c) {
-	HWND tooltip = (HWND) uiWindowsControl(c)->tooltip;
-	if (tooltip == NULL) return;
-	uiWindowsEnsureDestroyWindow(tooltip);
-	uiWindowsControl(c)->tooltip = NULL;
+void uiprivDestroyTooltip(uiControl* c)
+{
+	std::vector<HWND> *tooltips = (std::vector<HWND>*) uiWindowsControl(c)->tooltips;
+
+	if (tooltips == NULL) return;
+
+	for (HWND tt : *tooltips) {
+		uiWindowsEnsureDestroyWindow(tt);
+	}
+	delete tooltips;
+	uiWindowsControl(c)->tooltips = NULL;
 }
 
