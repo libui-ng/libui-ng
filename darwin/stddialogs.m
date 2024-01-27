@@ -5,7 +5,7 @@
 // LONGTERM explicitly document this works as we want
 // LONGTERM note that font and color buttons also do this
 
-#define windowWindow(w) ((NSWindow *) uiControlHandle(uiControl(w)))
+#define windowWindow(w) ((w) ? (NSWindow *) uiControlHandle(uiControl(w)) : nil)
 
 // source of code modal logic: http://stackoverflow.com/questions/604768/wait-for-nsalert-beginsheetmodalforwindow
 
