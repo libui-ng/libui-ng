@@ -452,3 +452,97 @@ void uiDrawRestore(uiDrawContext *c)
 {
 	CGContextRestoreGState(c->c);
 }
+
+// ImageBuffer API
+
+uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha)
+{
+	uiImageBuffer *buf;
+	CGColorSpaceRef color_space;
+	uint32_t alpha_info;
+
+	buf = uiprivNew(uiImageBuffer);
+	color_space = CGColorSpaceCreateDeviceRGB();
+	alpha_info = alpha ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
+
+	buf->buf = CGBitmapContextCreate(NULL,
+		width, height,
+		8, width * 4, color_space,
+		alpha_info | kCGBitmapByteOrder32Little);
+	buf->img = CGBitmapContextCreateImage(buf->buf);
+	buf->Width = width;
+	buf->Height = height;
+	buf->Stride = width * 4;
+
+	CFRelease(color_space);
+	return buf;
+}
+
+void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
+{
+	uint8_t *src = (uint8_t *) data;
+	uint8_t *dst = (uint8_t *) CGBitmapContextGetData(buf->buf);
+	int x, y;
+
+	// convert RGBA to BGRA and flip vertically
+	dst += buf->Stride * (buf->Height - 1);
+	for (y = 0; y < buf->Height; y++) {
+		for (x = 0; x < buf->Width * 4; x += 4) {
+			union {
+				uint32_t v32;
+				uint8_t v8[4];
+			} v;
+
+			v.v32 = ((uint32_t) (src[x + 3])) << 24;
+			v.v32 |= ((uint32_t) (src[x])) << 16;
+			v.v32 |= ((uint32_t) (src[x + 1])) << 8;
+			v.v32 |= ((uint32_t) (src[x + 2]));
+			dst[x] = v.v8[0];
+			dst[x + 1] = v.v8[1];
+			dst[x + 2] = v.v8[2];
+			dst[x + 3] = v.v8[3];
+		}
+		src += buf->Width * 4;
+		dst -= buf->Stride;
+	}
+
+	CGImageRelease(buf->img);
+	buf->img = CGBitmapContextCreateImage(buf->buf);
+}
+
+static CGInterpolationQuality getCGInterpQuality(uiInterpMode interpMode)
+{
+	if (interpMode == uiInterpModeSpeed)
+		return kCGInterpolationLow;
+	else if (interpMode == uiInterpModeBalanced)
+		return kCGInterpolationMedium;
+	return kCGInterpolationHigh;
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, uiInterpMode interpMode)
+{
+	if (srcrect->Width == 0 || srcrect->Height == 0)
+		return;  // avoid dividing by zero
+
+	CGFloat sx = dstrect->Width / (CGFloat) srcrect->Width;
+	CGFloat sy = dstrect->Height / (CGFloat) srcrect->Height;
+	CGRect clip_rect = CGRectMake(dstrect->X, dstrect->Y, dstrect->Width, dstrect->Height);
+	CGRect draw_rect = CGRectMake(
+		dstrect->X - srcrect->X * sx,
+		dstrect->Y - srcrect->Y * sy,
+		buf->Width * sx,
+		buf->Height * sy);
+
+	CGContextSaveGState(c->c);
+	CGContextSetInterpolationQuality(c->c, getCGInterpQuality(interpMode));
+	CGContextClipToRect(c->c, clip_rect);
+	CGContextDrawImage(c->c, draw_rect, buf->img);
+	CGContextRestoreGState(c->c);
+}
+
+void uiFreeImageBuffer(uiImageBuffer *buf)
+{
+	CGImageRelease(buf->img);
+	CGContextRelease(buf->buf);
+	uiprivFree(buf);
+}

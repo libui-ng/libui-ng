@@ -39,6 +39,11 @@ struct controlTestCase labelTestCases[] = {
 	{NULL, NULL, NULL}
 };
 
+struct controlTestCase imageBufferTestCases[] = {
+	QA_TEST("1. Transformation", imageBufferTransform),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestCase windowTestCases[] = {
 	QA_TEST("1. Fullscreen", windowFullscreen),
 	QA_TEST("2. Borderless", windowBorderless),
@@ -54,6 +59,7 @@ struct controlTestGroup controlTestGroups[] = {
 	{"uiCheckbox", checkboxTestCases},
 	{"uiEntry", entryTestCases},
 	{"uiLabel", labelTestCases},
+	{"uiImageBuffer", imageBufferTestCases},
 	{"uiWindow", windowTestCases},
 };
 
