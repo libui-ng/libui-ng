@@ -24,10 +24,10 @@ static int expectDoubleEqual(double a, double b, const char* error_prefix)
 	int equal = compareDouble(a, b, EPSILON);
 	if (!equal) {
 		if (error_prefix == NULL)
-	        cm_print_error("%f != %f\n", a, b);
+			cm_print_error("%f != %f\n", a, b);
 		else
-	        cm_print_error("%s%f != %f\n", error_prefix, a, b);
-    }
+			cm_print_error("%s%f != %f\n", error_prefix, a, b);
+	}
 	return equal;
 }
 
