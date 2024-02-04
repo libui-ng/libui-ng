@@ -56,7 +56,6 @@ extern int uiprivFromScancode(uintptr_t, uiAreaKeyEvent *);
 
 // matrix.c
 extern void uiprivFallbackSkew(uiDrawMatrix *, double, double, double, double);
-extern void uiprivScaleCenter(double, double, double *, double *);
 extern void uiprivFallbackTransformSize(uiDrawMatrix *, double *, double *);
 
 // OS-specific text.* files

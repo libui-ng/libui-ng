@@ -31,12 +31,6 @@ void uiprivFallbackSkew(uiDrawMatrix *m, double x, double y, double xamount, dou
 	uiDrawMatrixMultiply(m, &n);
 }
 
-void uiprivScaleCenter(double xCenter, double yCenter, double *x, double *y)
-{
-	*x = xCenter - (*x * xCenter);
-	*y = yCenter - (*y * yCenter);
-}
-
 // the basic algorithm is from cairo
 // but it's the same algorithm as the transform point, just without M31 and M32 taken into account, so let's just do that instead
 void uiprivFallbackTransformSize(uiDrawMatrix *m, double *x, double *y)
