@@ -19,14 +19,16 @@ static int compareDouble(double a, double b, double epsilon)
 void cm_print_error(const char * const format, ...);
 
 // Check if a == b without aborting the test.
-static int expectDoubleEqual(double a, double b, const char* error_prefix)
+static int expectDoubleEqual(double a, double b, int first_error, const char* error_prefix)
 {
+	// Function only used by assertMatrixEqual() macro below right now.
+	const char* func_prefix = first_error ? "(assertMatrixEqual)\n" : "";
 	int equal = compareDouble(a, b, EPSILON);
 	if (!equal) {
 		if (error_prefix == NULL)
-			cm_print_error("%f != %f\n", a, b);
+			cm_print_error("%s%f != %f\n", func_prefix, a, b);
 		else
-			cm_print_error("%s%f != %f\n", error_prefix, a, b);
+			cm_print_error("%s%s%f != %f\n", func_prefix, error_prefix, a, b);
 	}
 	return equal;
 }
@@ -39,12 +41,12 @@ static int expectDoubleEqual(double a, double b, const char* error_prefix)
 static void _assertMatrixEqual(uiDrawMatrix *a, uiDrawMatrix *b, const char * const file, const int line)
 {
 	int equal = 1;
-	equal &= expectDoubleEqual(a->M11, b->M11, "M11: ");
-	equal &= expectDoubleEqual(a->M12, b->M12, "M12: ");
-	equal &= expectDoubleEqual(a->M21, b->M21, "M21: ");
-	equal &= expectDoubleEqual(a->M22, b->M22, "M22: ");
-	equal &= expectDoubleEqual(a->M31, b->M31, "M31: ");
-	equal &= expectDoubleEqual(a->M32, b->M32, "M32: ");
+	equal &= expectDoubleEqual(a->M11, b->M11, equal, "M11: ");
+	equal &= expectDoubleEqual(a->M12, b->M12, equal, "M12: ");
+	equal &= expectDoubleEqual(a->M21, b->M21, equal, "M21: ");
+	equal &= expectDoubleEqual(a->M22, b->M22, equal, "M22: ");
+	equal &= expectDoubleEqual(a->M31, b->M31, equal, "M31: ");
+	equal &= expectDoubleEqual(a->M32, b->M32, equal, "M32: ");
 	if (!equal)
 		_fail(file, line);
 }
