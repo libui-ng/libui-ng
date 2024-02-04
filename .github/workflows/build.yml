@@ -38,7 +38,7 @@ jobs:
       - name: Run Tests
         run: xvfb-run meson test -C builddir --verbose
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Ubuntu-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
           # lib + header + examples + test + build-log
@@ -84,7 +84,7 @@ jobs:
       - name: Run Tests
         run: meson test -C builddir --verbose
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Win-${{ matrix.arch }}-${{ matrix.libtype }}-${{ matrix.buildtype }}
           # lib + header + examples + test + build-log
@@ -131,7 +131,7 @@ jobs:
       - name: Run Tests
         run: meson test -C builddir --verbose
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Mingw-${{ matrix.arch }}-static-${{ matrix.buildtype }}
           # lib + header + examples + test + build-log
@@ -172,7 +172,7 @@ jobs:
       - name: Run Tests
         run: meson test -C builddir --verbose
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macOS-x64-${{ matrix.libtype }}-${{ matrix.buildtype }}
           # lib + header + examples + test + build-log
