@@ -37,14 +37,25 @@ int uiProgressBarValue(uiProgressBar *p)
 void uiProgressBarSetValue(uiProgressBar *p, int value)
 {
 	if (value == -1) {
+		if ([p->pi isIndeterminate])
+			return;
+
 		[p->pi setIndeterminate:YES];
+		// Display to ensure a moving progress bar animation if a value
+		// has previously been set. Otherwise the bar will simply flash
+		// the last value.
+		[p->pi displayIfNeeded];
 		[p->pi startAnimation:p->pi];
 		return;
 	}
 
 	if ([p->pi isIndeterminate]) {
+		// Kill thread to stop animation and set new value instantly
+		// and not only after a ~1 second delay.
+		[p->pi setUsesThreadedAnimation:NO];
 		[p->pi setIndeterminate:NO];
 		[p->pi stopAnimation:p->pi];
+		[p->pi setUsesThreadedAnimation:YES];
 	}
 
 	if (value < 0 || value > 100)
