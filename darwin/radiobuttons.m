@@ -25,6 +25,7 @@ struct uiRadioButtons {
 	radioButtonsDelegate *delegate;
 	void (*onSelected)(uiRadioButtons *, void *);
 	void *onSelectedData;
+	int selected;
 };
 
 @implementation radioButtonsDelegate
@@ -39,8 +40,15 @@ struct uiRadioButtons {
 
 - (IBAction)onClicked:(id)sender
 {
+	NSButton *b = (NSButton *)sender;
 	uiRadioButtons *r = self->libui_r;
+	NSInteger index;
 
+	index = [r->buttons indexOfObject:b];
+	if (index == r->selected)
+		return;
+
+	r->selected = index;
 	(*(r->onSelected))(r, r->onSelectedData);
 }
 
@@ -156,21 +164,15 @@ void uiRadioButtonsAppend(uiRadioButtons *r, const char *text)
 
 int uiRadioButtonsSelected(uiRadioButtons *r)
 {
-	NSButton *b;
-	NSUInteger i;
-
-	for (i = 0; i < [r->buttons count]; i++) {
-		b = (NSButton *) [r->buttons objectAtIndex:i];
-		if ([b state] == NSOnState)
-			return i;
-	}
-	return -1;
+	return r->selected;
 }
 
 void uiRadioButtonsSetSelected(uiRadioButtons *r, int n)
 {
 	NSButton *b;
 	NSInteger state;
+
+	r->selected = n;
 
 	state = NSOnState;
 	if (n == -1) {
@@ -198,6 +200,7 @@ uiRadioButtons *uiNewRadioButtons(void)
 	r->view = [[NSView alloc] initWithFrame:NSZeroRect];
 	r->buttons = [NSMutableArray new];
 	r->constraints = [NSMutableArray new];
+	r->selected = -1;
 
 	r->delegate = [[radioButtonsDelegate alloc] initWithR:r];
 

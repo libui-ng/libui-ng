@@ -5,6 +5,7 @@ libui_qa_sources = [
 	'checkbox.c',
 	'entry.c',
 	'label.c',
+	'radiobuttons.c',
 	'window.c',
 ]
 
