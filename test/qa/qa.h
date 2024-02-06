@@ -22,6 +22,8 @@ QA_DECLARE_TEST(entryOverflowText);
 
 QA_DECLARE_TEST(labelMultiLine);
 
+QA_DECLARE_TEST(spinboxOnChanged);
+
 
 QA_DECLARE_TEST(windowFullscreen);
 QA_DECLARE_TEST(windowBorderless);
