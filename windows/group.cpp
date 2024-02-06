@@ -61,6 +61,7 @@ static void uiGroupDestroy(uiControl *c)
 		uiControlSetParent(g->child, NULL);
 		uiControlDestroy(g->child);
 	}
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(g->hwnd);
 	uiFreeControl(uiControl(g));
 }

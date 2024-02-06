@@ -33,6 +33,7 @@ static void uiSliderDestroy(uiControl *c)
 	uiSliderSetHasToolTip(s, 1);
 
 	uiWindowsUnregisterWM_HSCROLLHandler(s->hwnd);
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(s->hwnd);
 	uiFreeControl(uiControl(s));
 }

@@ -106,6 +106,7 @@ static void uiDateTimePickerDestroy(uiControl *c)
 
 	uiWindowsUnregisterReceiveWM_WININICHANGE(d->hwnd);
 	uiWindowsUnregisterWM_NOTIFYHandler(d->hwnd);
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(d->hwnd);
 	uiFreeControl(uiControl(d));
 }
