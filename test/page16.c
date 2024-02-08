@@ -1,6 +1,8 @@
 // 21 june 2016
 #include "test.h"
 
+#define MODEL_NUM_ROWS 100000
+
 static uiTableModelHandler mh;
 
 static int modelNumColumns(uiTableModelHandler *mh, uiTableModel *m)
@@ -21,13 +23,13 @@ static uiTableValueType modelColumnType(uiTableModelHandler *mh, uiTableModel *m
 
 static int modelNumRows(uiTableModelHandler *mh, uiTableModel *m)
 {
-	return 15;
+	return MODEL_NUM_ROWS;
 }
 
 static uiImage *img[2];
 static char row9text[1024];
 static int yellowRow = -1;
-static int checkStates[15];
+static int checkStates[MODEL_NUM_ROWS];
 
 static uiTableValue *modelCellValue(uiTableModelHandler *mh, uiTableModel *m, int row, int col)
 {
@@ -231,8 +233,6 @@ uiBox *makePage16(void)
 	appendImageNamed(img[1], "tango-icon-theme-0.8.90_32x32_x-office-spreadsheet.png");
 
 	strcpy(row9text, "Part");
-
-	memset(checkStates, 0, 15 * sizeof (int));
 
 	page16 = newVerticalBox();
 	controls = newHorizontalBox();
