@@ -79,6 +79,7 @@ static uiControl *makeBasicControlsPage(void)
 
 // TODO make these not global
 static uiSpinbox *spinbox;
+static uiSpinbox *spinbox_double;
 static uiSlider *slider;
 static uiProgressBar *pbar;
 
@@ -116,11 +117,13 @@ static uiControl *makeNumbersPage()
 	uiGroupSetChild(group, uiControl(vbox));
 
 	spinbox = uiNewSpinbox(0, 100);
+	spinbox_double = uiNewSpinboxDouble(0, 100, 4);
 	slider = uiNewSlider(0, 100);
 	pbar = uiNewProgressBar();
 	uiSpinboxOnChanged(spinbox, onSpinboxChanged, NULL);
 	uiSliderOnChanged(slider, onSliderChanged, NULL);
 	uiBoxAppend(vbox, uiControl(spinbox), 0);
+	uiBoxAppend(vbox, uiControl(spinbox_double), 0);
 	uiBoxAppend(vbox, uiControl(slider), 0);
 	uiBoxAppend(vbox, uiControl(pbar), 0);
 
