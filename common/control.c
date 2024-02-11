@@ -74,6 +74,11 @@ void uiFreeControl(uiControl *c)
 {
 	if (uiControlParent(c) != NULL)
 		uiprivUserBug("You cannot destroy a uiControl while it still has a parent. (control: %p)", c);
+
+	if (c->onFree) {
+		(*(c->onFree))(c, c->onFreeData);
+	}
+
 	uiprivFree(c);
 }
 
@@ -98,4 +103,10 @@ int uiControlEnabledToUser(uiControl *c)
 		c = uiControlParent(c);
 	}
 	return 1;
+}
+
+void uiControlOnFree(uiControl *w, void (*f)(uiControl *, void *senderData), void *data)
+{
+	w->onFree = f;
+	w->onFreeData = data;
 }

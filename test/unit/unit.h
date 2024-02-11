@@ -32,6 +32,7 @@ int drawMatrixRunUnitTests(void);
 struct state {
 	uiWindow *w;
 	uiControl *c;
+	int onFreeCalled;
 };
 
 int unitWindowOnClosingQuit(uiWindow *w, void *data);
