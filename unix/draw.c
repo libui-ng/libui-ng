@@ -192,16 +192,7 @@ void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 	cairo_surface_mark_dirty(buf->buf);
 }
 
-static cairo_filter_t getCairoFilter(uiInterpMode interpMode)
-{
-	if (interpMode == uiInterpModeSpeed)
-		return CAIRO_FILTER_NEAREST;
-	else if (interpMode == uiInterpModeBalanced)
-		return CAIRO_FILTER_BILINEAR;
-	return CAIRO_FILTER_BEST;
-}
-
-void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, uiInterpMode interpMode)
+static void drawImageBuffer(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, cairo_filter_t interp)
 {
 	if (srcrect->Width == 0 || srcrect->Height == 0)
 		return;  // avoid dividing by zero
@@ -217,11 +208,21 @@ void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, ui
 	}
 
 	cairo_set_source_surface(c->cr, buf->buf, -srcrect->X, -srcrect->Y);
-	cairo_pattern_set_filter(cairo_get_source(c->cr), getCairoFilter(interpMode));
+	cairo_pattern_set_filter(cairo_get_source(c->cr), interp);
 	cairo_clip(c->cr);
 	cairo_paint(c->cr);
 
 	cairo_restore(c->cr);
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, CAIRO_FILTER_BEST);
+}
+
+void uiImageBufferDrawFast(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, CAIRO_FILTER_NEAREST);
 }
 
 void uiFreeImageBuffer(uiImageBuffer *buf)

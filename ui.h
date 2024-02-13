@@ -2216,22 +2216,6 @@ _UI_EXTERN void uiDrawSave(uiDrawContext *c);
 _UI_EXTERN void uiDrawRestore(uiDrawContext *c);
 
 /**
- * Interpolation modes for image scaling.
- *
- * @enum uiInterpMode
- */
-_UI_ENUM(uiInterpMode) {
-	uiInterpModeSpeed,  //!< A high-performance interpolation. (Nearest neighbor on Windows and Unix.)
-	uiInterpModeBalanced,  //!< A reasonable-performance interpolation. (Bilinear on Windows and Unix.)
-	/**
-	 * The highest-quality interpolation.
-	 *
-	 * @note This mode uses the bilinear interpolation on Windows.
-	 */
-	uiInterpModeQuality,
-};
-
-/**
  * A class for storing an image to be drawn on uiDrawContext.
  *
  * @struct uiImageBuffer
@@ -2264,16 +2248,27 @@ _UI_EXTERN uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int heig
 _UI_EXTERN void uiImageBufferUpdate(uiImageBuffer *buf, const void *data);
 
 /**
- * Draws the image buffer on the draw context.
+ * Draws the image buffer on the draw context with the highest quality interpolation.
  *
  * @param c uiDrawContext instance.
  * @param buf uiImageBuffer instance.
  * @param scrrect The size and position in the image buffer.
  * @param dstrect The size and position in the draw context.
- * @param interpMode The interpolation mode used for image scaling.
+ * @note Use uiImageBufferFast() if you want to use faster interpolation.
  * @memberof uiImageBuffer
  */
-_UI_EXTERN void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, uiInterpMode interpMode);
+_UI_EXTERN void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect);
+
+/**
+ * Draws the image buffer on the draw context with the fastest interpolation.
+ *
+ * @param c uiDrawContext instance.
+ * @param buf uiImageBuffer instance.
+ * @param scrrect The size and position in the image buffer.
+ * @param dstrect The size and position in the draw context.
+ * @memberof uiImageBuffer
+ */
+_UI_EXTERN void uiImageBufferDrawFast(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect);
 
 /**
  * Frees the image buffer and all associated resources.

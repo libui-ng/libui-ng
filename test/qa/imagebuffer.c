@@ -115,7 +115,7 @@ static void handlerDraw(uiAreaHandler *a, uiArea *area, uiAreaDrawParams *p)
 	uiRect src_rect = { 0, 0, 16, 16 };
 
 	// first image
-	uiImageBufferDraw(p->Context, image, &src_rect, &src_rect, uiInterpModeQuality);
+	uiImageBufferDraw(p->Context, image, &src_rect, &src_rect);
 
 	// second image (test with uiDrawTransform)
 	uiDrawSave(p->Context);
@@ -129,7 +129,7 @@ static void handlerDraw(uiAreaHandler *a, uiArea *area, uiAreaDrawParams *p)
 	uiDrawTransform(p->Context, &rm);
 
 	uiRect dst_rect = { 0, 8, 32, 32 };
-	uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect, uiInterpModeQuality);
+	uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect);
 
 	uiDrawRestore(p->Context);
 
@@ -146,7 +146,7 @@ static void handlerDraw(uiAreaHandler *a, uiArea *area, uiAreaDrawParams *p)
 	uiDrawFill(p->Context, path, &brush);
 	uiDrawFreePath(path);
 
-	uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect, uiInterpModeQuality);
+	uiImageBufferDraw(p->Context, image, &src_rect, &dst_rect);
 
 	uiFreeImageBuffer(image);
 }

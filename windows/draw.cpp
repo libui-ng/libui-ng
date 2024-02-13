@@ -543,21 +543,23 @@ void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 	buf->buf->CopyFromMemory(&rekt, data, buf->Stride);
 }
 
-static D2D1_BITMAP_INTERPOLATION_MODE getD2D1InterpMode(uiInterpMode interpMode)
-{
-	if (interpMode == uiInterpModeSpeed)
-		return D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR;
-	return D2D1_BITMAP_INTERPOLATION_MODE_LINEAR;
-	// Higher quality interpolations require Windows 8 or later.
-	// https://learn.microsoft.com/en-us/windows/win32/api/d2d1_1/ne-d2d1_1-d2d1_interpolation_mode
-}
-
-void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, uiInterpMode interpMode)
+static void drawImageBuffer(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, D2D1_BITMAP_INTERPOLATION_MODE interp)
 {
 	D2D_RECT_F _srcrect = D2D1::RectF(srcrect->X, srcrect->Y, srcrect->X+srcrect->Width, srcrect->Y+srcrect->Height);
 	D2D_RECT_F _dstrect = D2D1::RectF(dstrect->X, dstrect->Y, dstrect->X+dstrect->Width, dstrect->Y+dstrect->Height);
+	c->rt->DrawBitmap(buf->buf, &_dstrect, 1.0f, interp, &_srcrect);
+}
 
-	c->rt->DrawBitmap(buf->buf, &_dstrect, 1.0f, getD2D1InterpMode(interpMode), &_srcrect);
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	// TODO Use D2D1_INTERPOLATION_MODE_CUBIC on Windows 8 or later.
+	// https://learn.microsoft.com/en-us/windows/win32/api/d2d1_1/ne-d2d1_1-d2d1_interpolation_mode
+	drawImageBuffer(c, buf, srcrect, dstrect, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR);
+}
+
+void uiImageBufferDrawFast(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
 }
 
 void uiFreeImageBuffer(uiImageBuffer *buf)
