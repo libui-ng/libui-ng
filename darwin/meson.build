@@ -57,7 +57,7 @@ libui_deps += [
 	meson.get_compiler('objc').find_library('objc',
 		required: true),
 	dependency('appleframeworks',
-		modules: ['Foundation', 'AppKit'],
+		modules: ['Foundation', 'AppKit', 'Accelerate'],
 		required: true),
 ]
 libui_soversion = 'A'

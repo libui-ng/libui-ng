@@ -480,31 +480,22 @@ uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alp
 
 void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
 {
-	uint8_t *src = (uint8_t *) data;
-	uint8_t *dst = (uint8_t *) CGBitmapContextGetData(buf->buf);
-	int x, y;
-
 	// convert RGBA to BGRA and flip vertically
-	dst += buf->Stride * (buf->Height - 1);
-	for (y = 0; y < buf->Height; y++) {
-		for (x = 0; x < buf->Width * 4; x += 4) {
-			union {
-				uint32_t v32;
-				uint8_t v8[4];
-			} v;
-
-			v.v32 = ((uint32_t) (src[x + 3])) << 24;
-			v.v32 |= ((uint32_t) (src[x])) << 16;
-			v.v32 |= ((uint32_t) (src[x + 1])) << 8;
-			v.v32 |= ((uint32_t) (src[x + 2]));
-			dst[x] = v.v8[0];
-			dst[x + 1] = v.v8[1];
-			dst[x + 2] = v.v8[2];
-			dst[x + 3] = v.v8[3];
-		}
-		src += buf->Width * 4;
-		dst -= buf->Stride;
-	}
+	vImage_Buffer src_buffer = {
+		(UInt8 *) data,
+		buf->Height,
+		buf->Width,
+		buf->Width * 4
+	};
+	vImage_Buffer dst_buffer = {
+		CGBitmapContextGetData(buf->buf),
+		buf->Height,
+		buf->Width,
+		buf->Width * 4
+	};
+	const uint8_t map[4] = { 2, 1, 0, 3 };
+	vImageVerticalReflect_ARGB8888(&src_buffer, &dst_buffer, kvImageNoFlags);
+	vImagePermuteChannels_ARGB8888(&dst_buffer, &dst_buffer, map, kvImageNoFlags);
 
 	CGImageRelease(buf->img);
 	buf->img = CGBitmapContextCreateImage(buf->buf);
