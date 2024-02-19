@@ -41,6 +41,7 @@ static const char *initerr(const char *message, const WCHAR *label, DWORD value)
 
 // LONGTERM put this declaration in a common file
 uiInitOptions uiprivOptions;
+static bool uiprivInitSuccess = false;
 
 #define wantedICCClasses ( \
 	ICC_STANDARD_CLASSES |	/* user32.dll controls */		\
@@ -61,6 +62,9 @@ const char *uiInit(uiInitOptions *o)
 	NONCLIENTMETRICSW ncm;
 	INITCOMMONCONTROLSEX icc;
 	HRESULT hr;
+
+	if (uiprivInitSuccess)
+		return NULL;
 
 	uiprivOptions = *o;
 
@@ -135,6 +139,7 @@ const char *uiInit(uiInitOptions *o)
 	if (hr != S_OK)
 		return ieHRESULT("initializing WIC", hr);
 
+	uiprivInitSuccess = true;
 	return NULL;
 }
 
