@@ -462,6 +462,7 @@ const libui_unit_sources = [_][]const u8{
     "test/unit/button.c",
     "test/unit/combobox.c",
     "test/unit/checkbox.c",
+    "test/unit/drawmatrix.c",
     "test/unit/radiobuttons.c",
     "test/unit/entry.c",
     "test/unit/menu.c",

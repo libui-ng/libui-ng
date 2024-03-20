@@ -203,11 +203,11 @@ jobs:
           echo "/tmp/minisign-linux/x86_64/" >> $GITHUB_PATH
       - name: Install Zig
         run: |
-          wget https://pkg.machengine.org/zig/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz
-          wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz.minisig
-          minisign -Vm zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz -P RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U
-          tar -xf zig-linux-x86_64-0.12.0-dev.2063+804cee3b9.tar.xz --directory=/tmp/
-          echo "/tmp/zig-linux-x86_64-0.12.0-dev.2063+804cee3b9" >> $GITHUB_PATH
+          wget https://pkg.machengine.org/zig/zig-linux-x86_64-0.12.0-dev.3180+83e578a18.tar.xz
+          wget https://ziglang.org/builds/zig-linux-x86_64-0.12.0-dev.3180+83e578a18.tar.xz.minisig
+          minisign -Vm zig-linux-x86_64-0.12.0-dev.3180+83e578a18.tar.xz -P RWSGOq2NVecA2UPNdBUZykf1CCb147pkmdtYxgb3Ti+JO/wCYvhbAb/U
+          tar -xf zig-linux-x86_64-0.12.0-dev.3180+83e578a18.tar.xz --directory=/tmp/
+          echo "/tmp/zig-linux-x86_64-0.12.0-dev.3180+83e578a18" >> $GITHUB_PATH
       - name: Install Ubuntu Deps
         run: |
           sudo apt-get update -y
