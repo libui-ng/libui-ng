@@ -83,7 +83,7 @@ static void setDateTimeFormat(HWND hwnd)
 	uiprivFree(unexpandedDate);
 
 	ntime = GLI(LOCALE_STIMEFORMAT, NULL, 0);
-	if (ndate == 0)
+	if (ntime == 0)
 		logLastError(L"error getting time string length");
 	time = (WCHAR *) uiprivAlloc(ntime * sizeof (WCHAR), "WCHAR[]");
 	if (GLI(LOCALE_STIMEFORMAT, time, ntime) == 0)
