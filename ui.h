@@ -110,13 +110,14 @@ _UI_EXTERN void uiFreeText(char *text);
  * 3. Implement at least the callbacks uiDragDestinationOnEnter() and
  *    uiDragDestinationOnDrop().
  * 4. Your *enter* callback specifies what type of #uiDragOperation your
- *    application wants to perform with the data to display an appropriate
- *    mouse cursor. You may inspect the data via uiDragContextDragData().
+ *    application wants to perform with the data so that it can display an
+ *    appropriate mouse cursor. You may inspect the data via
+ *    uiDragContextDragData().
  * 5. Your *drop* callback implements the data handling via
  *    uiDragContextDragData() and finalizes the drag and drop operation by
  *    returning either `TRUE` to signal a successful *drop* or `FALSE` to
  *    indicate that the *drop* was unsuccessful.
- * 6. Register your drag destination with a uiControl of your choise. See
+ * 6. Register your drag destination with a uiControl of your choice. See
  *    uiControlRegisterDragDestination().
  *
  * Important notes:

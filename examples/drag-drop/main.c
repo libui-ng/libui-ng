@@ -95,7 +95,7 @@ static uiDragOperation onEnter(uiDragDestination *dd, uiDragContext *dc, void *s
 {
 	if (dragOp != uiDragOperationNone && !(uiDragContextDragOperations(dc) & dragOp)) {
 		uiMultilineEntryAppend(eventLog, "Operation not supported by your file manager.\n");
-		uiMultilineEntryAppend(eventLog, "Please use a different file manger to complete this test.\n\n");
+		uiMultilineEntryAppend(eventLog, "Please use a different file manager to complete this test.\n\n");
 	}
 
 	updateDragContext(dd, dc);
