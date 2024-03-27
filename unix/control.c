@@ -124,6 +124,7 @@ static void onDragDataReceived(GtkWidget* widget, GdkDragContext* context, gint 
 	}
 	else if (info == uiDragTypeURIs) {
 		int i;
+		int k;
 		gchar **uris;
 
 		uris = gtk_selection_data_get_uris(data);
@@ -141,8 +142,19 @@ static void onDragDataReceived(GtkWidget* widget, GdkDragContext* context, gint 
 		else
 			d->data.URIs.URIs = uiprivAlloc(d->data.URIs.numURIs * sizeof(*d->data.URIs.URIs), "uiDragData->data.URIs.URIs");
 
-		for (i = 0; uris[i] != NULL; ++i) {
-			d->data.URIs.URIs[i] = g_filename_from_uri(uris[i], NULL, NULL);
+		for (i = 0, k = 0; uris[i] != NULL; ++i) {
+			GError *err = NULL;
+
+			d->data.URIs.URIs[k] = g_filename_from_uri(uris[i], NULL, &err);
+			if (err != NULL) {
+				--d->data.URIs.numURIs;
+				// TODO use error logging
+				fprintf(stderr, "Failed to get file name: %s\n", err->message);
+				g_error_free(err);
+			}
+			else {
+				++k;
+			}
 		}
 		g_strfreev(uris);
 	}
