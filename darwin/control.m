@@ -82,3 +82,34 @@ void uiDarwinNotifyVisibilityChanged(uiDarwinControl *c)
 	if (parent != NULL)
 		uiDarwinControlChildVisibilityChanged(uiDarwinControl(parent));
 }
+
+void uiprivControlDestroyDragDestination(uiControl *c)
+{
+	[(id)uiControlHandle(c) unregisterDraggedTypes];
+	uiprivFree(c->dragDest);
+	c->dragDest = NULL;
+}
+
+void uiControlRegisterDragDestination(uiControl *c, uiDragDestination *dd)
+{
+	NSMutableArray *types;
+	if (c->dragDest != NULL)
+		uiprivControlDestroyDragDestination(c);
+
+	if (dd == NULL)
+		return;
+
+	c->dragDest = dd;
+
+	types = [NSMutableArray new];
+	if (dd->typeMask & uiDragTypeURIs) {
+		[types addObject:NSFilenamesPboardType];
+	}
+	if (dd->typeMask & uiDragTypeText) {
+		[types addObject:NSStringPboardType];
+	}
+
+	[(id)uiControlHandle(c) registerForDraggedTypes:types];
+	[types release];
+}
+

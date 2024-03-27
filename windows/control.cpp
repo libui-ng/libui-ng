@@ -1,5 +1,6 @@
 // 16 august 2015
 #include "uipriv_windows.hpp"
+#include "droptarget.hpp"
 
 void uiWindowsControlSyncEnableState(uiWindowsControl *c, int enabled)
 {
@@ -119,3 +120,43 @@ void uiWindowsControlNotifyVisibilityChanged(uiWindowsControl *c)
 	// TODO we really need to figure this out; the duplication is a mess
 	uiWindowsControlContinueMinimumSizeChanged(c);
 }
+
+void uiprivControlDestroyDragDestination(uiControl *c)
+{
+	HWND hwnd = (HWND)uiControlHandle(c);
+	LPDROPTARGET lpDropTarget = NULL;
+
+	lpDropTarget = (LPDROPTARGET)c->dragDest->priv;
+	if (lpDropTarget != NULL) {
+		RevokeDragDrop(hwnd);
+		lpDropTarget->Release();
+		CoLockObjectExternal(lpDropTarget, false, true);
+	}
+
+	uiprivFree(c->dragDest);
+	c->dragDest = NULL;
+}
+
+void uiControlRegisterDragDestination(uiControl *c, uiDragDestination *dd)
+{
+	HWND hwnd = (HWND)uiControlHandle(c);
+	LPDROPTARGET lpDropTarget = NULL;
+
+	if (c->dragDest != NULL)
+		uiprivControlDestroyDragDestination(c);
+
+	if (dd == NULL)
+		return;
+
+	c->dragDest = dd;
+
+	lpDropTarget = (LPDROPTARGET)new uiDropTarget(c->dragDest, hwnd);
+	CoLockObjectExternal(lpDropTarget, true, true);
+	if (RegisterDragDrop(hwnd, lpDropTarget) != S_OK) {
+		lpDropTarget->Release();
+		CoLockObjectExternal(lpDropTarget, false, true);
+		lpDropTarget = NULL;
+	}
+	c->dragDest->priv = lpDropTarget;
+}
+

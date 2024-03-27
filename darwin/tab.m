@@ -28,6 +28,26 @@ struct uiTab {
 	NSLayoutPriority vertHuggingPri;
 };
 
+@interface uiprivTabView : NSTabView<NSDraggingDestination> {
+	uiTab *tab;
+}
+- (id)initWithFrame:(NSRect)frame uiTab:(uiTab *)t;
+@end
+
+@implementation uiprivTabView
+
+uiDarwinDragDestinationMethods(tab)
+
+- (id)initWithFrame:(NSRect)frame uiTab:(uiTab *)t
+{
+	self = [super initWithFrame:frame];
+	if (self)
+		self->tab = t;
+	return self;
+}
+
+@end
+
 @implementation tabPage
 
 - (id)initWithView:(NSView *)v pageID:(NSObject *)o
@@ -278,7 +298,7 @@ uiTab *uiNewTab(void)
 
 	uiDarwinNewControl(uiTab, t);
 
-	t->tabview = [[NSTabView alloc] initWithFrame:NSZeroRect];
+	t->tabview = [[uiprivTabView alloc] initWithFrame:NSZeroRect uiTab:t];
 	// also good for NSTabView (same selector and everything)
 	uiDarwinSetControlFont((NSControl *) (t->tabview), NSRegularControlSize);
 

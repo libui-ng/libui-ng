@@ -28,7 +28,7 @@
 - (NSView *)view;
 @end
 
-@interface gridView : NSView {
+@interface gridView : NSView<NSDraggingDestination> {
 	uiGrid *g;
 	NSMutableArray *children;
 	int padded;
@@ -163,6 +163,8 @@ struct uiGrid {
 @end
 
 @implementation gridView
+
+uiDarwinDragDestinationMethods(g)
 
 - (id)initWithG:(uiGrid *)gg
 {

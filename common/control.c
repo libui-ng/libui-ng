@@ -4,6 +4,8 @@
 
 void uiControlDestroy(uiControl *c)
 {
+	if (c->dragDest != NULL)
+		uiprivControlDestroyDragDestination(c);
 	(*(c->Destroy))(c);
 }
 
@@ -67,6 +69,7 @@ uiControl *uiAllocControl(size_t size, uint32_t OSsig, uint32_t typesig, const c
 	c->Signature = uiprivControlSignature;
 	c->OSSignature = OSsig;
 	c->TypeSignature = typesig;
+	c->dragDest = NULL;
 	return c;
 }
 

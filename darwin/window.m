@@ -27,6 +27,8 @@ struct uiWindow {
 
 @implementation uiprivNSWindow
 
+uiDarwinDragDestinationMethods(window)
+
 - (void)uiprivDoMove:(NSEvent *)initialEvent
 {
 	uiprivDoManualMove(self, initialEvent);

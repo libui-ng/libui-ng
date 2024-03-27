@@ -4,10 +4,28 @@
 // NSProgressIndicator has no intrinsic width by default; use the default width in Interface Builder
 #define progressIndicatorWidth 100
 
-@interface intrinsicWidthNSProgressIndicator : NSProgressIndicator
+struct uiProgressBar {
+	uiDarwinControl c;
+	NSProgressIndicator *pi;
+};
+
+@interface uiprivNSProgressIndicator : NSProgressIndicator<NSDraggingDestination> {
+	uiProgressBar *progressBar;
+}
+- (id)initWithFrame:(NSRect)frame uiProgressBar:(uiProgressBar *)p;
 @end
 
-@implementation intrinsicWidthNSProgressIndicator
+@implementation uiprivNSProgressIndicator
+
+uiDarwinDragDestinationMethods(progressBar)
+
+- (id)initWithFrame:(NSRect)frame uiProgressBar:(uiProgressBar *)p
+{
+	self = [super initWithFrame:frame];
+	if (self)
+		self->progressBar = p;
+	return self;
+}
 
 - (NSSize)intrinsicContentSize
 {
@@ -19,11 +37,6 @@
 }
 
 @end
-
-struct uiProgressBar {
-	uiDarwinControl c;
-	NSProgressIndicator *pi;
-};
 
 uiDarwinControlAllDefaults(uiProgressBar, pi)
 
@@ -68,7 +81,7 @@ uiProgressBar *uiNewProgressBar(void)
 
 	uiDarwinNewControl(uiProgressBar, p);
 
-	p->pi = [[intrinsicWidthNSProgressIndicator alloc] initWithFrame:NSZeroRect];
+	p->pi = [[uiprivNSProgressIndicator alloc] initWithFrame:NSZeroRect uiProgressBar:p];
 	[p->pi setControlSize:NSRegularControlSize];
 	[p->pi setBezeled:YES];
 	[p->pi setStyle:NSProgressIndicatorBarStyle];

@@ -8,7 +8,7 @@ struct uiCheckbox {
 	void *onToggledData;
 };
 
-@interface uiprivCheckbox : NSButton {
+@interface uiprivCheckbox : NSButton<NSDraggingDestination> {
 	uiCheckbox *checkbox;
 }
 - (id)initWithFrame:(NSRect)frame uiCheckbox:(uiCheckbox *)c;
@@ -16,6 +16,8 @@ struct uiCheckbox {
 @end
 
 @implementation uiprivCheckbox
+
+uiDarwinDragDestinationMethods(checkbox)
 
 - (id)initWithFrame:(NSRect)frame uiCheckbox:(uiCheckbox *)c
 {

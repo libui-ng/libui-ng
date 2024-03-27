@@ -21,10 +21,13 @@ libui_sources += [
 	'windows/d2dscratch.cpp',
 	'windows/datetimepicker.cpp',
 	'windows/debug.cpp',
+	'windows/dragcontext.cpp',
+	'windows/dragdata.cpp',
 	'windows/draw.cpp',
 	'windows/drawmatrix.cpp',
 	'windows/drawpath.cpp',
 	'windows/drawtext.cpp',
+	'windows/droptarget.cpp',
 	'windows/dwrite.cpp',
 	'windows/editablecombo.cpp',
 	'windows/entry.cpp',
@@ -79,7 +82,7 @@ if libui_mode == 'shared'
 endif
 
 # TODO prune this list
-foreach lib : ['user32', 'kernel32', 'gdi32', 'comctl32', 'uxtheme', 'msimg32', 'comdlg32', 'd2d1', 'dwrite', 'ole32', 'oleaut32', 'oleacc', 'uuid', 'windowscodecs']
+foreach lib : ['user32', 'kernel32', 'gdi32', 'comctl32', 'uxtheme', 'msimg32', 'comdlg32', 'd2d1', 'dwrite', 'ole32', 'oleaut32', 'oleacc', 'uuid', 'windowscodecs', 'shell32']
 	libui_deps += [
 		meson.get_compiler('cpp').find_library(lib,
 			required: true),

@@ -49,12 +49,24 @@ struct controlTestCase windowTestCases[] = {
 	{NULL, NULL, NULL}
 };
 
+struct controlTestCase dragdestinationTestCases[] = {
+	QA_TEST("1. Default No Accept", dragdestinationDefaultNoAccept),
+	QA_TEST("2. Drag Operation None", dragdestinationReturnDragOperationNone),
+	QA_TEST("3. Drag Operation Copy", dragdestinationReturnDragOperationCopy),
+	QA_TEST("4. Drag Operation Link", dragdestinationReturnDragOperationLink),
+	QA_TEST("5. Drag Operation Move", dragdestinationReturnDragOperationMove),
+	QA_TEST("6. Drag Context Position", dragdestinationDragContextPosition),
+	QA_TEST("7. Drag Context Drag Data", dragdestinationDragContextDragData),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestGroup controlTestGroups[] = {
 	{"uiButton", buttonTestCases},
 	{"uiCheckbox", checkboxTestCases},
 	{"uiEntry", entryTestCases},
 	{"uiLabel", labelTestCases},
 	{"uiWindow", windowTestCases},
+	{"uiDragDestination", dragdestinationTestCases},
 };
 
 uiControl* qaGuide()

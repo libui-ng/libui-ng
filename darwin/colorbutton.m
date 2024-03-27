@@ -3,7 +3,7 @@
 
 // TODO no intrinsic height?
 
-@interface colorButton : NSColorWell {
+@interface colorButton : NSColorWell<NSDraggingDestination> {
 	uiColorButton *libui_b;
 	BOOL libui_changing;
 	BOOL libui_setting;
@@ -25,6 +25,8 @@ struct uiColorButton {
 };
 
 @implementation colorButton
+
+uiDarwinDragDestinationMethods(libui_b)
 
 - (id)initWithFrame:(NSRect)frame libuiColorButton:(uiColorButton *)b
 {

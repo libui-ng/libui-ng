@@ -4,7 +4,7 @@
 // NSTextView has no intrinsic content size by default, which wreaks havoc on a pure-Auto Layout system
 // we'll have to take over to get it to work
 // see also http://stackoverflow.com/questions/24210153/nstextview-not-properly-resizing-with-auto-layout and http://stackoverflow.com/questions/11237622/using-autolayout-with-expanding-nstextviews
-@interface intrinsicSizeTextView : NSTextView {
+@interface intrinsicSizeTextView : NSTextView<NSDraggingDestination> {
 	uiMultilineEntry *libui_e;
 }
 - (id)initWithFrame:(NSRect)r e:(uiMultilineEntry *)e;
@@ -21,6 +21,8 @@ struct uiMultilineEntry {
 };
 
 @implementation intrinsicSizeTextView
+
+uiDarwinDragDestinationMethods(libui_e)
 
 - (id)initWithFrame:(NSRect)r e:(uiMultilineEntry *)e
 {

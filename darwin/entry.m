@@ -4,62 +4,101 @@
 // Text fields for entering text have no intrinsic width; we'll use the default Interface Builder width for them.
 #define textfieldWidth 96
 
-@interface uiprivNSTextField : NSTextField
-@end
-
-@implementation uiprivNSTextField
-
-- (NSSize)intrinsicContentSize
-{
-	NSSize s;
-
-	s = [super intrinsicContentSize];
-	s.width = textfieldWidth;
-	return s;
-}
-
-@end
-
-// TODO does this have one on its own?
-@interface uiprivNSSecureTextField : NSSecureTextField
-@end
-
-@implementation uiprivNSSecureTextField
-
-- (NSSize)intrinsicContentSize
-{
-	NSSize s;
-
-	s = [super intrinsicContentSize];
-	s.width = textfieldWidth;
-	return s;
-}
-
-@end
-
-// TODO does this have one on its own?
-@interface uiprivNSSearchField : NSSearchField
-@end
-
-@implementation uiprivNSSearchField
-
-- (NSSize)intrinsicContentSize
-{
-	NSSize s;
-
-	s = [super intrinsicContentSize];
-	s.width = textfieldWidth;
-	return s;
-}
-
-@end
-
 struct uiEntry {
 	uiDarwinControl c;
 	NSTextField *textfield;
 	void (*onChanged)(uiEntry *, void *);
 	void *onChangedData;
 };
+
+@interface uiprivNSTextField : NSTextField<NSDraggingDestination> {
+	uiEntry *entry;
+}
+- (id)initWithFrame:(NSRect)frame uiEntry:(uiEntry *)e;
+@end
+
+@implementation uiprivNSTextField
+
+uiDarwinDragDestinationMethods(entry)
+
+- (id)initWithFrame:(NSRect)frame uiEntry:(uiEntry *)e
+{
+	self = [super initWithFrame:frame];
+	if (self)
+		self->entry = e;
+	return self;
+}
+
+- (NSSize)intrinsicContentSize
+{
+	NSSize s;
+
+	s = [super intrinsicContentSize];
+	s.width = textfieldWidth;
+	return s;
+}
+
+@end
+
+// TODO does this have one on its own?
+@interface uiprivNSSecureTextField : NSSecureTextField<NSDraggingDestination> {
+	uiEntry *entry;
+}
+- (id)initWithFrame:(NSRect)frame uiEntry:(uiEntry *)e;
+@end
+
+@implementation uiprivNSSecureTextField
+
+uiDarwinDragDestinationMethods(entry)
+
+- (id)initWithFrame:(NSRect)frame uiEntry:(uiEntry *)e
+{
+	self = [super initWithFrame:frame];
+	if (self)
+		self->entry = e;
+	return self;
+}
+
+- (NSSize)intrinsicContentSize
+{
+	NSSize s;
+
+	s = [super intrinsicContentSize];
+	s.width = textfieldWidth;
+	return s;
+}
+
+@end
+
+// TODO does this have one on its own?
+@interface uiprivNSSearchField : NSSearchField<NSDraggingDestination> {
+	uiEntry *entry;
+}
+- (id)initWithFrame:(NSRect)frame uiEntry:(uiEntry *)e;
+@end
+
+@implementation uiprivNSSearchField
+
+uiDarwinDragDestinationMethods(entry)
+
+- (id)initWithFrame:(NSRect)frame uiEntry:(uiEntry *)e
+{
+	self = [super initWithFrame:frame];
+	if (self)
+		self->entry = e;
+	return self;
+}
+
+- (NSSize)intrinsicContentSize
+{
+	NSSize s;
+
+	s = [super intrinsicContentSize];
+	s.width = textfieldWidth;
+	return s;
+}
+
+@end
 
 static BOOL isSearchField(NSTextField *tf)
 {
@@ -155,18 +194,12 @@ static void defaultOnChanged(uiEntry *e, void *data)
 	// do nothing
 }
 
-static NSTextField *realNewEditableTextField(Class class)
-{
-	NSTextField *tf;
-
-	tf = [[class alloc] initWithFrame:NSZeroRect];
-	uiprivNSTextFieldSetStyleEntry(tf);
-	return tf;
-}
-
 NSTextField *uiprivNewEditableTextField(void)
 {
-	return realNewEditableTextField([uiprivNSTextField class]);
+	NSTextField *tf;
+	tf = [[uiprivNSTextField alloc] initWithFrame:NSZeroRect];
+	uiprivNSTextFieldSetStyleEntry(tf);
+	return tf;
 }
 
 static uiEntry *finishNewEntry(Class class)
@@ -176,7 +209,8 @@ static uiEntry *finishNewEntry(Class class)
 
 	uiDarwinNewControl(uiEntry, e);
 
-	e->textfield = realNewEditableTextField(class);
+	e->textfield = [[class alloc] initWithFrame:NSZeroRect uiEntry:e];
+	uiprivNSTextFieldSetStyleEntry(e->textfield);
 
 	delegate = [[uiprivEntryDelegate alloc] initWithEntry:e];
 	if (isSearchField(e->textfield)) {

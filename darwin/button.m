@@ -8,7 +8,7 @@ struct uiButton {
 	void *onClickedData;
 };
 
-@interface uiprivButton : NSButton {
+@interface uiprivButton : NSButton<NSDraggingDestination> {
 	uiButton *button;
 }
 - (id)initWithFrame:(NSRect)frame uiButton:(uiButton *)b;
@@ -16,6 +16,8 @@ struct uiButton {
 @end
 
 @implementation uiprivButton
+
+uiDarwinDragDestinationMethods(button)
 
 - (id)initWithFrame:(NSRect)frame uiButton:(uiButton *)b
 {

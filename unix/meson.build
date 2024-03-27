@@ -14,6 +14,8 @@ libui_sources += [
 	'unix/control.c',
 	'unix/datetimepicker.c',
 	'unix/debug.c',
+	'unix/dragcontext.c',
+	'unix/dragdata.c',
 	'unix/draw.c',
 	'unix/drawmatrix.c',
 	'unix/drawpath.c',

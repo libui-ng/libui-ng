@@ -22,13 +22,20 @@ QA_DECLARE_TEST(entryOverflowText);
 
 QA_DECLARE_TEST(labelMultiLine);
 
-
 QA_DECLARE_TEST(windowFullscreen);
 QA_DECLARE_TEST(windowBorderless);
 QA_DECLARE_TEST(windowResizeable);
 QA_DECLARE_TEST(windowFullscreenBorderless);
 QA_DECLARE_TEST(windowFullscreenResizeable);
 QA_DECLARE_TEST(windowResizeableBorderless);
+
+QA_DECLARE_TEST(dragdestinationDefaultNoAccept);
+QA_DECLARE_TEST(dragdestinationReturnDragOperationNone);
+QA_DECLARE_TEST(dragdestinationReturnDragOperationCopy);
+QA_DECLARE_TEST(dragdestinationReturnDragOperationLink);
+QA_DECLARE_TEST(dragdestinationReturnDragOperationMove);
+QA_DECLARE_TEST(dragdestinationDragContextPosition);
+QA_DECLARE_TEST(dragdestinationDragContextDragData);
 
 #endif
 

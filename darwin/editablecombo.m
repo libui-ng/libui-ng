@@ -10,7 +10,7 @@
 // NSComboBoxes have no intrinsic width; we'll use the default Interface Builder width for them.
 #define comboboxWidth 96
 
-@interface uiprivEditableCombobox : NSComboBox<NSComboBoxDelegate>
+@interface uiprivEditableCombobox : NSComboBox<NSComboBoxDelegate, NSDraggingDestination>
 - (id)initWithFrame:(NSRect)frame uiEditableCombobox:(uiEditableCombobox *)cb;
 - (void)controlTextDidChange:(NSNotification *)note;
 - (void)comboBoxSelectionDidChange:(NSNotification *)note;
@@ -26,6 +26,8 @@ struct uiEditableCombobox {
 @implementation uiprivEditableCombobox {
 	uiEditableCombobox *combobox;
 }
+
+uiDarwinDragDestinationMethods(combobox)
 
 - (NSSize)intrinsicContentSize
 {

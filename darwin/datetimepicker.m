@@ -11,7 +11,7 @@ struct uiDateTimePicker {
 
 // TODO see if target-action works here or not; I forgot what cody271@ originally said
 // the primary advantage of the delegate is the ability to reject changes, but libui doesn't support that yet — we should consider that API option as well
-@interface uiprivDatePicker : NSDatePicker<NSDatePickerCellDelegate> {
+@interface uiprivDatePicker : NSDatePicker<NSDatePickerCellDelegate, NSDraggingDestination> {
 	uiDateTimePicker *picker;
 }
 - (id)initWithElements:(NSDatePickerElementFlags)elements uiDateTimePicker:(uiDateTimePicker *)d;
@@ -20,6 +20,8 @@ struct uiDateTimePicker {
 @end
 
 @implementation uiprivDatePicker
+
+uiDarwinDragDestinationMethods(picker)
 
 - (id)initWithElements:(NSDatePickerElementFlags)elements uiDateTimePicker:(uiDateTimePicker *)d
 {

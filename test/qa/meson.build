@@ -6,6 +6,7 @@ libui_qa_sources = [
 	'entry.c',
 	'label.c',
 	'window.c',
+	'dragdestination.c',
 ]
 
 if libui_OS == 'windows'

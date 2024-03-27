@@ -17,7 +17,7 @@ struct uiSlider {
 
 static void _uiSliderUpdateToolTip(uiSlider *s);
 
-@interface uiprivSlider : NSSlider {
+@interface uiprivSlider : NSSlider<NSDraggingDestination> {
 	uiSlider *slider;
 }
 - (id)initWithFrame:(NSRect)frame uiSlider:(uiSlider *)s;
@@ -25,6 +25,8 @@ static void _uiSliderUpdateToolTip(uiSlider *s);
 @end
 
 @implementation uiprivSlider
+
+uiDarwinDragDestinationMethods(slider)
 
 - (id)initWithFrame:(NSRect)frame uiSlider:(uiSlider *)s
 {

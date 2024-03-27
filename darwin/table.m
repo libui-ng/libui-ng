@@ -12,7 +12,7 @@
 @end
 
 // TODO we really need to clean up the sharing of the table and model variables...
-@interface uiprivTableView : NSTableView {
+@interface uiprivTableView : NSTableView<NSDraggingDestination> {
 	uiTable *uiprivT;
 	uiTableModel *uiprivM;
 	NSTableHeaderView *headerViewRef;
@@ -29,6 +29,8 @@
 @implementation uiprivTableView
 
 @synthesize selectionMode;
+
+uiDarwinDragDestinationMethods(uiprivT)
 
 - (id)initWithFrame:(NSRect)r uiprivT:(uiTable *)t uiprivM:(uiTableModel *)m
 {
