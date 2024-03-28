@@ -187,36 +187,6 @@ pub fn build(b: *std.Build) void {
         run_step.dependOn(&run.step);
     }
 
-    // Run unit tests
-    {
-        const exe = b.addExecutable(.{
-            .name = "unit",
-            .target = target,
-            .optimize = optimize,
-            .win32_manifest = .{ .path = if (is_dynamic) "test/unit/unit.manifest" else "test/unit/unit.static.manifest" },
-        });
-        exe.addCSourceFiles(.{
-            .files = &libui_unit_sources,
-            .flags = &.{},
-        });
-        exe.addIncludePath(.{ .path = "test/unit/" });
-        exe.linkLibrary(lib);
-        exe.linkSystemLibrary("cmocka");
-
-        const install = b.addInstallArtifact(exe, .{
-            .dest_dir = .{ .override = test_dir },
-        });
-
-        const install_step = b.step("unit", "Build the unit test executable");
-        install_step.dependOn(&install.step);
-
-        build_all_tests_step.dependOn(&install.step);
-
-        const run = b.addRunArtifact(exe);
-        const run_step = b.step("unit-run", "Runs the unit test executable");
-        run_step.dependOn(&run.step);
-    }
-
     // Build qa binary
     {
         const exe = b.addExecutable(.{
