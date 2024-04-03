@@ -12,6 +12,7 @@ struct uiWindow {
 	int visible;
 	int margined;
 	int resizeable;
+	int keepInFront;
 	BOOL hasMenubar;
 	BOOL changingSize;
 	int fullscreen;
@@ -492,6 +493,23 @@ void uiWindowSetResizeable(uiWindow *w, int resizeable)
 		setStyle(w->hwnd, getStyle(w->hwnd) | WS_THICKFRAME | WS_MAXIMIZEBOX);
 	} else {
 		setStyle(w->hwnd, getStyle(w->hwnd) & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX);
+	}
+}
+
+int uiWindowKeepInFront(const uiWindow *w)
+{
+	return w->keepInFront;
+}
+
+void uiWindowSetKeepInFront(uiWindow *w, int keepInFront)
+{
+	w->keepInFront = keepInFront;
+	if (w->keepInFront) {
+		if (SetWindowPos(w->hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE) == 0)
+			logLastError(L"error setting window kept in front");
+	} else {
+		if (SetWindowPos(w->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE) == 0)
+			logLastError(L"error unsetting window kept in front");
 	}
 }
 

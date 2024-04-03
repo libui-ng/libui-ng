@@ -20,6 +20,7 @@ struct uiWindow {
 	uiControl *child;
 	int margined;
 	int resizeable;
+	int keepInFront;
 	int focused;
 
 	int (*onClosing)(uiWindow *, void *);
@@ -349,6 +350,17 @@ void uiWindowSetResizeable(uiWindow *w, int resizeable)
 
 	w->resizeable = resizeable;
 	gtk_window_set_resizable(w->window, resizeable);
+}
+
+int uiWindowKeepInFront(const uiWindow *w)
+{
+	return w->keepInFront;
+}
+
+void uiWindowSetKeepInFront(uiWindow *w, int keepInFront)
+{
+	w->keepInFront = keepInFront;
+	gtk_window_set_keep_above(w->window, keepInFront);
 }
 
 uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
