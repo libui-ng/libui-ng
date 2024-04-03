@@ -12,6 +12,7 @@ struct uiWindow {
 	int visible;
 	int margined;
 	int resizeable;
+	int keepAbove;
 	BOOL hasMenubar;
 	BOOL changingSize;
 	int fullscreen;
@@ -492,6 +493,23 @@ void uiWindowSetResizeable(uiWindow *w, int resizeable)
 		setStyle(w->hwnd, getStyle(w->hwnd) | WS_THICKFRAME | WS_MAXIMIZEBOX);
 	} else {
 		setStyle(w->hwnd, getStyle(w->hwnd) & ~WS_THICKFRAME & ~WS_MAXIMIZEBOX);
+	}
+}
+
+int uiWindowKeepAbove(const uiWindow *w)
+{
+	return w->keepAbove;
+}
+
+void uiWindowSetKeepAbove(uiWindow *w, int keepAbove)
+{
+	w->keepAbove = keepAbove;
+	if (w->keepAbove) {
+		if (SetWindowPos(w->hwnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE) == 0)
+			logLastError(L"error setting window kept above");
+	} else {
+		if (SetWindowPos(w->hwnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE) == 0)
+			logLastError(L"error unsetting window kept above");
 	}
 }
 
