@@ -92,7 +92,7 @@ void uiMenuItemOnClicked(uiMenuItem *i, void (*f)(uiMenuItem *, uiWindow *, void
 	i->onClickedData = data;
 }
 
-int uiMenuItemChecked(uiMenuItem *i)
+int uiMenuItemChecked(const uiMenuItem *i)
 {
 	return i->checked != FALSE;
 }

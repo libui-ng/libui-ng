@@ -33,7 +33,7 @@ uiWindowsControlAllDefaultsExceptDestroy(uiButton)
 // from http://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
 #define buttonHeight 14
 
-static void uiButtonMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiButtonMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiButton *b = uiButton(c);
 	SIZE size;
@@ -64,7 +64,7 @@ static void defaultOnClicked(uiButton *b, void *data)
 	// do nothing
 }
 
-char *uiButtonText(uiButton *b)
+char *uiButtonText(const uiButton *b)
 {
 	return uiWindowsWindowText(b->hwnd);
 }

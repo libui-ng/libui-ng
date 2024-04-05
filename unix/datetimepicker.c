@@ -568,7 +568,7 @@ static void defaultOnChanged(uiDateTimePicker *d, void *data)
 	// do nothing
 }
 
-void uiDateTimePickerTime(uiDateTimePicker *d, struct tm *time)
+void uiDateTimePickerTime(const uiDateTimePicker *d, struct tm *time)
 {
 	time_t t;
 	struct tm tmbuf;

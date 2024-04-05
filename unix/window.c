@@ -19,7 +19,6 @@ struct uiWindow {
 
 	uiControl *child;
 	int margined;
-	int resizeable;
 	int focused;
 
 	int (*onClosing)(uiWindow *, void *);
@@ -146,7 +145,7 @@ static void uiWindowDestroy(uiControl *c)
 
 uiUnixControlDefaultHandle(uiWindow)
 
-uiControl *uiWindowParent(uiControl *c)
+uiControl *uiWindowParent(const uiControl *c)
 {
 	return NULL;
 }
@@ -156,7 +155,7 @@ void uiWindowSetParent(uiControl *c, uiControl *parent)
 	uiUserBugCannotSetParentOnToplevel("uiWindow");
 }
 
-static int uiWindowToplevel(uiControl *c)
+static int uiWindowToplevel(const uiControl *c)
 {
 	return 1;
 }
@@ -180,7 +179,7 @@ uiUnixControlDefaultDisable(uiWindow)
 // TODO?
 uiUnixControlDefaultSetContainer(uiWindow)
 
-char *uiWindowTitle(uiWindow *w)
+char *uiWindowTitle(const uiWindow *w)
 {
 	return uiUnixStrdupText(gtk_window_get_title(w->window));
 }
@@ -190,7 +189,7 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	gtk_window_set_title(w->window, title);
 }
 
-void uiWindowPosition(uiWindow *w, int *x, int *y)
+void uiWindowPosition(const uiWindow *w, int *x, int *y)
 {
 	gtk_window_get_position(w->window, x, y);
 }
@@ -211,7 +210,7 @@ void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void 
 	w->onPositionChangedData = data;
 }
 
-void uiWindowContentSize(uiWindow *w, int *width, int *height)
+void uiWindowContentSize(const uiWindow *w, int *width, int *height)
 {
 	GtkAllocation allocation;
 
@@ -255,7 +254,7 @@ void uiWindowSetContentSize(uiWindow *w, int width, int height)
 			break;
 }
 
-int uiWindowFullscreen(uiWindow *w)
+int uiWindowFullscreen(const uiWindow *w)
 {
 	return w->fullscreen;
 }
@@ -284,7 +283,7 @@ void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
 	w->onClosingData = data;
 }
 
-int uiWindowFocused(uiWindow *w)
+int uiWindowFocused(const uiWindow *w)
 {
 	return w->focused;
 }
@@ -295,7 +294,7 @@ void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *da
 	w->onFocusChangedData = data;
 }
 
-int uiWindowBorderless(uiWindow *w)
+int uiWindowBorderless(const uiWindow *w)
 {
 	return gtk_window_get_decorated(w->window) == FALSE;
 }
@@ -319,7 +318,7 @@ void uiWindowSetChild(uiWindow *w, uiControl *child)
 	}
 }
 
-int uiWindowMargined(uiWindow *w)
+int uiWindowMargined(const uiWindow *w)
 {
 	return w->margined;
 }
@@ -330,9 +329,9 @@ void uiWindowSetMargined(uiWindow *w, int margined)
 	uiprivSetMargined(w->childHolderContainer, w->margined);
 }
 
-int uiWindowResizeable(uiWindow *w)
+int uiWindowResizeable(const uiWindow *w)
 {
-	return w->resizeable;
+	return gtk_window_get_resizable(w->window);
 }
 
 void uiWindowSetResizeable(uiWindow *w, int resizeable)
@@ -347,7 +346,6 @@ void uiWindowSetResizeable(uiWindow *w, int resizeable)
 		gtk_window_set_default_size(w->window, width, height);
 	}
 
-	w->resizeable = resizeable;
 	gtk_window_set_resizable(w->window, resizeable);
 }
 
@@ -357,7 +355,6 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	uiUnixNewControl(uiWindow, w);
 
-	w->resizeable = TRUE;
 	w->widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
 	w->container = GTK_CONTAINER(w->widget);
 	w->window = GTK_WINDOW(w->widget);

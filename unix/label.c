@@ -10,7 +10,7 @@ struct uiLabel {
 
 uiUnixControlAllDefaults(uiLabel)
 
-char *uiLabelText(uiLabel *l)
+char *uiLabelText(const uiLabel *l)
 {
 	return uiUnixStrdupText(gtk_label_get_text(l->label));
 }

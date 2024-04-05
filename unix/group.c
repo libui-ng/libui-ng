@@ -26,7 +26,7 @@ static void uiGroupDestroy(uiControl *c)
 	uiFreeControl(uiControl(g));
 }
 
-char *uiGroupTitle(uiGroup *g)
+char *uiGroupTitle(const uiGroup *g)
 {
 	return uiUnixStrdupText(gtk_frame_get_label(g->frame));
 }
@@ -43,7 +43,7 @@ void uiGroupSetChild(uiGroup *g, uiControl *child)
 	g->child = uiprivNewChildWithBox(child, uiControl(g), g->container, g->margined);
 }
 
-int uiGroupMargined(uiGroup *g)
+int uiGroupMargined(const uiGroup *g)
 {
 	return g->margined;
 }

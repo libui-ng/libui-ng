@@ -33,7 +33,7 @@ struct uiWindow {
 // from https://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
 #define windowMargin 7
 
-static void windowMargins(uiWindow *w, int *mx, int *my)
+static void windowMargins(const uiWindow *w, int *mx, int *my)
 {
 	uiWindowsSizing sizing;
 
@@ -196,7 +196,7 @@ static void uiWindowDestroy(uiControl *c)
 
 uiWindowsControlDefaultHandle(uiWindow)
 
-uiControl *uiWindowParent(uiControl *c)
+uiControl *uiWindowParent(const uiControl *c)
 {
 	return NULL;
 }
@@ -206,13 +206,13 @@ void uiWindowSetParent(uiControl *c, uiControl *parent)
 	uiUserBugCannotSetParentOnToplevel("uiWindow");
 }
 
-static int uiWindowToplevel(uiControl *c)
+static int uiWindowToplevel(const uiControl *c)
 {
 	return 1;
 }
 
 // TODO initial state of windows is hidden; ensure this here and make it so on other platforms
-static int uiWindowVisible(uiControl *c)
+static int uiWindowVisible(const uiControl *c)
 {
 	uiWindow *w = uiWindow(c);
 
@@ -255,7 +255,7 @@ uiWindowsControlDefaultSyncEnableState(uiWindow)
 // TODO
 uiWindowsControlDefaultSetParentHWND(uiWindow)
 
-static void uiWindowMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiWindowMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiWindow *w = uiWindow(c);
 	int mx, my;
@@ -283,7 +283,7 @@ static void uiWindowMinimumSizeChanged(uiWindowsControl *c)
 	windowRelayout(w);
 }
 
-static void uiWindowLayoutRect(uiWindowsControl *c, RECT *r)
+static void uiWindowLayoutRect(const uiWindowsControl *c, RECT *r)
 {
 	uiWindow *w = uiWindow(c);
 
@@ -299,7 +299,7 @@ static void uiWindowChildVisibilityChanged(uiWindowsControl *c)
 	uiWindowsControlMinimumSizeChanged(c);
 }
 
-char *uiWindowTitle(uiWindow *w)
+char *uiWindowTitle(const uiWindow *w)
 {
 	return uiWindowsWindowText(w->hwnd);
 }
@@ -312,7 +312,7 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 
 // this is used for both fullscreening and centering
 // see also https://blogs.msdn.microsoft.com/oldnewthing/20100412-00/?p=14353 and https://blogs.msdn.microsoft.com/oldnewthing/20050505-04/?p=35703
-static void windowMonitorRect(HWND hwnd, RECT *r)
+static void windowMonitorRect(const HWND hwnd, RECT *r)
 {
 	HMONITOR monitor;
 	MONITORINFO mi;
@@ -332,7 +332,7 @@ static void windowMonitorRect(HWND hwnd, RECT *r)
 	*r = mi.rcMonitor;
 }
 
-void uiWindowPosition(uiWindow *w, int *x, int *y)
+void uiWindowPosition(const uiWindow *w, int *x, int *y)
 {
 	RECT r;
 
@@ -355,7 +355,7 @@ void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void 
 	w->onPositionChangedData = data;
 }
 
-void uiWindowContentSize(uiWindow *w, int *width, int *height)
+void uiWindowContentSize(const uiWindow *w, int *width, int *height)
 {
 	RECT r;
 
@@ -374,7 +374,7 @@ void uiWindowSetContentSize(uiWindow *w, int width, int height)
 	w->changingSize = FALSE;
 }
 
-int uiWindowFullscreen(uiWindow *w)
+int uiWindowFullscreen(const uiWindow *w)
 {
 	return w->fullscreen;
 }
@@ -432,12 +432,12 @@ void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *da
 	w->onFocusChangedData = data;
 }
 
-int uiWindowFocused(uiWindow *w)
+int uiWindowFocused(const uiWindow *w)
 {
 	return w->focused;
 }
 
-int uiWindowBorderless(uiWindow *w)
+int uiWindowBorderless(const uiWindow *w)
 {
 	return w->borderless;
 }
@@ -469,7 +469,7 @@ void uiWindowSetChild(uiWindow *w, uiControl *child)
 	}
 }
 
-int uiWindowMargined(uiWindow *w)
+int uiWindowMargined(const uiWindow *w)
 {
 	return w->margined;
 }
@@ -480,7 +480,7 @@ void uiWindowSetMargined(uiWindow *w, int margined)
 	windowRelayout(w);
 }
 
-int uiWindowResizeable(uiWindow *w)
+int uiWindowResizeable(const uiWindow *w)
 {
 	return w->resizeable;
 }

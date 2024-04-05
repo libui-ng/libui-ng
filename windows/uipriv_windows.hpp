@@ -144,7 +144,7 @@ struct tabPage {
 };
 extern struct tabPage *newTabPage(uiControl *child);
 extern void tabPageDestroy(struct tabPage *tp);
-extern void tabPageMinimumSize(struct tabPage *tp, int *width, int *height);
+extern void tabPageMinimumSize(const struct tabPage *tp, int *width, int *height);
 
 // colordialog.cpp
 struct colorDialogRGBA {

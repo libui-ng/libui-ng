@@ -1,7 +1,7 @@
 // 9 april 2015
 #include "uipriv_windows.hpp"
 
-WCHAR *windowTextAndLen(HWND hwnd, LRESULT *len)
+WCHAR *windowTextAndLen(const HWND hwnd, LRESULT *len)
 {
 	LRESULT n;
 	WCHAR *text;
@@ -22,7 +22,7 @@ WCHAR *windowTextAndLen(HWND hwnd, LRESULT *len)
 	return text;
 }
 
-WCHAR *windowText(HWND hwnd)
+WCHAR *windowText(const HWND hwnd)
 {
 	return windowTextAndLen(hwnd, NULL);
 }
@@ -41,7 +41,7 @@ void uiFreeText(char *text)
 // via http://msdn.microsoft.com/en-us/library/windows/desktop/dn742486.aspx#sizingandspacing
 #define labelHeight 8
 
-int uiWindowsWindowTextHeight(HWND hwnd)
+int uiWindowsWindowTextHeight(const HWND hwnd)
 {
 	LRESULT len;
 	WCHAR* text, *start;
@@ -56,7 +56,7 @@ int uiWindowsWindowTextHeight(HWND hwnd)
 	return lineCount * labelHeight;
 }
 
-int uiWindowsWindowTextWidth(HWND hwnd)
+int uiWindowsWindowTextWidth(const HWND hwnd)
 {
 	LRESULT len;
 	WCHAR *text, *start, *end;
@@ -116,7 +116,7 @@ noTextOrError:
 	return 0;
 }
 
-char *uiWindowsWindowText(HWND hwnd)
+char *uiWindowsWindowText(const HWND hwnd)
 {
 	WCHAR *wtext;
 	char *text;

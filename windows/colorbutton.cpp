@@ -112,7 +112,7 @@ uiWindowsControlAllDefaultsExceptDestroy(uiColorButton)
 #define buttonHeight 14
 
 // TODO check widths
-static void uiColorButtonMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiColorButtonMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiColorButton *b = uiColorButton(c);
 	SIZE size;
