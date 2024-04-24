@@ -78,7 +78,7 @@ static void defaultOnChanged(uiDateTimePicker *d, void *data)
 }
 
 // TODO consider using NSDateComponents iff we ever need the extra accuracy of not using NSTimeInterval
-void uiDateTimePickerTime(uiDateTimePicker *d, struct tm *time)
+void uiDateTimePickerTime(const uiDateTimePicker *d, struct tm *time)
 {
 	time_t t;
 	struct tm tmbuf;

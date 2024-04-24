@@ -61,7 +61,7 @@ struct uiEntry {
 	void *onChangedData;
 };
 
-static BOOL isSearchField(NSTextField *tf)
+static BOOL isSearchField(const NSTextField *tf)
 {
 	return [tf isKindOfClass:[NSSearchField class]];
 }
@@ -118,7 +118,7 @@ static void uiEntryDestroy(uiControl *c)
 	uiFreeControl(uiControl(e));
 }
 
-char *uiEntryText(uiEntry *e)
+char *uiEntryText(const uiEntry *e)
 {
 	return uiDarwinNSStringToText([e->textfield stringValue]);
 }
@@ -135,7 +135,7 @@ void uiEntryOnChanged(uiEntry *e, void (*f)(uiEntry *, void *), void *data)
 	e->onChangedData = data;
 }
 
-int uiEntryReadOnly(uiEntry *e)
+int uiEntryReadOnly(const uiEntry *e)
 {
 	return [e->textfield isEditable] == NO;
 }
