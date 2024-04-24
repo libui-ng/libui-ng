@@ -23,7 +23,7 @@ pub fn build(b: *std.Build) void {
         });
     lib.linkLibC();
     lib.addIncludePath(.{ .path = "common" });
-    lib.installHeader("ui.h", "ui.h");
+    lib.installHeader(.{ .path = "ui.h" }, "ui.h");
     lib.defineCMacro("libui_EXPORTS", "");
     lib.addCSourceFiles(.{
         .files = &libui_common_sources,
@@ -32,7 +32,7 @@ pub fn build(b: *std.Build) void {
 
     if (target.result.isDarwin()) {
         // use darwin/*.m backend
-        lib.installHeader("ui_darwin.h", "ui_darwin.h");
+        lib.installHeader(.{ .path = "ui_darwin.h" }, "ui_darwin.h");
         lib.addIncludePath(.{ .path = "darwin" });
         lib.linkFramework("Foundation");
         lib.linkFramework("Appkit");
@@ -43,7 +43,7 @@ pub fn build(b: *std.Build) void {
         });
     } else if (target.result.os.tag == .windows) {
         // use windows/*.cpp backend
-        lib.installHeader("ui_windows.h", "ui_windows.h");
+        lib.installHeader(.{ .path = "ui_windows.h" }, "ui_windows.h");
         lib.subsystem = .Windows;
         lib.addIncludePath(.{ .path = "windows" });
         lib.linkSystemLibrary("user32");
@@ -76,7 +76,7 @@ pub fn build(b: *std.Build) void {
         });
     } else {
         // assume unix/*.c backend
-        lib.installHeader("ui_unix.h", "ui_unix.h");
+        lib.installHeader(.{ .path = "ui_unix.h" }, "ui_unix.h");
         lib.linkSystemLibrary("gtk+-3.0");
         lib.addIncludePath(.{ .path = "unix" });
         lib.addCSourceFiles(.{
