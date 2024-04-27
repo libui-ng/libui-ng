@@ -68,6 +68,7 @@ int main(void)
 		{ entryRunUnitTests },
 		{ progressBarRunUnitTests },
 		{ drawMatrixRunUnitTests },
+		{ imageBufferRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {
@@ -86,4 +87,3 @@ int main(void)
 
 	return failedTests;
 }
-

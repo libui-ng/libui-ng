@@ -141,3 +141,92 @@ void uiDrawRestore(uiDrawContext *c)
 {
 	cairo_restore(c->cr);
 }
+
+// ImageBuffer API
+
+uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha)
+{
+	uiImageBuffer *buf;
+
+	buf = uiprivNew(uiImageBuffer);
+
+	buf->buf = cairo_image_surface_create(alpha ? CAIRO_FORMAT_ARGB32 : CAIRO_FORMAT_RGB24, width, height);
+	if (cairo_surface_status(buf->buf) != CAIRO_STATUS_SUCCESS)
+		uiprivImplBug("error creating ImageBuffer: %s",
+			cairo_status_to_string(cairo_surface_status(buf->buf)));
+
+	buf->Width = width;
+	buf->Height = height;
+	buf->Stride = cairo_image_surface_get_stride(buf->buf);
+
+	return buf;
+}
+
+void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
+{
+	unsigned char *src = (unsigned char *) data;
+	unsigned char *dst = cairo_image_surface_get_data(buf->buf);
+	int x, y;
+
+	// convert RGBA to BGRA
+	for (y = 0; y < buf->Height; y++) {
+		for (x = 0; x < buf->Width * 4; x += 4) {
+			union {
+				uint32_t v32;
+				uint8_t v8[4];
+			} v;
+
+			v.v32 = ((uint32_t) (src[x + 3])) << 24;
+			v.v32 |= ((uint32_t) (src[x])) << 16;
+			v.v32 |= ((uint32_t) (src[x + 1])) << 8;
+			v.v32 |= ((uint32_t) (src[x + 2]));
+			dst[x] = v.v8[0];
+			dst[x + 1] = v.v8[1];
+			dst[x + 2] = v.v8[2];
+			dst[x + 3] = v.v8[3];
+		}
+		src += buf->Width * 4;
+		dst += buf->Stride;
+	}
+
+	cairo_surface_mark_dirty(buf->buf);
+}
+
+static void drawImageBuffer(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, cairo_filter_t interp)
+{
+	if (srcrect->Width == 0 || srcrect->Height == 0)
+		return;  // avoid dividing by zero
+
+	cairo_save(c->cr);
+	cairo_rectangle(c->cr, dstrect->X, dstrect->Y, dstrect->Width, dstrect->Height);
+
+	cairo_translate(c->cr, dstrect->X, dstrect->Y);
+	if ((dstrect->Width != srcrect->Width) || (dstrect->Height != srcrect->Height))	{
+		double sx = dstrect->Width / (double)srcrect->Width;
+		double sy = dstrect->Height / (double)srcrect->Height;
+		cairo_scale(c->cr, sx, sy);
+	}
+
+	cairo_set_source_surface(c->cr, buf->buf, -srcrect->X, -srcrect->Y);
+	cairo_pattern_set_filter(cairo_get_source(c->cr), interp);
+	cairo_clip(c->cr);
+	cairo_paint(c->cr);
+
+	cairo_restore(c->cr);
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, CAIRO_FILTER_BEST);
+}
+
+void uiImageBufferDrawFast(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, CAIRO_FILTER_NEAREST);
+}
+
+void uiFreeImageBuffer(uiImageBuffer *buf)
+{
+	cairo_surface_destroy(buf->buf);
+	uiprivFree(buf);
+}

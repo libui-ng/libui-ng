@@ -454,3 +454,89 @@ void uiDrawRestore(uiDrawContext *c)
 {
 	CGContextRestoreGState(c->c);
 }
+
+// ImageBuffer API
+
+uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha)
+{
+	uiImageBuffer *buf;
+	CGColorSpaceRef color_space;
+	uint32_t alpha_info;
+
+	buf = uiprivNew(uiImageBuffer);
+	color_space = CGColorSpaceCreateDeviceRGB();
+	alpha_info = alpha ? kCGImageAlphaPremultipliedFirst : kCGImageAlphaNoneSkipFirst;
+
+	buf->buf = CGBitmapContextCreate(NULL,
+		width, height,
+		8, width * 4, color_space,
+		alpha_info | kCGBitmapByteOrder32Little);
+	buf->img = CGBitmapContextCreateImage(buf->buf);
+	buf->Width = width;
+	buf->Height = height;
+	buf->Stride = width * 4;
+
+	CFRelease(color_space);
+	return buf;
+}
+
+void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
+{
+	// convert RGBA to BGRA and flip vertically
+	vImage_Buffer src_buffer = {
+		(UInt8 *) data,
+		buf->Height,
+		buf->Width,
+		buf->Width * 4
+	};
+	vImage_Buffer dst_buffer = {
+		CGBitmapContextGetData(buf->buf),
+		buf->Height,
+		buf->Width,
+		buf->Width * 4
+	};
+	const uint8_t map[4] = { 2, 1, 0, 3 };
+	vImageVerticalReflect_ARGB8888(&src_buffer, &dst_buffer, kvImageNoFlags);
+	vImagePermuteChannels_ARGB8888(&dst_buffer, &dst_buffer, map, kvImageNoFlags);
+
+	CGImageRelease(buf->img);
+	buf->img = CGBitmapContextCreateImage(buf->buf);
+}
+
+static void drawImageBuffer(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, CGInterpolationQuality interp)
+{
+	if (srcrect->Width == 0 || srcrect->Height == 0)
+		return;  // avoid dividing by zero
+
+	CGFloat sx = dstrect->Width / (CGFloat) srcrect->Width;
+	CGFloat sy = dstrect->Height / (CGFloat) srcrect->Height;
+	CGRect clip_rect = CGRectMake(dstrect->X, dstrect->Y, dstrect->Width, dstrect->Height);
+	CGRect draw_rect = CGRectMake(
+		dstrect->X - srcrect->X * sx,
+		dstrect->Y - srcrect->Y * sy,
+		buf->Width * sx,
+		buf->Height * sy);
+
+	CGContextSaveGState(c->c);
+	CGContextSetInterpolationQuality(c->c, interp);
+	CGContextClipToRect(c->c, clip_rect);
+	CGContextDrawImage(c->c, draw_rect, buf->img);
+	CGContextRestoreGState(c->c);
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, kCGInterpolationHigh);
+}
+
+void uiImageBufferDrawFast(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, kCGInterpolationLow);
+}
+
+void uiFreeImageBuffer(uiImageBuffer *buf)
+{
+	CGImageRelease(buf->img);
+	CGContextRelease(buf->buf);
+	uiprivFree(buf);
+}

@@ -2204,6 +2204,15 @@ struct uiDrawStrokeParams {
 	double DashPhase;
 };
 
+struct uiRect {
+	int X;
+	int Y;
+	int Width;
+	int Height;
+};
+
+typedef struct uiRect uiRect;
+
 _UI_EXTERN uiDrawPath *uiDrawNewPath(uiDrawFillMode fillMode);
 _UI_EXTERN void uiDrawFreePath(uiDrawPath *p);
 
@@ -2250,6 +2259,69 @@ _UI_EXTERN void uiDrawClip(uiDrawContext *c, uiDrawPath *path);
 
 _UI_EXTERN void uiDrawSave(uiDrawContext *c);
 _UI_EXTERN void uiDrawRestore(uiDrawContext *c);
+
+/**
+ * A class for storing an image to be drawn on uiDrawContext.
+ *
+ * @struct uiImageBuffer
+ */
+typedef struct uiImageBuffer uiImageBuffer;
+
+/**
+ * Creates a new image buffer instance.
+ *
+ * @param c uiDrawContext instance.
+ * @param width Image width in pixels.
+ * @param height Image height in pixels.
+ * @param alpha `TRUE` to use alpha channel, `FALSE` otherwise.
+ * @returns A new uiImageBuffer instance.
+ * @memberof uiImageBuffer
+ */
+_UI_EXTERN uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha);
+
+/**
+ * Copies a byte array to the image buffer.
+ *
+ * @param buf uiImageBuffer instance.
+ * @param data Byte array of premultiplied pixels in [R G B A] order.\n
+ *             `((uint8_t *) data)[0]` equals the **R** of the first pixel,
+ *             `[3]` the **A** of the first pixel.\n
+ *             `data` must be at least `buf->Width * buf->Height * 4` bytes long.\n
+ *             Data is copied internally. Ownership is not transferred.
+ * @memberof uiImageBuffer
+ */
+_UI_EXTERN void uiImageBufferUpdate(uiImageBuffer *buf, const void *data);
+
+/**
+ * Draws the image buffer on the draw context with the highest quality interpolation.
+ *
+ * @param c uiDrawContext instance.
+ * @param buf uiImageBuffer instance.
+ * @param scrrect The size and position in the image buffer.
+ * @param dstrect The size and position in the draw context.
+ * @note Use uiImageBufferFast() if you want to use faster interpolation.
+ * @memberof uiImageBuffer
+ */
+_UI_EXTERN void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect);
+
+/**
+ * Draws the image buffer on the draw context with the fastest interpolation.
+ *
+ * @param c uiDrawContext instance.
+ * @param buf uiImageBuffer instance.
+ * @param scrrect The size and position in the image buffer.
+ * @param dstrect The size and position in the draw context.
+ * @memberof uiImageBuffer
+ */
+_UI_EXTERN void uiImageBufferDrawFast(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect);
+
+/**
+ * Frees the image buffer and all associated resources.
+ *
+ * @param buf uiImageBuffer instance.
+ * @memberof uiImageBuffer
+ */
+_UI_EXTERN void uiFreeImageBuffer(uiImageBuffer *buf);
 
 // uiAttribute stores information about an attribute in a
 // uiAttributedString.

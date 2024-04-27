@@ -14,7 +14,8 @@ libui_unit_sources = [
         'entry.c',
         'menu.c',
         'progressbar.c',
-	'drawmatrix.c',
+	    'drawmatrix.c',
+		'imagebuffer.c',
 ]
 
 if libui_OS == 'windows'
@@ -36,4 +37,3 @@ unit = executable('unit', libui_unit_sources,
 	install: false)
 
 test('Unit Tests', unit)
-

@@ -2,6 +2,7 @@
 // note: as of OS X Sierra, the -mmacosx-version-min compiler options governs deprecation warnings; keep these around anyway just in case
 #define MAC_OS_X_VERSION_MIN_REQUIRED MAC_OS_X_VERSION_10_8
 #define MAC_OS_X_VERSION_MAX_ALLOWED MAC_OS_X_VERSION_10_8
+#import <Accelerate/Accelerate.h>
 #import <Cocoa/Cocoa.h>
 #import <dlfcn.h>		// see future.m
 #import "../ui.h"

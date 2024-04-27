@@ -58,7 +58,7 @@ libui_deps += [
 	meson.get_compiler('objc').find_library('objc',
 		required: true),
 	dependency('appleframeworks',
-		modules: ['Foundation', 'AppKit'],
+		modules: ['Foundation', 'AppKit', 'Accelerate'],
 		required: true),
 ]
 # the / is required by some older versions of OS X

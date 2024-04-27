@@ -6,3 +6,12 @@ struct uiDrawContext {
 	CGContextRef c;
 	CGFloat height;				// needed for text; see below
 };
+
+struct uiImageBuffer {
+	int Width;
+	int Height;
+	int Stride;
+
+	CGContextRef buf;
+	CGImageRef img;
+};

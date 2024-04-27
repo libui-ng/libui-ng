@@ -509,3 +509,61 @@ void uiDrawRestore(uiDrawContext *c)
 	// no need to explicitly addref or release; just transfer the ref
 	c->currentClip = state.clip;
 }
+
+
+// ImageBuffer API
+
+uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha)
+{
+	uiImageBuffer *buf;
+	HRESULT hr;
+
+	buf = uiprivNew(uiImageBuffer);
+
+	D2D1_BITMAP_PROPERTIES bp2 = D2D1::BitmapProperties();
+	bp2.dpiX = 0;
+	bp2.dpiY = 0;
+	bp2.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_R8G8B8A8_UNORM,
+				alpha ? D2D1_ALPHA_MODE_PREMULTIPLIED : D2D1_ALPHA_MODE_IGNORE);
+
+	hr = c->rt->CreateBitmap(D2D1::SizeU(width,height), NULL, 0, &bp2, &buf->buf);
+	if (hr != S_OK)
+		logHRESULT(L"error creating ImageBuffer", hr);
+
+	buf->Width = width;
+	buf->Height = height;
+	buf->Stride = width * 4;
+
+	return buf;
+}
+
+void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
+{
+	D2D1_RECT_U rekt = D2D1::RectU(0, 0, buf->Width, buf->Height);
+	buf->buf->CopyFromMemory(&rekt, data, buf->Stride);
+}
+
+static void drawImageBuffer(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, D2D1_BITMAP_INTERPOLATION_MODE interp)
+{
+	D2D_RECT_F _srcrect = D2D1::RectF(srcrect->X, srcrect->Y, srcrect->X+srcrect->Width, srcrect->Y+srcrect->Height);
+	D2D_RECT_F _dstrect = D2D1::RectF(dstrect->X, dstrect->Y, dstrect->X+dstrect->Width, dstrect->Y+dstrect->Height);
+	c->rt->DrawBitmap(buf->buf, &_dstrect, 1.0f, interp, &_srcrect);
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	// TODO Use D2D1_INTERPOLATION_MODE_CUBIC on Windows 8 or later.
+	// https://learn.microsoft.com/en-us/windows/win32/api/d2d1_1/ne-d2d1_1-d2d1_interpolation_mode
+	drawImageBuffer(c, buf, srcrect, dstrect, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR);
+}
+
+void uiImageBufferDrawFast(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect)
+{
+	drawImageBuffer(c, buf, srcrect, dstrect, D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR);
+}
+
+void uiFreeImageBuffer(uiImageBuffer *buf)
+{
+	buf->buf->Release();
+	uiprivFree(buf);
+}
