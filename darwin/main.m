@@ -106,6 +106,35 @@ static BOOL stepsIsRunning;
 	return NO;
 }
 
+-(void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+	BOOL activate = NO;
+	CFURLRef url = CFBundleCopyBundleURL(CFBundleGetMainBundle());
+	CFStringRef path = CFURLCopyFileSystemPath (url, kCFURLPOSIXPathStyle);
+	CFRelease(url);
+
+	if (!CFStringHasSuffix(path, CFSTR(".app"))) {
+		// don't use setActivationPolicy outside this function
+		// or the menu bar won't work properly on macOS 10.15
+		// see https://github.com/libui-ng/libui-ng/issues/225
+
+		// don't check for a NO return;
+		// something (launch services?) causes running from application bundles to always return NO
+		// when asking to change activation policy, even if the change is to the same activation policy!
+		// see https://github.com/andlabs/ui/issues/6
+		[uiprivNSApp() setActivationPolicy:NSApplicationActivationPolicyRegular];
+		activate = YES;
+	} else if ([uiprivNSApp() activationPolicy] == NSApplicationActivationPolicyAccessory) {
+		// The app is an agent app that runs in the background and doesn't appear in the Dock.
+		activate = YES;
+	}
+
+	CFRelease(path);
+
+	if (activate)
+		[uiprivNSApp() activateIgnoringOtherApps: YES];
+}
+
 @end
 
 uiInitOptions uiprivOptions;
@@ -115,9 +144,6 @@ const char *uiInit(uiInitOptions *o)
 	@autoreleasepool {
 		uiprivOptions = *o;
 		app = [[uiprivApplicationClass sharedApplication] retain];
-		// don't check for a NO return; something (launch services?) causes running from application bundles to always return NO when asking to change activation policy, even if the change is to the same activation policy!
-		// see https://github.com/andlabs/ui/issues/6
-		[uiprivNSApp() setActivationPolicy:NSApplicationActivationPolicyRegular];
 		delegate = [uiprivAppDelegate new];
 		[uiprivNSApp() setDelegate:delegate];
 
