@@ -10,22 +10,11 @@ static int onClosing(uiWindow *w, void *data)
 static uiWindow* windowNew(uiControl *child, const char* (*guide)(void))
 {
 	uiWindow *w;
-	uiBox *box;
-	uiMultilineEntry *g;
-
-	box = uiNewHorizontalBox();
-
-	g = uiNewMultilineEntry();
-	uiMultilineEntrySetText(g, guide());
-	uiMultilineEntrySetReadOnly(g, 1);
-
-	uiBoxAppend(box, child, 1);
-	uiBoxAppend(box, uiControl(g), 1);
 
 	w = uiNewWindow("Quality Assurance", QA_WINDOW_WIDTH, QA_WINDOW_HEIGHT, 0);
 	uiWindowOnClosing(w, onClosing, NULL);
 
-	uiWindowSetChild(w, uiControl(box));
+	uiWindowSetChild(w, qaMakeGuide(child, guide()));
 	uiControlShow(uiControl(w));
 
 	return w;

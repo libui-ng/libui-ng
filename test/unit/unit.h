@@ -24,6 +24,7 @@ int radioButtonsRunUnitTests(void);
 int entryRunUnitTests(void);
 int menuRunUnitTests(void);
 int progressBarRunUnitTests(void);
+int drawMatrixRunUnitTests(void);
 
 /**
  * Helper for general setup/teardown of controls embedded in a window.

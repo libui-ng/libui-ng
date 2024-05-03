@@ -145,7 +145,6 @@ libui_libui_link_args = []
 
 libui_sources = []
 libui_deps = []
-libui_soversion = ''
 libui_rpath = ''
 subdir('common')
 if libui_OS == 'windows'
@@ -168,9 +167,7 @@ libui_libui = library('ui', libui_sources,
 	c_args: ['-Dlibui_EXPORTS'],
 	cpp_args: ['-Dlibui_EXPORTS'],
 	objc_args: ['-Dlibui_EXPORTS'],
-	link_args: libui_libui_link_args,
-	soversion: libui_soversion,
-	darwin_versions: [])		# TODO
+	link_args: libui_libui_link_args)
 install_headers('ui.h')
 
 # TODO when the API is stable enough to be versioned, create a pkg-config file (https://mesonbuild.com/Pkgconfig-module.html) and a declare_dependency() section too

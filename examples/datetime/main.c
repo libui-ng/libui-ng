@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-#include "../../ui.h"
+#include <ui.h>
 
 uiDateTimePicker *dtboth, *dtdate, *dttime;
 
