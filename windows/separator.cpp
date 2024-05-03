@@ -64,7 +64,7 @@ uiSeparator *uiNewVerticalSeparator(void)
 
 	s->hwnd = uiWindowsEnsureCreateControlHWND(0,
 		L"static", L"",
-		SS_ETCHEDHORZ,
+		SS_ETCHEDVERT,
 		hInstance, NULL,
 		TRUE);
 	s->vertical = TRUE;
