@@ -14,6 +14,7 @@ libui_unit_sources = [
         'entry.c',
         'menu.c',
         'progressbar.c',
+	'drawmatrix.c',
 ]
 
 if libui_OS == 'windows'

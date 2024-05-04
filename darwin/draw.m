@@ -325,35 +325,37 @@ static void c2m(CGAffineTransform *c, uiDrawMatrix *m)
 void uiDrawMatrixTranslate(uiDrawMatrix *m, double x, double y)
 {
 	CGAffineTransform c;
+	CGAffineTransform tmp;
 
 	m2c(m, &c);
-	c = CGAffineTransformTranslate(c, x, y);
+	tmp = CGAffineTransformMakeTranslation(x, y);
+	c = CGAffineTransformConcat(c, tmp);
 	c2m(&c, m);
 }
 
 void uiDrawMatrixScale(uiDrawMatrix *m, double xCenter, double yCenter, double x, double y)
 {
 	CGAffineTransform c;
-	double xt, yt;
+	CGAffineTransform tmp;
 
 	m2c(m, &c);
-	xt = x;
-	yt = y;
-	uiprivScaleCenter(xCenter, yCenter, &xt, &yt);
-	c = CGAffineTransformTranslate(c, xt, yt);
-	c = CGAffineTransformScale(c, x, y);
-	c = CGAffineTransformTranslate(c, -xt, -yt);
+	tmp = CGAffineTransformMakeTranslation(xCenter, yCenter);
+	tmp = CGAffineTransformScale(tmp, x, y);
+	tmp = CGAffineTransformTranslate(tmp, -xCenter, -yCenter);
+	c = CGAffineTransformConcat(c, tmp);
 	c2m(&c, m);
 }
 
 void uiDrawMatrixRotate(uiDrawMatrix *m, double x, double y, double amount)
 {
 	CGAffineTransform c;
+	CGAffineTransform tmp;
 
 	m2c(m, &c);
-	c = CGAffineTransformTranslate(c, x, y);
-	c = CGAffineTransformRotate(c, amount);
-	c = CGAffineTransformTranslate(c, -x, -y);
+	tmp = CGAffineTransformMakeTranslation(x, y);
+	tmp = CGAffineTransformRotate(tmp, amount);
+	tmp = CGAffineTransformTranslate(tmp, -x, -y);
+	c = CGAffineTransformConcat(c, tmp);
 	c2m(&c, m);
 }
 

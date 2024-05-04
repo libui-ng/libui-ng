@@ -154,3 +154,46 @@ uiControl* searchEntryOnChanged()
 	return uiControl(vbox);
 }
 
+const char *entryLongTextGuide() {
+	return
+	"1.\tYou should see a text entry box containing the text\n"
+	"\t`abcdefghijklmnopqrstuvwxyz`. No scrolling on your part should be\n"
+	"\tnecessary to see the entire string.\n"
+	;
+}
+
+uiControl* entryLongText()
+{
+	uiBox *vbox;
+	uiEntry *entry;
+
+	vbox = uiNewVerticalBox();
+	entry = uiNewEntry();
+	uiEntrySetText(entry, "abcdefghijklmnopqrstuvwxyz");
+	uiBoxAppend(vbox, uiControl(entry), 0);
+
+	return uiControl(vbox);
+}
+
+const char *entryOverflowTextGuide() {
+	return
+	"1.\tYou should see a text entry box containing text that overflows.\n"
+	"\tThe left most side of the entry should read `aaaabbbbccccddd...`.\n"
+	"\tYou should not see the end of the text `...xxxyyyyzzzz` without\n"
+	"\tscrolling manually.\n"
+	;
+}
+
+uiControl* entryOverflowText()
+{
+	uiBox *vbox;
+	uiEntry *entry;
+
+	vbox = uiNewVerticalBox();
+	entry = uiNewEntry();
+	uiEntrySetText(entry, "aaaabbbbccccddddeeeeffffgggghhhhiiiijjjjkkkkllll"
+		"mmmmnnnnooooppppqqqqrrrrssssttttuuuuvvvvwwwwxxxxyyyyzzzz");
+	uiBoxAppend(vbox, uiControl(entry), 0);
+
+	return uiControl(vbox);
+}

@@ -1,4 +1,3 @@
-// 6 december 2015
 #include <thread>
 #include <chrono>
 #include <mutex>
@@ -6,7 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <time.h>
-#include "../../ui.h"
+#include <ui.h>
 using namespace std;
 
 uiMultilineEntry *e;

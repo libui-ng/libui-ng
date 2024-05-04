@@ -23,14 +23,18 @@ static BOOL onWM_COMMAND(uiControl *c, HWND clicked, WORD code, LRESULT *lResult
 
 	if (code != BN_CLICKED)
 		return FALSE;
+
+	*lResult = 0;
 	for (const HWND &hwnd : *(r->hwnds)) {
 		check = BST_UNCHECKED;
-		if (clicked == hwnd)
+		if (clicked == hwnd) {
+			if (Button_GetCheck(hwnd) == BST_CHECKED)
+				return TRUE;
 			check = BST_CHECKED;
+		}
 		SendMessage(hwnd, BM_SETCHECK, check, 0);
 	}
 	(*(r->onSelected))(r, r->onSelectedData);
-	*lResult = 0;
 	return TRUE;
 }
 
