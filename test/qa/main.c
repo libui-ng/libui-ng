@@ -39,6 +39,11 @@ struct controlTestCase labelTestCases[] = {
 	{NULL, NULL, NULL}
 };
 
+struct controlTestCase radioButtonsTestCases[] = {
+	QA_TEST("1. OnSelected Callback", radioButtonsOnSelected),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestCase separatorTestCases[] = {
 	QA_TEST("1. Vertical Separator", separatorVertical),
 	QA_TEST("2. Horizontal Separator", separatorHorizontal),
@@ -60,6 +65,7 @@ struct controlTestGroup controlTestGroups[] = {
 	{"uiCheckbox", checkboxTestCases},
 	{"uiEntry", entryTestCases},
 	{"uiLabel", labelTestCases},
+	{"uiRadioButtons", radioButtonsTestCases},
 	{"uiSeparator", separatorTestCases},
 	{"uiWindow", windowTestCases},
 };
