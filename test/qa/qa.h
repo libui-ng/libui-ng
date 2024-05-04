@@ -27,6 +27,8 @@ QA_DECLARE_TEST(radioButtonsOnSelected);
 QA_DECLARE_TEST(separatorVertical);
 QA_DECLARE_TEST(separatorHorizontal);
 
+QA_DECLARE_TEST(spinboxOnChanged);
+
 QA_DECLARE_TEST(windowFullscreen);
 QA_DECLARE_TEST(windowBorderless);
 QA_DECLARE_TEST(windowResizeable);
