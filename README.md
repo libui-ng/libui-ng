@@ -70,7 +70,7 @@ Backends other than `ninja` should work, but are untested by me.
 
 ### Build with Zig Toolchain
 
-An alternative to using meson is to use the zig compiler and toolchain. The version used is a nightly build of zig `0.12.0`, specifically `0.12.0-dev.1391+ae6df9e96`.
+An alternative to using meson is to use the zig compiler and toolchain, specifically the `0.12.0` stable release of zig.
 
 ```shell-session
 $ # in the top-level libui-ng directory run:
@@ -84,7 +84,7 @@ $ zig build -Doptimize=ReleaseSafe
 ```
 
 #### Requirements
-On all hosts, a [zig 0.12.0 master build](https://ziglang.org/download/) must be installed.
+On all hosts, [zig 0.12.0](https://ziglang.org/download/#release-0.12.0) must be installed.
 
 To compile for Unix platforms, `gtk+-3.0` and `pkg-config` packages must be installed.
 
