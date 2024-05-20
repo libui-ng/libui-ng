@@ -447,7 +447,7 @@ static void uiGridSyncEnableState(uiWindowsControl *c, int enabled)
 
 uiWindowsControlDefaultSetParentHWND(uiGrid)
 
-static void uiGridMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiGridMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiGrid *g = uiGrid(c);
 	int xpadding, ypadding;

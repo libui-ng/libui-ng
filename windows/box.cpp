@@ -16,7 +16,7 @@ struct uiBox {
 	int padded;
 };
 
-static void boxPadding(uiBox *b, int *xpadding, int *ypadding)
+static void boxPadding(const uiBox *b, int *xpadding, int *ypadding)
 {
 	uiWindowsSizing sizing;
 
@@ -154,7 +154,7 @@ static void uiBoxSyncEnableState(uiWindowsControl *c, int enabled)
 
 uiWindowsControlDefaultSetParentHWND(uiBox)
 
-static void uiBoxMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiBoxMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiBox *b = uiBox(c);
 	int xpadding, ypadding;
@@ -275,12 +275,12 @@ void uiBoxDelete(uiBox *b, int index)
 	uiWindowsControlMinimumSizeChanged(uiWindowsControl(b));
 }
 
-int uiBoxNumChildren(uiBox *b)
+int uiBoxNumChildren(const uiBox *b)
 {
 	return (int) b->controls->size();
 }
 
-int uiBoxPadded(uiBox *b)
+int uiBoxPadded(const uiBox *b)
 {
 	return b->padded;
 }

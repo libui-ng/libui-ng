@@ -94,7 +94,7 @@ static void onSliderChanged(uiSlider *s, void *data)
 	uiProgressBarSetValue(pbar, uiSliderValue(s));
 }
 
-static uiControl *makeNumbersPage()
+static uiControl *makeNumbersPage(void)
 {
 	uiBox *hbox;
 	uiGroup *group;

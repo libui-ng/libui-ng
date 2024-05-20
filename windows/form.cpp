@@ -159,7 +159,7 @@ static void uiFormSyncEnableState(uiWindowsControl *c, int enabled)
 
 uiWindowsControlDefaultSetParentHWND(uiForm)
 
-static void uiFormMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiFormMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiForm *f = uiForm(c);
 	int xpadding, ypadding;

@@ -124,7 +124,7 @@ static void uiGroupChildVisibilityChanged(uiDarwinControl *c)
 	groupRelayout(g);
 }
 
-char *uiGroupTitle(uiGroup *g)
+char *uiGroupTitle(const uiGroup *g)
 {
 	return uiDarwinNSStringToText([g->box title]);
 }
@@ -160,7 +160,7 @@ void uiGroupSetChild(uiGroup *g, uiControl *child)
 	groupRelayout(g);
 }
 
-int uiGroupMargined(uiGroup *g)
+int uiGroupMargined(const uiGroup *g)
 {
 	return g->margined;
 }

@@ -27,7 +27,7 @@ struct uiProgressBar {
 
 uiDarwinControlAllDefaults(uiProgressBar, pi)
 
-int uiProgressBarValue(uiProgressBar *p)
+int uiProgressBarValue(const uiProgressBar *p)
 {
 	if ([p->pi isIndeterminate])
 		return -1;

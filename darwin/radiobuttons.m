@@ -162,7 +162,7 @@ void uiRadioButtonsAppend(uiRadioButtons *r, const char *text)
 	[r->lastv retain];
 }
 
-int uiRadioButtonsSelected(uiRadioButtons *r)
+int uiRadioButtonsSelected(const uiRadioButtons *r)
 {
 	return r->selected;
 }

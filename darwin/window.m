@@ -146,7 +146,7 @@ static void uiWindowDestroy(uiControl *c)
 
 uiDarwinControlDefaultHandle(uiWindow, window)
 
-uiControl *uiWindowParent(uiControl *c)
+uiControl *uiWindowParent(const uiControl *c)
 {
 	return NULL;
 }
@@ -156,12 +156,12 @@ void uiWindowSetParent(uiControl *c, uiControl *parent)
 	uiUserBugCannotSetParentOnToplevel("uiWindow");
 }
 
-static int uiWindowToplevel(uiControl *c)
+static int uiWindowToplevel(const uiControl *c)
 {
 	return 1;
 }
 
-static int uiWindowVisible(uiControl *c)
+static int uiWindowVisible(const uiControl *c)
 {
 	uiWindow *w = uiWindow(c);
 
@@ -241,7 +241,7 @@ static void uiWindowChildVisibilityChanged(uiDarwinControl *c)
 	windowRelayout(w);
 }
 
-char *uiWindowTitle(uiWindow *w)
+char *uiWindowTitle(const uiWindow *w)
 {
 	return uiDarwinNSStringToText([w->window title]);
 }
@@ -251,7 +251,7 @@ void uiWindowSetTitle(uiWindow *w, const char *title)
 	[w->window setTitle:uiprivToNSString(title)];
 }
 
-void uiWindowPosition(uiWindow *w, int *x, int *y)
+void uiWindowPosition(const uiWindow *w, int *x, int *y)
 {
 	NSRect screen;
 	NSRect window;
@@ -288,7 +288,7 @@ void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void 
 	w->onPositionChangedData = data;
 }
 
-void uiWindowContentSize(uiWindow *w, int *width, int *height)
+void uiWindowContentSize(const uiWindow *w, int *width, int *height)
 {
 	NSRect r;
 
@@ -304,7 +304,7 @@ void uiWindowSetContentSize(uiWindow *w, int width, int height)
 	w->suppressSizeChanged = NO;
 }
 
-int uiWindowFullscreen(uiWindow *w)
+int uiWindowFullscreen(const uiWindow *w)
 {
 	return w->fullscreen;
 }
@@ -337,7 +337,7 @@ void uiWindowOnFocusChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *da
 	w->onFocusChangedData = data;
 }
 
-int uiWindowFocused(uiWindow *w)
+int uiWindowFocused(const uiWindow *w)
 {
 	return w->focused;
 }
@@ -348,7 +348,7 @@ void uiWindowOnClosing(uiWindow *w, int (*f)(uiWindow *, void *), void *data)
 	w->onClosingData = data;
 }
 
-int uiWindowBorderless(uiWindow *w)
+int uiWindowBorderless(const uiWindow *w)
 {
 	return w->borderless;
 }
@@ -390,7 +390,7 @@ void uiWindowSetChild(uiWindow *w, uiControl *child)
 	windowRelayout(w);
 }
 
-int uiWindowMargined(uiWindow *w)
+int uiWindowMargined(const uiWindow *w)
 {
 	return w->margined;
 }
@@ -401,7 +401,7 @@ void uiWindowSetMargined(uiWindow *w, int margined)
 	uiprivSingleChildConstraintsSetMargined(&(w->constraints), w->margined);
 }
 
-int uiWindowResizeable(uiWindow *w)
+int uiWindowResizeable(const uiWindow *w)
 {
 	return w->resizeable;
 }

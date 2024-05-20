@@ -443,12 +443,12 @@ void uiBoxDelete(uiBox *b, int n)
 	[b->view delete:n];
 }
 
-int uiBoxNumChildren(uiBox *b)
+int uiBoxNumChildren(const uiBox *b)
 {
 	return [b->view numChildren];
 }
 
-int uiBoxPadded(uiBox *b)
+int uiBoxPadded(const uiBox *b)
 {
 	return [b->view isPadded];
 }

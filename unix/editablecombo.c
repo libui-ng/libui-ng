@@ -31,7 +31,7 @@ void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text)
 	gtk_combo_box_text_append(c->comboboxText, NULL, text);
 }
 
-char *uiEditableComboboxText(uiEditableCombobox *c)
+char *uiEditableComboboxText(const uiEditableCombobox *c)
 {
 	return gtk_combo_box_text_get_active_text(c->comboboxText);
 }
