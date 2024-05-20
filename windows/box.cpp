@@ -127,6 +127,7 @@ static void uiBoxDestroy(uiControl *c)
 		uiControlDestroy(bc.c);
 	}
 	delete b->controls;
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(b->hwnd);
 	uiFreeControl(uiControl(b));
 }

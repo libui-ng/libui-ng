@@ -18,6 +18,7 @@ static void uiColorButtonDestroy(uiControl *c)
 
 	uiWindowsUnregisterWM_COMMANDHandler(b->hwnd);
 	uiWindowsUnregisterWM_NOTIFYHandler(b->hwnd);
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(b->hwnd);
 	uiFreeControl(uiControl(b));
 }
