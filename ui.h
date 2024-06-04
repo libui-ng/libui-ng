@@ -3177,6 +3177,37 @@ _UI_EXTERN void uiFreeImage(uiImage *i);
 _UI_EXTERN void uiImageAppend(uiImage *i, void *pixels, int pixelWidth, int pixelHeight, int byteStride);
 
 /**
+ * A scrollable container.
+ * 
+ * uiScroll holds a single child, which may be larger than the size of the uiScroll.
+ * Scroll bars may sometimes or always be shown, depending on the platform and size
+ * of the child.
+ * 
+ * @struct uiScroll
+ * @ingroup static
+ */
+typedef struct uiScroll uiScroll;
+#define uiScroll(this) ((uiScroll *) (this))
+
+/**
+ * Creates a new scroll container
+ * 
+ * @returns a new uiScroll instance
+ * @memberof uiScroll @static
+ */
+_UI_EXTERN uiScroll *uiNewScroll(void);
+
+/**
+ * Sets the child of a scroll container.
+ * 
+ * @param scroll uiScroll instance
+ * @param ctl Control to set as child
+ * @memberof uiScroll
+ */
+_UI_EXTERN void uiScrollSetChild(uiScroll *scroll, uiControl *ctl);
+
+
+/**
  * @addtogroup table
  * @{
  *
