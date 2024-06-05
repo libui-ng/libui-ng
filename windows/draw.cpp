@@ -38,7 +38,7 @@ ID2D1HwndRenderTarget *makeHWNDRenderTarget(HWND hwnd)
 		logLastError(L"error getting DC to find DPI");
 
 	ZeroMemory(&props, sizeof (D2D1_RENDER_TARGET_PROPERTIES));
-	props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+	props.type = D2D1_RENDER_TARGET_TYPE_HARDWARE;
 	props.pixelFormat.format = DXGI_FORMAT_UNKNOWN;
 	props.pixelFormat.alphaMode = D2D1_ALPHA_MODE_UNKNOWN;
 	props.dpiX = GetDeviceCaps(dc, LOGPIXELSX);
@@ -62,8 +62,16 @@ ID2D1HwndRenderTarget *makeHWNDRenderTarget(HWND hwnd)
 		&props,
 		&hprops,
 		&rt);
-	if (hr != S_OK)
-		logHRESULT(L"error creating HWND render target", hr);
+	if (hr != S_OK) {
+		props.type = D2D1_RENDER_TARGET_TYPE_DEFAULT;
+		hr = d2dfactory->CreateHwndRenderTarget(
+			&props,
+			&hprops,
+			&rt);
+		if (hr != S_OK)
+			logHRESULT(L"error creating HWND render target", hr);
+	}
+
 	return rt;
 }
 
@@ -508,4 +516,56 @@ void uiDrawRestore(uiDrawContext *c)
 		c->currentClip->Release();
 	// no need to explicitly addref or release; just transfer the ref
 	c->currentClip = state.clip;
+}
+
+
+// ImageBuffer API
+
+uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha)
+{
+	uiImageBuffer *buf;
+	HRESULT hr;
+
+	buf = uiprivNew(uiImageBuffer);
+
+	D2D1_BITMAP_PROPERTIES bp2 = D2D1::BitmapProperties();
+	bp2.dpiX = 0;
+	bp2.dpiY = 0;
+	bp2.pixelFormat = D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM,
+				alpha ? D2D1_ALPHA_MODE_PREMULTIPLIED : D2D1_ALPHA_MODE_IGNORE);
+
+	//c->rt->BeginDraw();
+
+	hr = c->rt->CreateBitmap(D2D1::SizeU(width,height), NULL, 0, &bp2, &buf->buf);
+	if (hr != S_OK)
+		logHRESULT(L"error creating ImageBuffer", hr);
+
+	//c->rt->EndDraw();
+
+	buf->Width = width;
+	buf->Height = height;
+	buf->Stride = width * 4;
+
+	return buf;
+}
+
+void uiImageBufferUpdate(uiImageBuffer *buf, const void *data)
+{
+	D2D1_RECT_U rekt = D2D1::RectU(0, 0, buf->Width, buf->Height);
+	buf->buf->CopyFromMemory(&rekt, data, buf->Stride);
+}
+
+void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, int filter)
+{
+	D2D_RECT_F _srcrect = D2D1::RectF(srcrect->X, srcrect->Y, srcrect->X+srcrect->Width, srcrect->Y+srcrect->Height);
+	D2D_RECT_F _dstrect = D2D1::RectF(dstrect->X, dstrect->Y, dstrect->X+dstrect->Width, dstrect->Y+dstrect->Height);
+
+	c->rt->DrawBitmap(buf->buf, &_dstrect, 1.0f,
+		filter ? D2D1_BITMAP_INTERPOLATION_MODE_LINEAR : D2D1_BITMAP_INTERPOLATION_MODE_NEAREST_NEIGHBOR, &_srcrect);
+}
+
+void uiFreeImageBuffer(uiImageBuffer *buf)
+{
+	buf->buf->Release();
+	uiprivFree(buf);
 }
