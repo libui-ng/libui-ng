@@ -32,16 +32,27 @@ int unitTestSetup(void **_state)
 	return 0;
 }
 
+void unitControlOnFree(uiControl *c, void *data)
+{
+	assert_non_null(c);
+	assert_non_null(data);
+	assert_ptr_equal(c, ((struct state *)data)->w);
+	((struct state *)data)->onFreeCalled = 1;
+}
+
 int unitTestTeardown(void **_state)
 {
 	struct state *state = *_state;
 
+	uiControlOnFree(uiControl(state->w), unitControlOnFree, state);
+	state->onFreeCalled = 0;
 	uiWindowSetChild(state->w, uiControl(state->c));
 	uiControlShow(uiControl(state->w));
 	//uiMain();
 	uiMainSteps();
 	uiMainStep(1);
 	uiControlDestroy(uiControl(state->w));
+	assert_int_equal(state->onFreeCalled, 1);
 	uiUninit();
 	return 0;
 }
