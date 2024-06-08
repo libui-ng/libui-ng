@@ -109,9 +109,13 @@ static BOOL stepsIsRunning;
 @end
 
 uiInitOptions uiprivOptions;
+static BOOL uiprivInitSuccess = FALSE;
 
 const char *uiInit(uiInitOptions *o)
 {
+	if (uiprivInitSuccess)
+		return NULL;
+
 	@autoreleasepool {
 		uiprivOptions = *o;
 		app = [[uiprivApplicationClass sharedApplication] retain];
@@ -136,6 +140,7 @@ const char *uiInit(uiInitOptions *o)
 
 	globalPool = [[NSAutoreleasePool alloc] init];
 
+	uiprivInitSuccess = TRUE;
 	return NULL;
 }
 
