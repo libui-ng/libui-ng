@@ -2017,6 +2017,7 @@ struct uiAreaHandler {
 	void (*MouseCrossed)(uiAreaHandler *, uiArea *, int left);
 	void (*DragBroken)(uiAreaHandler *, uiArea *);
 	int (*KeyEvent)(uiAreaHandler *, uiArea *, uiAreaKeyEvent *);
+	void (*Resize)(uiAreaHandler *, uiArea *, int, int);
 };
 
 // TODO RTL layouts?
