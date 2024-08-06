@@ -26,6 +26,8 @@ struct uiTab {
 	NSMutableArray *pages;
 	NSLayoutPriority horzHuggingPri;
 	NSLayoutPriority vertHuggingPri;
+	void (*onSelected)(uiTab *, int, void *);
+	void *onSelectedData;
 };
 
 @implementation tabPage
@@ -37,6 +39,7 @@ struct uiTab {
 		self->view = [v retain];
 		self->pageID = [o retain];
 	}
+
 	return self;
 }
 
@@ -84,11 +87,45 @@ struct uiTab {
 
 @end
 
+@interface uiprivTabDelegate: NSObject<NSTabViewDelegate> {
+	uiTab *tab;
+}
+- (id)initWithTab:(uiTab *)t;
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem;
+@end
+
+@implementation uiprivTabDelegate
+
+- (id)initWithTab:(uiTab *)t
+{
+	self = [super init];
+	if (self)
+		self->tab = t;
+	return self;
+
+}
+
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
+{
+	uiTab *t = self->tab;
+	NSInteger index = [tabView indexOfTabViewItem:tabViewItem];
+	(*(t->onSelected))(t, (int) index, t->onSelectedData);
+}
+
+@end
+
+static void defaultOnSelected(uiTab *t, int index, void*data)
+{
+	// do nothing
+}
+
 static void uiTabDestroy(uiControl *c)
 {
 	uiTab *t = uiTab(c);
 	tabPage *page;
+	uiprivTabDelegate *delegate;
 
+	uiTabOnSelected(t, defaultOnSelected, NULL);
 	// first remove all tab pages so we can destroy all the children
 	while ([t->tabview numberOfTabViewItems] != 0)
 		[t->tabview removeTabViewItem:[t->tabview tabViewItemAtIndex:0]];
@@ -100,6 +137,9 @@ static void uiTabDestroy(uiControl *c)
 		uiControlDestroy(page.c);
 	}
 	// and finally destroy ourselves
+	delegate = [t->tabview delegate];
+	[t->tabview setDelegate:nil];
+	[delegate release];
 	[t->pages release];
 	[t->tabview release];
 	uiFreeControl(uiControl(t));
@@ -272,13 +312,22 @@ void uiTabSetMargined(uiTab *t, int n, int margined)
 	[page setMargined:margined];
 }
 
+void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, int, void *), void *data)
+{
+	t->onSelected = f;
+	t->onSelectedData = data;
+}
+
 uiTab *uiNewTab(void)
 {
 	uiTab *t;
+	uiprivTabDelegate *delegate;
 
 	uiDarwinNewControl(uiTab, t);
 
 	t->tabview = [[NSTabView alloc] initWithFrame:NSZeroRect];
+	delegate = [[uiprivTabDelegate alloc] initWithTab:t];
+	[t->tabview setDelegate:delegate];
 	// also good for NSTabView (same selector and everything)
 	uiDarwinSetControlFont((NSControl *) (t->tabview), NSRegularControlSize);
 
@@ -288,5 +337,6 @@ uiTab *uiNewTab(void)
 	t->horzHuggingPri = NSLayoutPriorityDefaultLow;
 	t->vertHuggingPri = NSLayoutPriorityDefaultLow;
 
+	uiTabOnSelected(t, defaultOnSelected, NULL);
 	return t;
 }
