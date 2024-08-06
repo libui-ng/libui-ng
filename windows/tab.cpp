@@ -10,7 +10,7 @@ struct uiTab {
 	HWND tabHWND;		// of the tab control itself
 	std::vector<struct tabPage *> *pages;
 	HWND parent;
-	void (*onSelected)(uiTab *, int, void *);
+	void (*onSelected)(uiTab *, void *);
 	void *onSelectedData;
 };
 
@@ -71,7 +71,7 @@ static void showHidePage(uiTab *t, LRESULT which, int hide)
 		ShowWindow(page->hwnd, SW_SHOW);
 		// we only resize the current page, so we have to resize it; before we can do that, we need to make sure we are of the right size
 		uiWindowsControlMinimumSizeChanged(uiWindowsControl(t));
-		(*t->onSelected)(t, (int)which, t->onSelectedData);
+		(*t->onSelected)(t, t->onSelectedData);
 	}
 }
 
@@ -90,7 +90,7 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nm, LRESULT *lResult)
 	return TRUE;
 }
 
-static void defaultOnSelected(uiTab *t, int index, void*data)
+static void defaultOnSelected(uiTab *t, void *data)
 {
 	// do nothing
 }
@@ -278,10 +278,22 @@ static void onResize(uiWindowsControl *c)
 	tabRelayout(uiTab(c));
 }
 
-void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, int, void *), void *data)
+void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, void *), void *data)
 {
 	t->onSelected = f;
 	t->onSelectedData = data;
+}
+
+int uiTabSelected(uiTab *t)
+{
+	return curpage(t);
+}
+
+void uiTabSetSelected(uiTab *t, int index)
+{
+	showHidePage(t, curpage(t), 1);
+	showHidePage(t, index, 0);
+	SendMessageW(t->tabHWND, TCM_SETCURSEL, index, 0);
 }
 
 uiTab *uiNewTab(void)

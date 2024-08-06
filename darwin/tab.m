@@ -26,7 +26,7 @@ struct uiTab {
 	NSMutableArray *pages;
 	NSLayoutPriority horzHuggingPri;
 	NSLayoutPriority vertHuggingPri;
-	void (*onSelected)(uiTab *, int, void *);
+	void (*onSelected)(uiTab *, void *);
 	void *onSelectedData;
 };
 
@@ -107,13 +107,12 @@ struct uiTab {
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem
 {
 	uiTab *t = self->tab;
-	NSInteger index = [tabView indexOfTabViewItem:tabViewItem];
-	(*(t->onSelected))(t, (int) index, t->onSelectedData);
+	(*(t->onSelected))(t, t->onSelectedData);
 }
 
 @end
 
-static void defaultOnSelected(uiTab *t, int index, void*data)
+static void defaultOnSelected(uiTab *t, void*data)
 {
 	// do nothing
 }
@@ -311,7 +310,19 @@ void uiTabSetMargined(uiTab *t, int n, int margined)
 	[page setMargined:margined];
 }
 
-void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, int, void *), void *data)
+
+int uiTabSelected(uiTab *t)
+{
+	NSTabViewItem *selectedTabViewItem = [t->tabview selectedTabViewItem];
+	return [t->tabview indexOfTabViewItem:selectedTabViewItem];
+}
+
+void uiTabSetSelected(uiTab *t, int index)
+{
+	[t->tabview selectTabViewItemAtIndex:index];
+}
+
+void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, void *), void *data)
 {
 	t->onSelected = f;
 	t->onSelectedData = data;

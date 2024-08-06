@@ -915,7 +915,12 @@ _UI_EXTERN uiLabel *uiNewLabel(const char *text);
 typedef struct uiTab uiTab;
 #define uiTab(this) ((uiTab *) (this))
 
-_UI_EXTERN void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, int, void *), void *data);
+_UI_EXTERN int uiTabSelected(uiTab *t);
+
+_UI_EXTERN void uiTabSetSelected(uiTab *t, int index);
+
+_UI_EXTERN void uiTabOnSelected(uiTab *t,
+        void (*f)(uiTab *sender, void *senderData), void *data);
 
 /**
  * Appends a control in form of a page/tab with label.
