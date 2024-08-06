@@ -39,7 +39,6 @@ struct uiTab {
 		self->view = [v retain];
 		self->pageID = [o retain];
 	}
-
 	return self;
 }
 
