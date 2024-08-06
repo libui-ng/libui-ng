@@ -33,7 +33,8 @@ int onShouldQuit(void *data)
 	return 0;
 }
 
-static void onTabSelected(uiTab *t , int index, void* data) {
+static void onTabSelected(uiTab *t , void* data) {
+	int index = uiTabSelected(t);
 	printf("Tab with index %d selected\n", index);
 }
 
