@@ -10,6 +10,8 @@ struct uiTab {
 	HWND tabHWND;		// of the tab control itself
 	std::vector<struct tabPage *> *pages;
 	HWND parent;
+	void (*onSelected)(uiTab *, int, void *);
+	void *onSelectedData;
 };
 
 // utility functions
@@ -69,6 +71,7 @@ static void showHidePage(uiTab *t, LRESULT which, int hide)
 		ShowWindow(page->hwnd, SW_SHOW);
 		// we only resize the current page, so we have to resize it; before we can do that, we need to make sure we are of the right size
 		uiWindowsControlMinimumSizeChanged(uiWindowsControl(t));
+		(*t->onSelected)(t, (int)which, t->onSelectedData);
 	}
 }
 
@@ -87,11 +90,17 @@ static BOOL onWM_NOTIFY(uiControl *c, HWND hwnd, NMHDR *nm, LRESULT *lResult)
 	return TRUE;
 }
 
+static void defaultOnSelected(uiTab *t, int index, void*data)
+{
+	// do nothing
+}
+
 static void uiTabDestroy(uiControl *c)
 {
 	uiTab *t = uiTab(c);
 	uiControl *child;
 
+	uiTabOnSelected(t, defaultOnSelected, NULL);
 	for (struct tabPage *&page : *(t->pages)) {
 		child = page->child;
 		tabPageDestroy(page);
@@ -269,6 +278,12 @@ static void onResize(uiWindowsControl *c)
 	tabRelayout(uiTab(c));
 }
 
+void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, int, void *), void *data)
+{
+	t->onSelected = f;
+	t->onSelectedData = data;
+}
+
 uiTab *uiNewTab(void)
 {
 	uiTab *t;
@@ -287,6 +302,7 @@ uiTab *uiNewTab(void)
 	uiWindowsRegisterWM_NOTIFYHandler(t->tabHWND, onWM_NOTIFY, uiControl(t));
 
 	t->pages = new std::vector<struct tabPage *>;
+	uiTabOnSelected(t, defaultOnSelected, NULL);
 
 	return t;
 }
