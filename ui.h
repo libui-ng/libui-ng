@@ -915,10 +915,37 @@ _UI_EXTERN uiLabel *uiNewLabel(const char *text);
 typedef struct uiTab uiTab;
 #define uiTab(this) ((uiTab *) (this))
 
+/**
+ * Returns the index of the tab selected.
+ *
+ * @param c uiTab instance.
+ * @returns Index of the tab selected
+ * @memberof uiTab
+ */
 _UI_EXTERN int uiTabSelected(uiTab *t);
 
+/**
+ * Sets the tab selected.
+ *
+ * @param c uiTab instance.
+ * @param index Index of the tab to be selected
+ * @memberof uiTab
+ */
 _UI_EXTERN void uiTabSetSelected(uiTab *t, int index);
 
+/**
+ * Registers a callback for when a tab is selected.
+ *
+ * @param t uiTab instance.
+ * @param f Callback function.\n
+ *          @p sender Back reference to the instance that triggered the callback.\n
+ *          @p senderData User data registered with the sender instance.
+ * @param data User data to be passed to the callback.
+ *
+ * @note The callback is not triggered when calling uiTabSetSelected(),
+ * @note Only one callback can be registered at a time.
+ * @memberof uiTab
+ */
 _UI_EXTERN void uiTabOnSelected(uiTab *t,
         void (*f)(uiTab *sender, void *senderData), void *data);
 
