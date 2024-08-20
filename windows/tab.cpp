@@ -292,8 +292,8 @@ int uiTabSelected(uiTab *t)
 void uiTabSetSelected(uiTab *t, int index)
 {
 	showHidePage(t, curpage(t), 1);
-	showHidePage(t, index, 0);
 	SendMessageW(t->tabHWND, TCM_SETCURSEL, index, 0);
+	showHidePage(t, index, 0);
 }
 
 uiTab *uiNewTab(void)
