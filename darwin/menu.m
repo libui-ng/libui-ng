@@ -59,6 +59,8 @@ enum uiprivMenuItemType {
 		return;
 	}
 
+	NSWindow* keyWindow;
+
 	switch (self->item->type) {
 	case typeQuit:
 		if (uiprivShouldQuit())
@@ -68,8 +70,14 @@ enum uiprivMenuItemType {
 		uiMenuItemSetChecked(self->item, !uiMenuItemChecked(self->item));
 		// fall through
 	default:
+		keyWindow = [uiprivNSApp() keyWindow];
+		if (!keyWindow) {
+			uiprivImplBug("NSApp.keyWidnow is nil");
+			return;
+		}
+
 		// use the key window as the source of the menu event; it's the active window
-		(*(self->item->onClicked))(self->item, uiprivWindowFromNSWindow([uiprivNSApp() keyWindow]),
+		(*(self->item->onClicked))(self->item, uiprivWindowFromNSWindow(keyWindow),
 			self->item->onClickedData);
 		break;
 	}
