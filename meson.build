@@ -125,19 +125,9 @@ add_project_arguments(libui_project_compile_args,
 add_project_link_arguments(libui_project_link_args,
 	language: ['c', 'cpp', 'objc'])
 
-if libui_OS == 'windows'
-	if libui_MSVC
-		static_lib_suffix = 'lib'
-	else
-		static_lib_suffix = 'a'
-	endif
-	shared_lib_suffix = 'dll'
-elif libui_OS == 'darwin'
-	static_lib_suffix = 'a'
-	shared_lib_suffix = 'dylib'
-else
-	static_lib_suffix = 'a'
-	shared_lib_suffix = 'so'
+libui_lib_suffix = []
+if libui_OS == 'windows' and libui_MSVC
+	libui_lib_suffix = 'lib'
 endif
 
 # TODO:
