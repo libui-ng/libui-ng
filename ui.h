@@ -929,6 +929,8 @@ _UI_EXTERN int uiTabSelected(uiTab *t);
  *
  * @param c uiTab instance.
  * @param index Index of the tab to be selected
+ * @note The @p index must be in the range [0, uiTabNumPages(t) - 1].
+ *          If out of bounds, the selection is not changed.
  * @memberof uiTab
  */
 _UI_EXTERN void uiTabSetSelected(uiTab *t, int index);

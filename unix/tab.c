@@ -100,6 +100,8 @@ int uiTabSelected(uiTab *t)
 
 void uiTabSetSelected(uiTab *t, int index)
 {
+	if (index < 0 || index >= uiTabNumPages(t))
+		return;
 	gtk_notebook_set_current_page(t->notebook, index);
 }
 

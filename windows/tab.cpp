@@ -291,6 +291,8 @@ int uiTabSelected(uiTab *t)
 
 void uiTabSetSelected(uiTab *t, int index)
 {
+	if (index < 0 || index >= uiTabNumPages(t))
+		return;
 	showHidePage(t, curpage(t), 1);
 	SendMessageW(t->tabHWND, TCM_SETCURSEL, index, 0);
 	showHidePage(t, index, 0);

@@ -319,6 +319,8 @@ int uiTabSelected(uiTab *t)
 
 void uiTabSetSelected(uiTab *t, int index)
 {
+	if (index < 0 || index >= uiTabNumPages(t))
+		return;
 	[t->tabview selectTabViewItemAtIndex:index];
 }
 
