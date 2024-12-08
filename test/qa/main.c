@@ -39,6 +39,22 @@ struct controlTestCase labelTestCases[] = {
 	{NULL, NULL, NULL}
 };
 
+struct controlTestCase radioButtonsTestCases[] = {
+	QA_TEST("1. OnSelected Callback", radioButtonsOnSelected),
+	{NULL, NULL, NULL}
+};
+
+struct controlTestCase separatorTestCases[] = {
+	QA_TEST("1. Vertical Separator", separatorVertical),
+	QA_TEST("2. Horizontal Separator", separatorHorizontal),
+	{NULL, NULL, NULL}
+};
+
+struct controlTestCase spinboxTestCases[] = {
+	QA_TEST("1. Spinbox OnChanged Callback", spinboxOnChanged),
+	{NULL, NULL, NULL}
+};
+
 struct controlTestCase windowTestCases[] = {
 	QA_TEST("1. Fullscreen", windowFullscreen),
 	QA_TEST("2. Borderless", windowBorderless),
@@ -54,6 +70,9 @@ struct controlTestGroup controlTestGroups[] = {
 	{"uiCheckbox", checkboxTestCases},
 	{"uiEntry", entryTestCases},
 	{"uiLabel", labelTestCases},
+	{"uiRadioButtons", radioButtonsTestCases},
+	{"uiSeparator", separatorTestCases},
+	{"uiSpinbox", spinboxTestCases},
 	{"uiWindow", windowTestCases},
 };
 

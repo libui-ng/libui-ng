@@ -70,6 +70,7 @@ int main(void)
 		{ radioButtonsRunUnitTests },
 		{ entryRunUnitTests },
 		{ progressBarRunUnitTests },
+		{ drawMatrixRunUnitTests },
 	};
 
 	for (i = 0; i < sizeof(unitTests)/sizeof(*unitTests); ++i) {
