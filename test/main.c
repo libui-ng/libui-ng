@@ -33,6 +33,11 @@ int onShouldQuit(void *data)
 	return 0;
 }
 
+static void onTabSelected(uiTab *t , void* data) {
+	int index = uiTabSelected(t);
+	printf("Tab with index %d selected\n", index);
+}
+
 uiBox *mainBox;
 uiTab *mainTab;
 
@@ -159,6 +164,8 @@ int main(int argc, char *argv[])
 
 	innerTab = newTab();
 	uiTabAppend(outerTab, "Pages 16-?", uiControl(innerTab));
+
+	uiTabOnSelected(outerTab, onTabSelected, NULL);
 
 	page16 = makePage16();
 	uiTabAppend(innerTab, "Page 16", uiControl(page16));

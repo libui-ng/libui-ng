@@ -8,10 +8,17 @@ struct uiTab {
 	GtkContainer *container;
 	GtkNotebook *notebook;
 
+	void (*onSelected)(uiTab *, void *);
+	void *onSelectedData;
 	GArray *pages;				// []*uiprivChild
 };
 
 uiUnixControlAllDefaultsExceptDestroy(uiTab)
+
+static void defaultOnSelected(uiTab *t, void *data)
+{
+	// do nothing
+}
 
 static void uiTabDestroy(uiControl *c)
 {
@@ -19,6 +26,7 @@ static void uiTabDestroy(uiControl *c)
 	guint i;
 	uiprivChild *page;
 
+	uiTabOnSelected(t, defaultOnSelected, NULL);
 	for (i = 0; i < t->pages->len; i++) {
 		page = g_array_index(t->pages, uiprivChild *, i);
 		uiprivChildDestroy(page);
@@ -79,6 +87,30 @@ void uiTabSetMargined(uiTab *t, int n, int margined)
 	uiprivChildSetMargined(page, uiprivChildFlag(page));
 }
 
+static void onSelected(GtkNotebook* notebook, GtkWidget *page, guint index, gpointer data)
+{
+	uiTab *t = uiTab(data);
+	(*(t->onSelected))(t, t->onSelectedData);
+}
+
+int uiTabSelected(uiTab *t)
+{
+	return gtk_notebook_get_current_page(t->notebook);
+}
+
+void uiTabSetSelected(uiTab *t, int index)
+{
+	if (index < 0 || index >= uiTabNumPages(t))
+		return;
+	gtk_notebook_set_current_page(t->notebook, index);
+}
+
+void uiTabOnSelected(uiTab *t, void (*f)(uiTab *, void *), void *data)
+{
+	t->onSelected = f;
+	t->onSelectedData = data;
+}
+
 uiTab *uiNewTab(void)
 {
 	uiTab *t;
@@ -92,6 +124,9 @@ uiTab *uiNewTab(void)
 	gtk_notebook_set_scrollable(t->notebook, TRUE);
 
 	t->pages = g_array_new(FALSE, TRUE, sizeof (uiprivChild *));
+
+	g_signal_connect_after(t->notebook, "switch-page", G_CALLBACK(onSelected), t);
+	uiTabOnSelected(t, defaultOnSelected, NULL);
 
 	return t;
 }

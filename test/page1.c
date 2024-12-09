@@ -60,9 +60,14 @@ SHED(disable, Disable)
 
 uiBox *page1;
 
+void goToPage2(uiButton *b, void *data)
+{
+	uiTabSetSelected(mainTab, 1);
+}
+
 void makePage1(uiWindow *w)
 {
-	uiButton *getButton, *setButton;
+	uiButton *getButton, *setButton, *nextButton;
 	uiBox *hbox;
 	uiBox *testBox;
 	uiLabel *label;
@@ -167,5 +172,8 @@ void makePage1(uiWindow *w)
 	uiBoxAppend(hbox, uiControl(getButton), 1);
 	uiBoxAppend(page1, uiControl(hbox), 0);
 
+	nextButton = uiNewButton("Go to Page 2");
+	uiButtonOnClicked(nextButton, goToPage2, NULL);
+	uiBoxAppend(page1, uiControl(nextButton), 0);
 	uiBoxAppend(page1, uiControl(label), 0);
 }
