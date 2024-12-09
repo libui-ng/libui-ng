@@ -49,7 +49,7 @@ void uiComboboxClear(uiCombobox *c)
 	g_signal_handler_unblock(c->combobox, c->onSelectedSignal);
 }
 
-int uiComboboxNumItems(uiCombobox *c)
+int uiComboboxNumItems(const uiCombobox *c)
 {
 	GtkListStore *store;
 
@@ -57,7 +57,7 @@ int uiComboboxNumItems(uiCombobox *c)
 	return gtk_tree_model_iter_n_children(GTK_TREE_MODEL(store), NULL);
 }
 
-int uiComboboxSelected(uiCombobox *c)
+int uiComboboxSelected(const uiCombobox *c)
 {
 	return gtk_combo_box_get_active(c->combobox);
 }

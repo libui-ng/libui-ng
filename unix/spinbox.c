@@ -25,7 +25,7 @@ static void defaultOnChanged(uiSpinbox *s, void *data)
 	// do nothing
 }
 
-int uiSpinboxValue(uiSpinbox *s)
+int uiSpinboxValue(const uiSpinbox *s)
 {
 	return gtk_spin_button_get_value(s->spinButton);
 }

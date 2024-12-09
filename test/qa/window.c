@@ -27,7 +27,7 @@ static void fullscreenOnToggledCb(uiCheckbox *c, void *data)
 	uiWindowSetFullscreen(w, uiCheckboxChecked(c));
 }
 
-const char *windowFullscreenGuide() {
+const char *windowFullscreenGuide(void) {
 	return
 	"1.\tOne checkbox:\n"
 	"\t`Fullscreen` unchecked.\n"
@@ -42,7 +42,7 @@ const char *windowFullscreenGuide() {
 	;
 }
 
-uiControl* windowFullscreen()
+uiControl* windowFullscreen(void)
 {
 	uiWindow *w;
 	uiCheckbox *c;
@@ -63,7 +63,7 @@ static void borderlessOnToggledCb(uiCheckbox *c, void *data)
 	uiWindowSetBorderless(w, uiCheckboxChecked(c));
 }
 
-const char *windowBorderlessGuide() {
+const char *windowBorderlessGuide(void) {
 	return
 	"Note: This test may not fully work on some Unix window managers.\n"
 	"\n"
@@ -80,7 +80,7 @@ const char *windowBorderlessGuide() {
 	;
 }
 
-uiControl* windowBorderless()
+uiControl* windowBorderless(void)
 {
 	uiWindow *w;
 	uiCheckbox *c;
@@ -101,7 +101,7 @@ static void resizeableOnToggledCb(uiCheckbox *c, void *data)
 	uiWindowSetResizeable(w, uiCheckboxChecked(c));
 }
 
-const char *windowResizeableGuide() {
+const char *windowResizeableGuide(void) {
 	return
 	"Note: This test may not fully work on some Unix window managers.\n"
 	"\n"
@@ -121,7 +121,7 @@ const char *windowResizeableGuide() {
 	;
 }
 
-uiControl* windowResizeable()
+uiControl* windowResizeable(void)
 {
 	uiWindow *w;
 	uiCheckbox *c;
@@ -161,7 +161,7 @@ static void fullscreenBorderlessFullscreenOnToggledCb(uiCheckbox *c, void *data)
 	updateFullscreenBorderless(w);
 }
 
-const char *windowFullscreenBorderlessGuide() {
+const char *windowFullscreenBorderlessGuide(void) {
 	return
 	"Note: This test may not fully work on some Unix window managers.\n"
 	"\n"
@@ -205,7 +205,7 @@ const char *windowFullscreenBorderlessGuide() {
 	;
 }
 
-uiControl* windowFullscreenBorderless()
+uiControl* windowFullscreenBorderless(void)
 {
 	uiWindow *w;
 	uiBox *vbox;
@@ -247,7 +247,7 @@ static void fullscreenResizeableResizeableOnToggledCb(uiCheckbox *c, void *data)
 	updateFullscreenResizeable(w);
 }
 
-const char *windowFullscreenResizeableGuide() {
+const char *windowFullscreenResizeableGuide(void) {
 	return
 	"Note: This test may not fully work on some Unix window managers.\n"
 	"\n"
@@ -292,7 +292,7 @@ const char *windowFullscreenResizeableGuide() {
 	;
 }
 
-uiControl* windowFullscreenResizeable()
+uiControl* windowFullscreenResizeable(void)
 {
 	uiWindow *w;
 	uiBox *vbox;
@@ -334,7 +334,7 @@ static void resizeableBorderlessResizeableOnToggledCb(uiCheckbox *c, void *data)
 	updateResizeableBorderless(w);
 }
 
-const char *windowResizeableBorderlessGuide() {
+const char *windowResizeableBorderlessGuide(void) {
 	return
 	"Note: This test may not fully work on some Unix window managers.\n"
 	"\n"
@@ -375,7 +375,7 @@ const char *windowResizeableBorderlessGuide() {
 	;
 }
 
-uiControl* windowResizeableBorderless()
+uiControl* windowResizeableBorderless(void)
 {
 	uiWindow *w;
 	uiBox *vbox;

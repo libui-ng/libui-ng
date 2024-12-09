@@ -107,12 +107,12 @@ void uiComboboxClear(uiCombobox *c)
 	uiControlDisable(uiControl(c));
 }
 
-int uiComboboxNumItems(uiCombobox *c)
+int uiComboboxNumItems(const uiCombobox *c)
 {
 	return [[c->pbac arrangedObjects] count];
 }
 
-int uiComboboxSelected(uiCombobox *c)
+int uiComboboxSelected(const uiCombobox *c)
 {
 	return [c->pb indexOfSelectedItem];
 }

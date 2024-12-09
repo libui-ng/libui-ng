@@ -44,12 +44,12 @@ _UI_EXTERN void uiDarwinControlChildVisibilityChanged(uiDarwinControl *);
 		uiFreeControl(c); \
 	}
 #define uiDarwinControlDefaultHandle(type, handlefield) \
-	static uintptr_t type ## Handle(uiControl *c) \
+	static uintptr_t type ## Handle(const uiControl *c) \
 	{ \
 		return (uintptr_t) (type(c)->handlefield); \
 	}
 #define uiDarwinControlDefaultParent(type, handlefield) \
-	static uiControl *type ## Parent(uiControl *c) \
+	static uiControl *type ## Parent(const uiControl *c) \
 	{ \
 		return uiDarwinControl(c)->parent; \
 	}
@@ -60,12 +60,12 @@ _UI_EXTERN void uiDarwinControlChildVisibilityChanged(uiDarwinControl *);
 		uiDarwinControl(c)->parent = parent; \
 	}
 #define uiDarwinControlDefaultToplevel(type, handlefield) \
-	static int type ## Toplevel(uiControl *c) \
+	static int type ## Toplevel(const uiControl *c) \
 	{ \
 		return 0; \
 	}
 #define uiDarwinControlDefaultVisible(type, handlefield) \
-	static int type ## Visible(uiControl *c) \
+	static int type ## Visible(const uiControl *c) \
 	{ \
 		return uiDarwinControl(c)->visible; \
 	}
@@ -84,7 +84,7 @@ _UI_EXTERN void uiDarwinControlChildVisibilityChanged(uiDarwinControl *);
 		uiDarwinNotifyVisibilityChanged(uiDarwinControl(c)); \
 	}
 #define uiDarwinControlDefaultEnabled(type, handlefield) \
-	static int type ## Enabled(uiControl *c) \
+	static int type ## Enabled(const uiControl *c) \
 	{ \
 		return uiDarwinControl(c)->enabled; \
 	}

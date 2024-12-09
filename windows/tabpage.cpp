@@ -6,7 +6,7 @@
 // from http://msdn.microsoft.com/en-us/library/windows/desktop/bb226818%28v=vs.85%29.aspx
 #define tabMargin 7
 
-static void tabPageMargins(struct tabPage *tp, int *mx, int *my)
+static void tabPageMargins(const struct tabPage *tp, int *mx, int *my)
 {
 	uiWindowsSizing sizing;
 
@@ -124,7 +124,7 @@ void tabPageDestroy(struct tabPage *tp)
 	uiprivFree(tp);
 }
 
-void tabPageMinimumSize(struct tabPage *tp, int *width, int *height)
+void tabPageMinimumSize(const struct tabPage *tp, int *width, int *height)
 {
 	int mx, my;
 
