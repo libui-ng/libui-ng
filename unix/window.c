@@ -199,10 +199,14 @@ void uiWindowSetPosition(uiWindow *w, int x, int y)
 {
 	w->changingPosition = TRUE;
 	gtk_window_move(w->window, x, y);
-	// gtk_window_move() is asynchronous. Wait for the configure-event
-	while (w->changingPosition)
+	// gtk_window_move() is asynchronous. Run the event loop manually.
+	while (gtk_events_pending())
 		if (!uiMainStep(1))
 			break;
+
+	// Hidden windows do not trigger the "configure-event".
+	// TODO log failure for visible windows.
+	w->changingPosition = FALSE;
 }
 
 void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
@@ -213,46 +217,21 @@ void uiWindowOnPositionChanged(uiWindow *w, void (*f)(uiWindow *, void *), void 
 
 void uiWindowContentSize(uiWindow *w, int *width, int *height)
 {
-	GtkAllocation allocation;
-
-	gtk_widget_get_allocation(w->childHolderWidget, &allocation);
-	*width = allocation.width;
-	*height = allocation.height;
+	gtk_window_get_size(w->window, width, height);
 }
 
 void uiWindowSetContentSize(uiWindow *w, int width, int height)
 {
-	GtkAllocation childAlloc;
-	gint winWidth, winHeight;
-
-	// we need to resize the child holder widget to the given size
-	// we can't resize that without running the event loop
-	// but we can do gtk_window_set_size()
-	// so how do we deal with the differences in sizes?
-	// simple arithmetic, of course!
-
-	// from what I can tell, the return from gtk_widget_get_allocation(w->window) and gtk_window_get_size(w->window) will be the same
-	// this is not affected by Wayland and not affected by GTK+ builtin CSD
-	// so we can safely juse use them to get the real window size!
-	// since we're using gtk_window_resize(), use the latter
-	gtk_window_get_size(w->window, &winWidth, &winHeight);
-
-	// now get the child holder widget's current allocation
-	gtk_widget_get_allocation(w->childHolderWidget, &childAlloc);
-	// and punch that out of the window size
-	winWidth -= childAlloc.width;
-	winHeight -= childAlloc.height;
-
-	// now we just need to add the new size back in
-	winWidth += width;
-	winHeight += height;
-
 	w->changingSize = TRUE;
-	gtk_window_resize(w->window, winWidth, winHeight);
-	// gtk_window_resize may be asynchronous. Wait for the size-allocate event.
-	while (w->changingSize)
+	gtk_window_resize(w->window, width, height);
+	// gtk_window_resize() is asynchronous. Run the event loop manually.
+	while (gtk_events_pending())
 		if (!uiMainStep(1))
 			break;
+
+	// Hidden windows do not trigger the "size-allocate.
+	// TODO log failure for visible windows.
+	w->changingSize = FALSE;
 }
 
 int uiWindowFullscreen(uiWindow *w)
@@ -362,6 +341,11 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 	w->container = GTK_CONTAINER(w->widget);
 	w->window = GTK_WINDOW(w->widget);
 
+	w->cachedPosX = 0;
+	w->cachedPosY = 0;
+	w->cachedWidth = width;
+	w->cachedHeight = height;
+
 	gtk_window_set_title(w->window, title);
 	gtk_window_resize(w->window, width, height);
 
@@ -387,6 +371,10 @@ uiWindow *uiNewWindow(const char *title, int width, int height, int hasMenubar)
 
 	// show everything in the vbox, but not the GtkWindow itself
 	gtk_widget_show_all(w->vboxWidget);
+
+	// create resources to return the correct content size after creation
+	// but before display
+	gtk_widget_realize(w->widget);
 
 	// and connect our events
 	g_signal_connect(w->widget, "delete-event", G_CALLBACK(onClosing), w);
