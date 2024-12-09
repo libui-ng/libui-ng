@@ -22,6 +22,7 @@ struct uiWindow {
 	int fullscreen;
 	int borderless;
 	int resizeable;
+	int keepAbove;
 	int focused;
 };
 
@@ -413,6 +414,22 @@ void uiWindowSetResizeable(uiWindow *w, int resizeable)
 		[w->window setStyleMask:[w->window styleMask] | NSResizableWindowMask];
 	} else {
 		[w->window setStyleMask:[w->window styleMask] & ~NSResizableWindowMask];
+	}
+}
+
+int uiWindowKeepAbove(const uiWindow *w)
+{
+	return w->keepAbove;
+}
+
+void uiWindowSetKeepAbove(uiWindow *w, int keepAbove)
+{
+	w->keepAbove = keepAbove;
+	if (keepAbove) {
+		// Can be changed to other levels if you think they're better
+		[w->window setLevel:NSFloatingWindowLevel];
+	} else {
+		[w->window setLevel:NSNormalWindowLevel];
 	}
 }
 
