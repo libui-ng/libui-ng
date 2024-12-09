@@ -22,12 +22,28 @@ static void setupSavePanel(NSSavePanel *s)
 static char *runSavePanel(NSWindow *parent, NSSavePanel *s)
 {
 	char *filename;
+	NSInteger result;
+	NSWindow* keyWindow;
 
-	[s beginSheetModalForWindow:parent completionHandler:^(NSInteger result) {
-		[uiprivNSApp() stopModalWithCode:result];
-	}];
-	if ([uiprivNSApp() runModalForWindow:s] != NSFileHandlingPanelOKButton)
+	if (parent) {
+		keyWindow = [uiprivNSApp() keyWindow];
+
+		[s beginSheetModalForWindow:parent completionHandler:^(NSInteger result) {
+			[uiprivNSApp() stopModalWithCode:result];
+		}];
+		result = [uiprivNSApp() runModalForWindow:s];
+
+		// Explicitly set a window as the key window, as it can be nil under certain circumstances.
+		// (https://github.com/libui-ng/libui-ng/issues/288)
+		if (keyWindow)
+			[keyWindow makeKeyWindow];
+	} else {
+		result = [s runModal];
+	}
+
+	if (result != NSFileHandlingPanelOKButton)
 		return NULL;
+
 	filename = uiDarwinNSStringToText([[s URL] path]);
 	return filename;
 }
@@ -94,6 +110,9 @@ char *uiSaveFile(uiWindow *parent)
 
 - (NSInteger)run
 {
+	if (!self->parent)
+		return [self->panel runModal];
+
 	[self->panel beginSheetModalForWindow:self->parent
 		modalDelegate:self
 		didEndSelector:@selector(panelEnded:result:data:)
@@ -112,7 +131,9 @@ static void msgbox(NSWindow *parent, const char *title, const char *description,
 {
 	NSAlert *a;
 	libuiCodeModalAlertPanel *cm;
+	NSWindow* keyWindow;
 
+	keyWindow = [uiprivNSApp() keyWindow];
 	a = [NSAlert new];
 	[a setAlertStyle:style];
 	[a setShowsHelp:NO];
@@ -124,6 +145,11 @@ static void msgbox(NSWindow *parent, const char *title, const char *description,
 	[cm run];
 	[cm release];
 	[a release];
+
+	// Explicitly set a window as the key window, as it can be nil under certain circumstances.
+	// (https://github.com/libui-ng/libui-ng/issues/288)
+	if (keyWindow)
+		[keyWindow makeKeyWindow];
 }
 
 void uiMsgBox(uiWindow *parent, const char *title, const char *description)
