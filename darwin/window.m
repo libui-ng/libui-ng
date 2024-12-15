@@ -170,7 +170,15 @@ static int uiWindowVisible(uiControl *c)
 
 static void uiWindowShow(uiControl *c)
 {
+        NSWindow *front = [uiprivNSApp() mainWindow];
 	uiWindow *w = uiWindow(c);
+
+	if (front) {
+	  NSPoint topLeft = [front cascadeTopLeftFromPoint:NSZeroPoint];
+	  [w->window setFrameTopLeftPoint: topLeft];
+	} else {
+	  [w->window center];
+	}
 
 	[w->window makeKeyAndOrderFront:w->window];
 }
