@@ -27,7 +27,8 @@ int unitTestSetup(void **_state)
 	uiInitOptions o = {0};
 
 	assert_null(uiInit(&o));
-	state->w = uiNewWindow("Unit Test", UNIT_TEST_WINDOW_WIDTH, UNIT_TEST_WINDOW_HEIGHT, 0);
+	state->c = NULL;
+	state->w = uiNewWindow(UNIT_TEST_WINDOW_TITLE, UNIT_TEST_WINDOW_WIDTH, UNIT_TEST_WINDOW_HEIGHT, 0);
 	uiWindowOnClosing(state->w, unitWindowOnClosingQuit, NULL);
 	return 0;
 }
@@ -36,7 +37,8 @@ int unitTestTeardown(void **_state)
 {
 	struct state *state = *_state;
 
-	uiWindowSetChild(state->w, uiControl(state->c));
+	if (state->c != NULL)
+		uiWindowSetChild(state->w, uiControl(state->c));
 	uiControlShow(uiControl(state->w));
 	//uiMain();
 	uiMainSteps();
@@ -57,6 +59,7 @@ int main(void)
 	int failedComponents = 0;
 	struct unitTest unitTests[] = {
 		{ initRunUnitTests },
+		{ windowRunUnitTests },
 		{ menuRunUnitTests },
 		{ sliderRunUnitTests },
 		{ spinboxRunUnitTests },

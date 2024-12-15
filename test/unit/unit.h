@@ -14,6 +14,7 @@
  * Unit test run functions.
  */
 int initRunUnitTests(void);
+int windowRunUnitTests(void);
 int sliderRunUnitTests(void);
 int spinboxRunUnitTests(void);
 int labelRunUnitTests(void);
@@ -38,6 +39,7 @@ int unitWindowOnClosingQuit(uiWindow *w, void *data);
 
 #define UNIT_TEST_WINDOW_WIDTH 300
 #define UNIT_TEST_WINDOW_HEIGHT 200
+#define UNIT_TEST_WINDOW_TITLE "Unit Test"
 
 /**
  * Helper for setting up the state variable used in unit tests.
