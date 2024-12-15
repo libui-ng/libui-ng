@@ -125,6 +125,11 @@ add_project_arguments(libui_project_compile_args,
 add_project_link_arguments(libui_project_link_args,
 	language: ['c', 'cpp', 'objc'])
 
+libui_lib_suffix = []
+if libui_OS == 'windows' and libui_MSVC
+	libui_lib_suffix = 'lib'
+endif
+
 # TODO:
 # meson determins whether -Wl,--no-undefined is provided via
 # built-in option b_lundef, and it's true by default, which is what
@@ -162,6 +167,7 @@ libui_libui = library('ui', libui_sources,
 	build_rpath: libui_rpath,
 	install_rpath: libui_rpath,
 	name_prefix: 'lib',		# always call it libui, even in Windows DLLs
+	name_suffix: (libui_mode == 'static') ? static_lib_suffix : shared_lib_suffix,
 	install: true,
 	gnu_symbol_visibility: 'hidden',
 	c_args: ['-Dlibui_EXPORTS'],
