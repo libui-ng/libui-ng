@@ -12,6 +12,14 @@ struct uiDrawContext {
 	ID2D1PathGeometry *currentClip;
 };
 
+struct uiImageBuffer {
+	int Width;
+	int Height;
+	int Stride;
+
+	ID2D1Bitmap *buf;
+};
+
 // drawpath.cpp
 extern ID2D1PathGeometry *pathGeometry(uiDrawPath *p);
 
