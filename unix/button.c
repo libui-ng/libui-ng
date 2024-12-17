@@ -23,7 +23,7 @@ static void defaultOnClicked(uiButton *b, void *data)
 	// do nothing
 }
 
-char *uiButtonText(uiButton *b)
+char *uiButtonText(const uiButton *b)
 {
 	return uiUnixStrdupText(gtk_button_get_label(b->button));
 }

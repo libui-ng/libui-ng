@@ -70,7 +70,7 @@ static void defaultOnChanged(uiMultilineEntry *e, void *data)
 	// do nothing
 }
 
-char *uiMultilineEntryText(uiMultilineEntry *e)
+char *uiMultilineEntryText(const uiMultilineEntry *e)
 {
 	return uiDarwinNSStringToText([e->tv string]);
 }
@@ -101,7 +101,7 @@ void uiMultilineEntryOnChanged(uiMultilineEntry *e, void (*f)(uiMultilineEntry *
 	e->onChangedData = data;
 }
 
-int uiMultilineEntryReadOnly(uiMultilineEntry *e)
+int uiMultilineEntryReadOnly(const uiMultilineEntry *e)
 {
 	return [e->tv isEditable] == NO;
 }

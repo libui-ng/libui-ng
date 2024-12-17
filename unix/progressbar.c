@@ -25,7 +25,7 @@ static void uiProgressBarDestroy(uiControl *c)
 	uiFreeControl(uiControl(p));
 }
 
-int uiProgressBarValue(uiProgressBar *p)
+int uiProgressBarValue(const uiProgressBar *p)
 {
 	if (p->indeterminate)
 		return -1;

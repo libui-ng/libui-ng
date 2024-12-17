@@ -8,7 +8,7 @@ struct uiLabel {
 
 uiDarwinControlAllDefaults(uiLabel, textfield)
 
-char *uiLabelText(uiLabel *l)
+char *uiLabelText(const uiLabel *l)
 {
 	return uiDarwinNSStringToText([l->textfield stringValue]);
 }

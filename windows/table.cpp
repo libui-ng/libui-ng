@@ -635,7 +635,7 @@ uiWindowsControlAllDefaultsExceptDestroy(uiTable)
 #define tableMinWidth 107		/* in line with other controls */
 #define tableMinHeight (14 * 3)	/* header + 2 lines (roughly) */
 
-static void uiTableMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiTableMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiTable *t = uiTable(c);
 	uiWindowsSizing sizing;

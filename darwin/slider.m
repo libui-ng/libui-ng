@@ -84,7 +84,7 @@ static void _uiSliderUpdateToolTip(uiSlider *s)
 	[s->slider setToolTip:[NSString stringWithFormat:@"%ld", [s->slider integerValue]]];
 }
 
-int uiSliderHasToolTip(uiSlider *s)
+int uiSliderHasToolTip(const uiSlider *s)
 {
 	return s->hasToolTip;
 }
@@ -99,7 +99,7 @@ void uiSliderSetHasToolTip(uiSlider *s, int hasToolTip)
 		[s->slider setToolTip:nil];
 }
 
-int uiSliderValue(uiSlider *s)
+int uiSliderValue(const uiSlider *s)
 {
 	return [s->slider integerValue];
 }

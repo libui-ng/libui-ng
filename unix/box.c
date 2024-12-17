@@ -109,12 +109,12 @@ void uiBoxDelete(uiBox *b, int index)
 	g_array_remove_index(b->controls, index);
 }
 
-int uiBoxNumChildren(uiBox *b)
+int uiBoxNumChildren(const uiBox *b)
 {
 	return (int) b->controls->len;
 }
 
-int uiBoxPadded(uiBox *b)
+int uiBoxPadded(const uiBox *b)
 {
 	return b->padded;
 }

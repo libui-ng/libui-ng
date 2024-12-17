@@ -20,7 +20,7 @@ struct uiGroup {
 #define groupUnmarginedYMarginTop 8
 #define groupUnmarginedYMarginBottom 3
 
-static void groupMargins(uiGroup *g, int *mx, int *mtop, int *mbottom)
+static void groupMargins(const uiGroup *g, int *mx, int *mtop, int *mbottom)
 {
 	uiWindowsSizing sizing;
 
@@ -89,7 +89,7 @@ static void uiGroupSyncEnableState(uiWindowsControl *c, int enabled)
 
 uiWindowsControlDefaultSetParentHWND(uiGroup)
 
-static void uiGroupMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiGroupMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiGroup *g = uiGroup(c);
 	int mx, mtop, mbottom;
@@ -127,7 +127,7 @@ static void uiGroupChildVisibilityChanged(uiWindowsControl *c)
 	uiWindowsControlMinimumSizeChanged(c);
 }
 
-char *uiGroupTitle(uiGroup *g)
+char *uiGroupTitle(const uiGroup *g)
 {
 	return uiWindowsWindowText(g->hwnd);
 }
@@ -154,7 +154,7 @@ void uiGroupSetChild(uiGroup *g, uiControl *child)
 	}
 }
 
-int uiGroupMargined(uiGroup *g)
+int uiGroupMargined(const uiGroup *g)
 {
 	return g->margined;
 }

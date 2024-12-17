@@ -56,7 +56,7 @@ static void defaultOnReleased(uiSlider *s, void *data)
 	// do nothing
 }
 
-int uiSliderValue(uiSlider *s)
+int uiSliderValue(const uiSlider *s)
 {
 	return gtk_range_get_value(s->range);
 }
@@ -69,7 +69,7 @@ void uiSliderSetValue(uiSlider *s, int value)
 	g_signal_handler_unblock(s->range, s->onChangedSignal);
 }
 
-int uiSliderHasToolTip(uiSlider *s)
+int uiSliderHasToolTip(const uiSlider *s)
 {
 	return gtk_widget_get_has_tooltip(s->widget);
 }

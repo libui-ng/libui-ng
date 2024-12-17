@@ -52,7 +52,7 @@ static void uiButtonDestroy(uiControl *c)
 	uiFreeControl(uiControl(b));
 }
 
-char *uiButtonText(uiButton *b)
+char *uiButtonText(const uiButton *b)
 {
 	return uiDarwinNSStringToText([b->button title]);
 }

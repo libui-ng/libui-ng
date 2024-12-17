@@ -64,7 +64,7 @@ uiWindowsControlAllDefaultsExceptDestroy(uiRadioButtons)
 // from http://msdn.microsoft.com/en-us/library/windows/desktop/bb226818%28v=vs.85%29.aspx
 #define radiobuttonXFromLeftOfBoxToLeftOfLabel 12
 
-static void uiRadioButtonsMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiRadioButtonsMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiRadioButtons *r = uiRadioButtons(c);
 	int wid, maxwid;
@@ -152,7 +152,7 @@ void uiRadioButtonsAppend(uiRadioButtons *r, const char *text)
 	uiWindowsControlMinimumSizeChanged(uiWindowsControl(r));
 }
 
-int uiRadioButtonsSelected(uiRadioButtons *r)
+int uiRadioButtonsSelected(const uiRadioButtons *r)
 {
 	size_t i;
 

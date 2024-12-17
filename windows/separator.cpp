@@ -23,7 +23,7 @@ uiWindowsControlAllDefaults(uiSeparator)
 // TODO
 #define separatorWidth 1
 
-static void uiSeparatorMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiSeparatorMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiSeparator *s = uiSeparator(c);
 	uiWindowsSizing sizing;

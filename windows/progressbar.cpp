@@ -12,7 +12,7 @@ uiWindowsControlAllDefaults(uiProgressBar)
 #define pbarWidth 237
 #define pbarHeight 8
 
-static void uiProgressBarMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiProgressBarMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiProgressBar *p = uiProgressBar(c);
 	uiWindowsSizing sizing;
@@ -28,7 +28,7 @@ static void uiProgressBarMinimumSize(uiWindowsControl *c, int *width, int *heigh
 
 #define indeterminate(p) ((getStyle(p->hwnd) & PBS_MARQUEE) != 0)
 
-int uiProgressBarValue(uiProgressBar *p)
+int uiProgressBarValue(const uiProgressBar *p)
 {
 	if (indeterminate(p))
 		return -1;

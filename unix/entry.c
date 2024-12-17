@@ -25,7 +25,7 @@ static void defaultOnChanged(uiEntry *e, void *data)
 	// do nothing
 }
 
-char *uiEntryText(uiEntry *e)
+char *uiEntryText(const uiEntry *e)
 {
 	return uiUnixStrdupText(gtk_entry_get_text(e->entry));
 }
@@ -45,7 +45,7 @@ void uiEntryOnChanged(uiEntry *e, void (*f)(uiEntry *, void *), void *data)
 	e->onChangedData = data;
 }
 
-int uiEntryReadOnly(uiEntry *e)
+int uiEntryReadOnly(const uiEntry *e)
 {
 	return gtk_editable_get_editable(e->editable) == FALSE;
 }
