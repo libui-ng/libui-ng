@@ -53,9 +53,11 @@ static uiControl *makeBasicControlsPage(void)
 	uiFormSetPadded(entryForm, 1);
 	uiGroupSetChild(group, uiControl(entryForm));
 
+	uiEntry* entry = uiNewEntry();
+	uiEntrySetPlaceholder(entry, "Type here");
 	uiFormAppend(entryForm,
 		"Entry",
-		uiControl(uiNewEntry()),
+		uiControl(entry),
 		0);
 	uiFormAppend(entryForm,
 		"Password Entry",
@@ -146,6 +148,7 @@ static uiControl *makeNumbersPage()
 	uiEditableComboboxAppend(ecbox, "Editable Item 1");
 	uiEditableComboboxAppend(ecbox, "Editable Item 2");
 	uiEditableComboboxAppend(ecbox, "Editable Item 3");
+	uiEditableComboboxSetPlaceholder(ecbox, "Select an item");
 	uiBoxAppend(vbox, uiControl(ecbox), 0);
 
 	rb = uiNewRadioButtons();
@@ -263,6 +266,7 @@ static uiControl *makeDataChoosersPage(void)
 
 	button = uiNewButton("  Open File  ");
 	entry = uiNewEntry();
+	uiEntrySetPlaceholder(entry, "Select a file");
 	uiEntrySetReadOnly(entry, 1);
 	uiButtonOnClicked(button, onOpenFileClicked, entry);
 	uiGridAppend(grid, uiControl(button),

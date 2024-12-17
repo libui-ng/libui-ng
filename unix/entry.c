@@ -60,6 +60,19 @@ void uiEntrySetReadOnly(uiEntry *e, int readonly)
 	gtk_editable_set_editable(e->editable, editable);
 }
 
+char *uiEntryPlaceholder(uiEntry *e)
+{
+	char* text = gtk_entry_get_placeholder_text(e->entry);
+	if (!text)
+		return uiUnixStrdupText("");
+	return uiUnixStrdupText(text);
+}
+
+void uiEntrySetPlaceholder(uiEntry *e, const char *text)
+{
+	gtk_entry_set_placeholder_text(e->entry, text);
+}
+
 static uiEntry *finishNewEntry(GtkWidget *w, const gchar *signal)
 {
 	uiEntry *e;

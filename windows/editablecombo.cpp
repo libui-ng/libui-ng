@@ -10,6 +10,7 @@ struct uiEditableCombobox {
 	HWND hwnd;
 	void (*onChanged)(uiEditableCombobox *, void *);
 	void *onChangedData;
+	int placeholderLen;
 };
 
 static BOOL onWM_COMMAND(uiControl *cc, HWND hwnd, WORD code, LRESULT *lResult)
@@ -96,6 +97,16 @@ void uiEditableComboboxOnChanged(uiEditableCombobox *c, void (*f)(uiEditableComb
 {
 	c->onChanged = f;
 	c->onChangedData = data;
+}
+
+char *uiEditableComboboxPlaceholder(uiEditableCombobox *c)
+{
+	return uiprivComboboxPlaceholder(c->hwnd, c->placeholderLen);
+}
+
+void uiEditableComboboxSetPlaceholder(uiEditableCombobox *c, const char *text)
+{
+	c->placeholderLen = uiprivSetComboboxPlaceholder(c->hwnd, text);
 }
 
 uiEditableCombobox *uiNewEditableCombobox(void)

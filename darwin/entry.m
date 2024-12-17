@@ -150,6 +150,19 @@ void uiEntrySetReadOnly(uiEntry *e, int readonly)
 	[e->textfield setEditable:editable];
 }
 
+char *uiEntryPlaceholder(uiEntry *e)
+{
+	NSString* text = [e->textfield.cell placeholderString];
+	if (!text)
+		return uiDarwinNSStringToText(@"");
+	return uiDarwinNSStringToText(text);
+}
+
+void uiEntrySetPlaceholder(uiEntry *e, const char *text)
+{
+	[e->textfield.cell setPlaceholderString:uiprivToNSString(text)];
+}
+
 static void defaultOnChanged(uiEntry *e, void *data)
 {
 	// do nothing
