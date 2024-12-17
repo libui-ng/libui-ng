@@ -174,5 +174,8 @@ extern void uiprivUninitImage(void);
 extern IWICBitmap *uiprivImageAppropriateForDC(uiImage *i, HDC dc);
 extern HRESULT uiprivWICToGDI(IWICBitmap *b, HDC dc, int width, int height, HBITMAP *hb);
 
+// tooltip.cpp
+extern void uiprivDestroyTooltip(uiControl* c);
+
 #endif
 

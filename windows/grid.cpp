@@ -420,6 +420,7 @@ static void uiGridDestroy(uiControl *c)
 	}
 	delete g->indexof;
 	delete g->children;
+	uiprivDestroyTooltip(c);
 	uiWindowsEnsureDestroyWindow(g->hwnd);
 	uiFreeControl(uiControl(g));
 }
