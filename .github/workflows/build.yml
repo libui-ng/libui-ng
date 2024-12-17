@@ -56,7 +56,7 @@ jobs:
         # windows-latest, windows-2022
         os: [windows-latest]
         arch: [x86, x64]
-        libtype: [static] # FIXME [static, shared]
+        libtype: [static, shared]
         # debug, debugoptimized, release
         buildtype: [debug]
     runs-on: ${{ matrix.os }}
