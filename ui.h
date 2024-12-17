@@ -61,6 +61,7 @@ struct uiInitOptions {
 	size_t Size;
 };
 
+_UI_EXTERN const char *uiVersion(void);
 _UI_EXTERN const char *uiInit(uiInitOptions *options);
 _UI_EXTERN void uiUninit(void);
 _UI_EXTERN void uiFreeInitError(const char *err);
