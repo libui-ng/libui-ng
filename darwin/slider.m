@@ -107,6 +107,9 @@ int uiSliderValue(uiSlider *s)
 void uiSliderSetValue(uiSlider *s, int value)
 {
 	[s->slider setIntegerValue:value];
+
+	if (s->hasToolTip)
+		_uiSliderUpdateToolTip(s);
 }
 
 void uiSliderOnChanged(uiSlider *s, void (*f)(uiSlider *, void *), void *data)
