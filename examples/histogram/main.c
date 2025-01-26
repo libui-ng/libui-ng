@@ -245,7 +245,6 @@ static int shouldQuit(void *data)
 
 int main(void)
 {
-	uiInitOptions o;
 	const char *err;
 	uiBox *hbox, *vbox;
 	int i;
@@ -257,8 +256,7 @@ int main(void)
 	handler.DragBroken = handlerDragBroken;
 	handler.KeyEvent = handlerKeyEvent;
 
-	memset(&o, 0, sizeof (uiInitOptions));
-	err = uiInit(&o);
+	err = uiInit(NULL);
 	if (err != NULL) {
 		fprintf(stderr, "error initializing ui: %s\n", err);
 		uiFreeInitError(err);

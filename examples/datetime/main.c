@@ -58,15 +58,13 @@ int onClosing(uiWindow *w, void *data)
 
 int main(void)
 {
-	uiInitOptions o;
 	const char *err;
 	uiWindow *w;
 	uiGrid *g;
 	uiLabel *l;
 	uiButton *b;
 
-	memset(&o, 0, sizeof (uiInitOptions));
-	err = uiInit(&o);
+	err = uiInit(NULL);
 	if (err != NULL) {
 		fprintf(stderr, "error initializing ui: %s\n", err);
 		uiFreeInitError(err);
