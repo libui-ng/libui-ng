@@ -204,11 +204,6 @@ char* uiSpinboxValueText(uiSpinbox *s)
 	return uiWindowsWindowText(s->edit);
 }
 
-char* uiSpinboxValueText(uiSpinbox *s)
-{
-	return uiWindowsWindowText(s->edit);
-}
-
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {
 	s->inhibitChanged = TRUE;
