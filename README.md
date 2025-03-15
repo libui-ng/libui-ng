@@ -108,6 +108,7 @@ Other people have made bindings to other languages:
 
 Language | Bindings
 --- | ---
+Beef | [libui-beef](https://github.com/guofeiyu2022/libui-beef)
 C++ | [libui-cpp](https://github.com/billyquith/libui-cpp), [cpp-libui-qtlike](https://github.com/aoloe/cpp-libui-qtlike)
 C# / .NET Framework | [LibUI.Binding](https://github.com/NattyNarwhal/LibUI.Binding)
 C# / .NET Core | [DevZH.UI](https://github.com/noliar/DevZH.UI), [SharpUI](https://github.com/benpye/sharpui/)
