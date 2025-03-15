@@ -316,12 +316,10 @@ static uiControl *makeDataChoosersPage(void)
 
 int main(void)
 {
-	uiInitOptions options;
 	const char *err;
 	uiTab *tab;
 
-	memset(&options, 0, sizeof (uiInitOptions));
-	err = uiInit(&options);
+	err = uiInit(NULL);
 	if (err != NULL) {
 		fprintf(stderr, "error initializing libui: %s", err);
 		uiFreeInitError(err);
@@ -414,7 +412,6 @@ static void onSliderChanged(uiSlider *s, void *data)
 
 int main(void)
 {
-	uiInitOptions o;
 	const char *err;
 	uiMenu *menu;
 	uiMenuItem *item;
@@ -429,8 +426,7 @@ int main(void)
 	uiRadioButtons *rb;
 	uiTab *tab;
 
-	memset(&o, 0, sizeof (uiInitOptions));
-	err = uiInit(&o);
+	err = uiInit(NULL);
 	if (err != NULL) {
 		fprintf(stderr, "error initializing ui: %s\n", err);
 		uiFreeInitError(err);

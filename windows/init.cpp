@@ -62,7 +62,9 @@ const char *uiInit(uiInitOptions *o)
 	INITCOMMONCONTROLSEX icc;
 	HRESULT hr;
 
-	uiprivOptions = *o;
+	if (o) {
+		uiprivOptions = *o;
+	}
 
 	initAlloc();
 

@@ -10,7 +10,9 @@ const char *uiInit(uiInitOptions *o)
 	GError *err = NULL;
 	const char *msg;
 
-	uiprivOptions = *o;
+	if (o) {
+		uiprivOptions = *o;
+	}
 	if (gtk_init_with_args(NULL, NULL, NULL, NULL, NULL, &err) == FALSE) {
 		msg = g_strdup(err->message);
 		g_error_free(err);

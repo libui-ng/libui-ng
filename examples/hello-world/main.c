@@ -9,12 +9,11 @@ int onClosing(uiWindow *w, void *data)
 
 int main(void)
 {
-	uiInitOptions o = {0};
 	const char *err;
 	uiWindow *w;
 	uiLabel *l;
 
-	err = uiInit(&o);
+	err = uiInit(NULL);
 	if (err != NULL) {
 		fprintf(stderr, "Error initializing libui-ng: %s\n", err);
 		uiFreeInitError(err);

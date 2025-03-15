@@ -61,6 +61,17 @@ struct uiInitOptions {
 	size_t Size;
 };
 
+/**
+ * Init.
+ *
+ * @note uiInitOptions is not used now and options can be set to `NULL`.
+ *       However if options is not set to `NULL` then uiInitOptions pointed
+ *       by options pointer is internaly copied and options pointer is not
+ *       used internaly anymore.
+ *
+ * @param options uiInitOptions pointer
+ * @returns `NULL` if initialization has not failed otherwise fail message.
+ */
 _UI_EXTERN const char *uiInit(uiInitOptions *options);
 _UI_EXTERN void uiUninit(void);
 _UI_EXTERN void uiFreeInitError(const char *err);

@@ -30,13 +30,11 @@ void saySomething(uiButton *b, void *data)
 
 int main(void)
 {
-	uiInitOptions o;
 	uiWindow *w;
 	uiBox *b;
 	uiButton *btn;
 
-	memset(&o, 0, sizeof (uiInitOptions));
-	if (uiInit(&o) != NULL)
+	if (uiInit(NULL) != NULL)
 		abort();
 
 	w = uiNewWindow("Hello", 320, 240, 0);
