@@ -66,6 +66,9 @@ void uiSliderSetValue(uiSlider *s, int value)
 	// we need to inhibit sending of ::value-changed because this WILL send a ::value-changed otherwise
 	g_signal_handler_block(s->range, s->onChangedSignal);
 	gtk_range_set_value(s->range, value);
+
+	if (uiSliderHasToolTip(s))
+		_uiSliderUpdateToolTip(s);
 	g_signal_handler_unblock(s->range, s->onChangedSignal);
 }
 
