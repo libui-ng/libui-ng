@@ -169,7 +169,7 @@ static CGFloat stepperYDelta(void)
 
 uiDarwinControlAllDefaults(uiSpinbox, spinbox)
 
-int uiSpinboxValue(uiSpinbox *s)
+int uiSpinboxValue(const uiSpinbox *s)
 {
 	return [s->spinbox libui_value];
 }

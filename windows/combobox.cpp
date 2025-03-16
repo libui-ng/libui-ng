@@ -36,7 +36,7 @@ uiWindowsControlAllDefaultsExceptDestroy(uiCombobox)
 #define comboboxWidth 107	/* this is actually the shorter progress bar width, but Microsoft only indicates as wide as necessary; LONGTERM */
 #define comboboxHeight 14	/* LONGTERM: is this too high? */
 
-static void uiComboboxMinimumSize(uiWindowsControl *cc, int *width, int *height)
+static void uiComboboxMinimumSize(const uiWindowsControl *cc, int *width, int *height)
 {
 	uiCombobox *c = uiCombobox(cc);
 	uiWindowsSizing sizing;
@@ -101,7 +101,7 @@ void uiComboboxClear(uiCombobox *c)
 		logLastError(L"error clearing items from uiCombobox");
 }
 
-int uiComboboxNumItems(uiCombobox *c)
+int uiComboboxNumItems(const uiCombobox *c)
 {
 	LRESULT n;
 
@@ -111,7 +111,7 @@ int uiComboboxNumItems(uiCombobox *c)
 	return n;
 }
 
-int uiComboboxSelected(uiCombobox *c)
+int uiComboboxSelected(const uiCombobox *c)
 {
 	LRESULT n;
 

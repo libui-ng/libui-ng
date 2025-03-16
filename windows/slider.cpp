@@ -43,7 +43,7 @@ uiWindowsControlAllDefaultsExceptDestroy(uiSlider);
 #define sliderWidth 107 /* this is actually the shorter progress bar width, but Microsoft doesn't indicate a width */
 #define sliderHeight 15
 
-static void uiSliderMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiSliderMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiSlider *s = uiSlider(c);
 	uiWindowsSizing sizing;
@@ -57,7 +57,7 @@ static void uiSliderMinimumSize(uiWindowsControl *c, int *width, int *height)
 	*height = y;
 }
 
-int uiSliderHasToolTip(uiSlider *s)
+int uiSliderHasToolTip(const uiSlider *s)
 {
 	return ((HWND) SendMessage(s->hwnd, TBM_GETTOOLTIPS, 0, 0) == s->hwndToolTip);
 }
@@ -80,7 +80,7 @@ static void defaultOnReleased(uiSlider *s, void *data)
 	// do nothing
 }
 
-int uiSliderValue(uiSlider *s)
+int uiSliderValue(const uiSlider *s)
 {
 	return SendMessageW(s->hwnd, TBM_GETPOS, 0, 0);
 }

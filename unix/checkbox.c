@@ -26,7 +26,7 @@ static void defaultOnToggled(uiCheckbox *c, void *data)
 	// do nothing
 }
 
-char *uiCheckboxText(uiCheckbox *c)
+char *uiCheckboxText(const uiCheckbox *c)
 {
 	return uiUnixStrdupText(gtk_button_get_label(c->button));
 }
@@ -42,7 +42,7 @@ void uiCheckboxOnToggled(uiCheckbox *c, void (*f)(uiCheckbox *, void *), void *d
 	c->onToggledData = data;
 }
 
-int uiCheckboxChecked(uiCheckbox *c)
+int uiCheckboxChecked(const uiCheckbox *c)
 {
 	return gtk_toggle_button_get_active(c->toggleButton) != FALSE;
 }

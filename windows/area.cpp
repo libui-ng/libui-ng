@@ -53,7 +53,7 @@ static LRESULT CALLBACK areaWndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM 
 
 uiWindowsControlAllDefaults(uiArea)
 
-static void uiAreaMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiAreaMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	// TODO
 	*width = 0;

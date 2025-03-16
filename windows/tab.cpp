@@ -16,17 +16,17 @@ struct uiTab {
 
 // utility functions
 
-static LRESULT curpage(uiTab *t)
+static LRESULT curpage(const uiTab *t)
 {
 	return SendMessageW(t->tabHWND, TCM_GETCURSEL, 0, 0);
 }
 
-static struct tabPage *tabPage(uiTab *t, int i)
+static struct tabPage *tabPage(const uiTab *t, int i)
 {
 	return (*(t->pages))[i];
 }
 
-static void tabPageRect(uiTab *t, RECT *r)
+static void tabPageRect(const uiTab *t, RECT *r)
 {
 	// this rect needs to be in parent window coordinates, but TCM_ADJUSTRECT wants a window rect, which is screen coordinates
 	// because we have each page as a sibling of the tab, use the tab's own rect as the input rect
@@ -141,7 +141,7 @@ static void uiTabSyncEnableState(uiWindowsControl *c, int enabled)
 
 uiWindowsControlDefaultSetParentHWND(uiTab)
 
-static void uiTabMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiTabMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiTab *t = uiTab(c);
 	int pagewid, pageht;
@@ -253,12 +253,12 @@ void uiTabDelete(uiTab *t, int n)
 	t->pages->erase(t->pages->begin() + n);
 }
 
-int uiTabNumPages(uiTab *t)
+int uiTabNumPages(const uiTab *t)
 {
 	return t->pages->size();
 }
 
-int uiTabMargined(uiTab *t, int n)
+int uiTabMargined(const uiTab *t, int n)
 {
 	return tabPage(t, n)->margined;
 }

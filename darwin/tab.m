@@ -289,12 +289,12 @@ void uiTabDelete(uiTab *t, int n)
 	tabRelayout(t);
 }
 
-int uiTabNumPages(uiTab *t)
+int uiTabNumPages(const uiTab *t)
 {
 	return [t->pages count];
 }
 
-int uiTabMargined(uiTab *t, int n)
+int uiTabMargined(const uiTab *t, int n)
 {
 	tabPage *page;
 

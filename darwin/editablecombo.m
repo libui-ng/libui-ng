@@ -86,7 +86,7 @@ void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text)
 	[c->cb addItemWithObjectValue:uiprivToNSString(text)];
 }
 
-char *uiEditableComboboxText(uiEditableCombobox *c)
+char *uiEditableComboboxText(const uiEditableCombobox *c)
 {
 	return uiDarwinNSStringToText([c->cb stringValue]);
 }

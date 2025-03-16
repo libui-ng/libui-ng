@@ -53,7 +53,7 @@ static void uiCheckboxDestroy(uiControl *cc)
 	uiFreeControl(uiControl(c));
 }
 
-char *uiCheckboxText(uiCheckbox *c)
+char *uiCheckboxText(const uiCheckbox *c)
 {
 	return uiDarwinNSStringToText([c->button title]);
 }
@@ -69,7 +69,7 @@ void uiCheckboxOnToggled(uiCheckbox *c, void (*f)(uiCheckbox *, void *), void *d
 	c->onToggledData = data;
 }
 
-int uiCheckboxChecked(uiCheckbox *c)
+int uiCheckboxChecked(const uiCheckbox *c)
 {
 	return [c->button state] == NSOnState;
 }

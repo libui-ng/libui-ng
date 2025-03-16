@@ -11,25 +11,6 @@ struct uiSpinbox {
 	BOOL inhibitChanged;
 };
 
-// utility functions
-
-static int value(uiSpinbox *s)
-{
-	BOOL neededCap = FALSE;
-	LRESULT val;
-
-	// This verifies the value put in, capping it automatically.
-	// We don't need to worry about checking for an error; that flag should really be called "did we have to cap?".
-	// We DO need to set the value in case of a cap though.
-	val = SendMessageW(s->updown, UDM_GETPOS32, 0, (LPARAM) (&neededCap));
-	if (neededCap) {
-		s->inhibitChanged = TRUE;
-		SendMessageW(s->updown, UDM_SETPOS32, 0, (LPARAM) val);
-		s->inhibitChanged = FALSE;
-	}
-	return val;
-}
-
 // control implementation
 
 // TODO assign lResult
@@ -37,6 +18,8 @@ static BOOL onWM_COMMAND(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 {
 	uiSpinbox *s = (uiSpinbox *) c;
 	WCHAR *wtext;
+	BOOL neededCap = FALSE;
+	LRESULT val;
 
 	if (code != EN_CHANGE)
 		return FALSE;
@@ -52,8 +35,16 @@ static BOOL onWM_COMMAND(uiControl *c, HWND hwnd, WORD code, LRESULT *lResult)
 		return TRUE;
 	}
 	uiprivFree(wtext);
-	// value() does the work for us
-	value(s);
+
+	// This verifies the value put in, capping it automatically.
+	// We don't need to worry about checking for an error; that flag should really be called "did we have to cap?".
+	// We DO need to set the value in case of a cap though.
+	val = SendMessageW(s->updown, UDM_GETPOS32, 0, (LPARAM) (&neededCap));
+	if (neededCap) {
+		s->inhibitChanged = TRUE;
+		SendMessageW(s->updown, UDM_SETPOS32, 0, (LPARAM) val);
+		s->inhibitChanged = FALSE;
+	}
 	(*(s->onChanged))(s, s->onChangedData);
 	return TRUE;
 }
@@ -77,7 +68,7 @@ uiWindowsControlAllDefaultsExceptDestroy(uiSpinbox)
 #define entryWidth 107 /* this is actually the shorter progress bar width, but Microsoft only indicates as wide as necessary */
 #define entryHeight 14
 
-static void uiSpinboxMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiSpinboxMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiSpinbox *s = uiSpinbox(c);
 	uiWindowsSizing sizing;
@@ -115,7 +106,7 @@ static void recreateUpDown(uiSpinbox *s)
 
 	if (s->updown != NULL) {
 		preserve = TRUE;
-		current = value(s);
+		current = uiSpinboxValue(s);
 		SendMessageW(s->updown, UDM_GETRANGE32, (WPARAM) (&min), (LPARAM) (&max));
 		uiWindowsEnsureDestroyWindow(s->updown);
 	}
@@ -157,14 +148,17 @@ static void defaultOnChanged(uiSpinbox *s, void *data)
 	// do nothing
 }
 
-int uiSpinboxValue(uiSpinbox *s)
+int uiSpinboxValue(const uiSpinbox *s)
 {
-	return value(s);
+	// We do not need to check if the value is out of range because
+	// any update is triggering a WM_COMMAND event
+	return SendMessageW(s->updown, UDM_GETPOS32, 0, 0);
 }
 
 void uiSpinboxSetValue(uiSpinbox *s, int value)
 {
 	s->inhibitChanged = TRUE;
+	// Capping is done automatically
 	SendMessageW(s->updown, UDM_SETPOS32, 0, (LPARAM) value);
 	s->inhibitChanged = FALSE;
 }

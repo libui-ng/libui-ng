@@ -65,12 +65,12 @@ void uiTabDelete(uiTab *t, int n)
 	g_array_remove_index(t->pages, n);
 }
 
-int uiTabNumPages(uiTab *t)
+int uiTabNumPages(const uiTab *t)
 {
 	return t->pages->len;
 }
 
-int uiTabMargined(uiTab *t, int n)
+int uiTabMargined(const uiTab *t, int n)
 {
 	uiprivChild *page;
 

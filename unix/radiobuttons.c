@@ -62,7 +62,7 @@ void uiRadioButtonsAppend(uiRadioButtons *r, const char *text)
 	gtk_widget_show(rb);
 }
 
-int uiRadioButtonsSelected(uiRadioButtons *r)
+int uiRadioButtonsSelected(const uiRadioButtons *r)
 {
 	GtkToggleButton *tb;
 	guint i;

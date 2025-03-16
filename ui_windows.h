@@ -22,9 +22,9 @@ struct uiWindowsControl {
 	BOOL visible;
 	void (*SyncEnableState)(uiWindowsControl *, int);
 	void (*SetParentHWND)(uiWindowsControl *, HWND);
-	void (*MinimumSize)(uiWindowsControl *, int *, int *);
+	void (*MinimumSize)(const uiWindowsControl *, int *, int *);
 	void (*MinimumSizeChanged)(uiWindowsControl *);
-	void (*LayoutRect)(uiWindowsControl *c, RECT *r);
+	void (*LayoutRect)(const uiWindowsControl *c, RECT *r);
 	void (*AssignControlIDZOrder)(uiWindowsControl *, LONG_PTR *, HWND *);
 	void (*ChildVisibilityChanged)(uiWindowsControl *);
 };
@@ -32,9 +32,9 @@ struct uiWindowsControl {
 // TODO document
 _UI_EXTERN void uiWindowsControlSyncEnableState(uiWindowsControl *, int);
 _UI_EXTERN void uiWindowsControlSetParentHWND(uiWindowsControl *, HWND);
-_UI_EXTERN void uiWindowsControlMinimumSize(uiWindowsControl *, int *, int *);
+_UI_EXTERN void uiWindowsControlMinimumSize(const uiWindowsControl *, int *, int *);
 _UI_EXTERN void uiWindowsControlMinimumSizeChanged(uiWindowsControl *);
-_UI_EXTERN void uiWindowsControlLayoutRect(uiWindowsControl *, RECT *);
+_UI_EXTERN void uiWindowsControlLayoutRect(const uiWindowsControl *, RECT *);
 _UI_EXTERN void uiWindowsControlAssignControlIDZOrder(uiWindowsControl *, LONG_PTR *, HWND *);
 _UI_EXTERN void uiWindowsControlChildVisibilityChanged(uiWindowsControl *);
 
@@ -46,12 +46,12 @@ _UI_EXTERN void uiWindowsControlChildVisibilityChanged(uiWindowsControl *);
 		uiFreeControl(c); \
 	}
 #define uiWindowsControlDefaultHandle(type) \
-	static uintptr_t type ## Handle(uiControl *c) \
+	static uintptr_t type ## Handle(const uiControl *c) \
 	{ \
 		return (uintptr_t) (type(c)->hwnd); \
 	}
 #define uiWindowsControlDefaultParent(type) \
-	static uiControl *type ## Parent(uiControl *c) \
+	static uiControl *type ## Parent(const uiControl *c) \
 	{ \
 		return uiWindowsControl(c)->parent; \
 	}
@@ -62,12 +62,12 @@ _UI_EXTERN void uiWindowsControlChildVisibilityChanged(uiWindowsControl *);
 		uiWindowsControl(c)->parent = parent; \
 	}
 #define uiWindowsControlDefaultToplevel(type) \
-	static int type ## Toplevel(uiControl *c) \
+	static int type ## Toplevel(const uiControl *c) \
 	{ \
 		return 0; \
 	}
 #define uiWindowsControlDefaultVisible(type) \
-	static int type ## Visible(uiControl *c) \
+	static int type ## Visible(const uiControl *c) \
 	{ \
 		return uiWindowsControl(c)->visible; \
 	}
@@ -86,7 +86,7 @@ _UI_EXTERN void uiWindowsControlChildVisibilityChanged(uiWindowsControl *);
 		uiWindowsControlNotifyVisibilityChanged(uiWindowsControl(c)); \
 	}
 #define uiWindowsControlDefaultEnabled(type) \
-	static int type ## Enabled(uiControl *c) \
+	static int type ## Enabled(const uiControl *c) \
 	{ \
 		return uiWindowsControl(c)->enabled; \
 	}
@@ -125,7 +125,7 @@ _UI_EXTERN void uiWindowsControlChildVisibilityChanged(uiWindowsControl *);
 		/* otherwise do nothing; we have no children */ \
 	}
 #define uiWindowsControlDefaultLayoutRect(type) \
-	static void type ## LayoutRect(uiWindowsControl *c, RECT *r) \
+	static void type ## LayoutRect(const uiWindowsControl *c, RECT *r) \
 	{ \
 		/* use the window rect as we include the non-client area in the sizes */ \
 		uiWindowsEnsureGetWindowRect(type(c)->hwnd, r); \
@@ -203,16 +203,16 @@ _UI_EXTERN void uiWindowsEnsureSetParentHWND(HWND hwnd, HWND parent);
 _UI_EXTERN void uiWindowsEnsureAssignControlIDZOrder(HWND hwnd, LONG_PTR *controlID, HWND *insertAfter);
 
 // TODO document
-_UI_EXTERN void uiWindowsEnsureGetClientRect(HWND hwnd, RECT *r);
-_UI_EXTERN void uiWindowsEnsureGetWindowRect(HWND hwnd, RECT *r);
+_UI_EXTERN void uiWindowsEnsureGetClientRect(const HWND hwnd, RECT *r);
+_UI_EXTERN void uiWindowsEnsureGetWindowRect(const HWND hwnd, RECT *r);
 
 // TODO document
-_UI_EXTERN char *uiWindowsWindowText(HWND hwnd);
+_UI_EXTERN char *uiWindowsWindowText(const HWND hwnd);
 _UI_EXTERN void uiWindowsSetWindowText(HWND hwnd, const char *text);
 
 // TODO document
-_UI_EXTERN int uiWindowsWindowTextWidth(HWND hwnd);
-_UI_EXTERN int uiWindowsWindowTextHeight(HWND hwnd);
+_UI_EXTERN int uiWindowsWindowTextWidth(const HWND hwnd);
+_UI_EXTERN int uiWindowsWindowTextHeight(const HWND hwnd);
 
 // TODO document
 // TODO point out this should only be used in a resize cycle
@@ -241,7 +241,7 @@ struct uiWindowsSizing {
 	int BaseY;
 	LONG InternalLeading;
 };
-_UI_EXTERN void uiWindowsGetSizing(HWND hwnd, uiWindowsSizing *sizing);
+_UI_EXTERN void uiWindowsGetSizing(const HWND hwnd, uiWindowsSizing *sizing);
 _UI_EXTERN void uiWindowsSizingDlgUnitsToPixels(uiWindowsSizing *sizing, int *x, int *y);
 _UI_EXTERN void uiWindowsSizingStandardPadding(uiWindowsSizing *sizing, int *x, int *y);
 
@@ -249,7 +249,7 @@ _UI_EXTERN void uiWindowsSizingStandardPadding(uiWindowsSizing *sizing, int *x, 
 _UI_EXTERN HWND uiWindowsMakeContainer(uiWindowsControl *c, void (*onResize)(uiWindowsControl *));
 
 // TODO document
-_UI_EXTERN BOOL uiWindowsControlTooSmall(uiWindowsControl *c);
+_UI_EXTERN BOOL uiWindowsControlTooSmall(const uiWindowsControl *c);
 _UI_EXTERN void uiWindowsControlContinueMinimumSizeChanged(uiWindowsControl *c);
 
 // TODO document

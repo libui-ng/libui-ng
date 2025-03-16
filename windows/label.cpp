@@ -8,7 +8,7 @@ struct uiLabel {
 
 uiWindowsControlAllDefaults(uiLabel)
 
-static void uiLabelMinimumSize(uiWindowsControl *c, int *width, int *height)
+static void uiLabelMinimumSize(const uiWindowsControl *c, int *width, int *height)
 {
 	uiLabel *l = uiLabel(c);
 	uiWindowsSizing sizing;
@@ -21,7 +21,7 @@ static void uiLabelMinimumSize(uiWindowsControl *c, int *width, int *height)
 	*height = y;
 }
 
-char *uiLabelText(uiLabel *l)
+char *uiLabelText(const uiLabel *l)
 {
 	return uiWindowsWindowText(l->hwnd);
 }

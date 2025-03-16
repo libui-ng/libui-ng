@@ -106,14 +106,14 @@ struct uiControl {
 	uint32_t OSSignature;
 	uint32_t TypeSignature;
 	void (*Destroy)(uiControl *);
-	uintptr_t (*Handle)(uiControl *);
-	uiControl *(*Parent)(uiControl *);
+	uintptr_t (*Handle)(const uiControl *);
+	uiControl *(*Parent)(const uiControl *);
 	void (*SetParent)(uiControl *, uiControl *);
-	int (*Toplevel)(uiControl *);
-	int (*Visible)(uiControl *);
+	int (*Toplevel)(const uiControl *);
+	int (*Visible)(const uiControl *);
 	void (*Show)(uiControl *);
 	void (*Hide)(uiControl *);
-	int (*Enabled)(uiControl *);
+	int (*Enabled)(const uiControl *);
 	void (*Enable)(uiControl *);
 	void (*Disable)(uiControl *);
 };
@@ -140,7 +140,7 @@ _UI_EXTERN void uiControlDestroy(uiControl *c);
  * @returns OS-level handle.
  * @memberof uiControl
  */
-_UI_EXTERN uintptr_t uiControlHandle(uiControl *c);
+_UI_EXTERN uintptr_t uiControlHandle(const uiControl *c);
 
 /**
  * Returns the parent control.
@@ -149,7 +149,7 @@ _UI_EXTERN uintptr_t uiControlHandle(uiControl *c);
  * @returns The parent control, `NULL` if detached.
  * @memberof uiControl
  */
-_UI_EXTERN uiControl *uiControlParent(uiControl *c);
+_UI_EXTERN uiControl *uiControlParent(const uiControl *c);
 
 /**
  * Sets the control's parent.
@@ -168,7 +168,7 @@ _UI_EXTERN void uiControlSetParent(uiControl *c, uiControl *parent);
  * @returns `TRUE` if top level control, `FALSE` otherwise.
  * @memberof uiControl
  */
-_UI_EXTERN int uiControlToplevel(uiControl *c);
+_UI_EXTERN int uiControlToplevel(const uiControl *c);
 
 /**
  * Returns whether or not the control is visible.
@@ -177,7 +177,7 @@ _UI_EXTERN int uiControlToplevel(uiControl *c);
  * @returns `TRUE` if visible, `FALSE` otherwise.
  * @memberof uiControl
  */
-_UI_EXTERN int uiControlVisible(uiControl *c);
+_UI_EXTERN int uiControlVisible(const uiControl *c);
 
 /**
  * Shows the control.
@@ -205,7 +205,7 @@ _UI_EXTERN void uiControlHide(uiControl *c);
  * @see uiControlEnabledToUser
  * @memberof uiControl
  */
-_UI_EXTERN int uiControlEnabled(uiControl *c);
+_UI_EXTERN int uiControlEnabled(const uiControl *c);
 
 /**
  * Enables the control.
@@ -266,7 +266,7 @@ _UI_EXTERN void uiControlVerifySetParent(uiControl *c, uiControl *parent);
  * @see uiControlEnabled
  * @memberof uiControl
  */
-_UI_EXTERN int uiControlEnabledToUser(uiControl *c);
+_UI_EXTERN int uiControlEnabledToUser(const uiControl *c);
 
 // TODO Move this to private API? According to old/new.md this should be used by toplevel controls.
 _UI_EXTERN void uiUserBugCannotSetParentOnToplevel(const char *type);
@@ -299,7 +299,7 @@ typedef struct uiWindow uiWindow;
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiWindow
  */
-_UI_EXTERN char *uiWindowTitle(uiWindow *w);
+_UI_EXTERN char *uiWindowTitle(const uiWindow *w);
 
 /**
  * Sets the window title.
@@ -324,7 +324,7 @@ _UI_EXTERN void uiWindowSetTitle(uiWindow *w, const char *title);
  * @note This method may return inaccurate or dummy values on Unix platforms.
  * @memberof uiWindow
  */
-_UI_EXTERN void uiWindowPosition(uiWindow *w, int *x, int *y);
+_UI_EXTERN void uiWindowPosition(const uiWindow *w, int *x, int *y);
 
 /**
  * Moves the window to the specified position.
@@ -364,7 +364,7 @@ _UI_EXTERN void uiWindowOnPositionChanged(uiWindow *w,
  * @note The content size does NOT include window decorations like menus or title bars.
  * @memberof uiWindow
  */
-_UI_EXTERN void uiWindowContentSize(uiWindow *w, int *width, int *height);
+_UI_EXTERN void uiWindowContentSize(const uiWindow *w, int *width, int *height);
 
 /**
  * Sets the window content size.
@@ -385,7 +385,7 @@ _UI_EXTERN void uiWindowSetContentSize(uiWindow *w, int width, int height);
  * @returns `TRUE` if full screen, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiWindow
  */
-_UI_EXTERN int uiWindowFullscreen(uiWindow *w);
+_UI_EXTERN int uiWindowFullscreen(const uiWindow *w);
 
 /**
  * Sets whether or not the window is full screen.
@@ -453,7 +453,7 @@ _UI_EXTERN void uiWindowOnFocusChanged(uiWindow *w,
  * @returns `TRUE` if window is focused, `FALSE` otherwise.
  * @memberof uiWindow
  */
-_UI_EXTERN int uiWindowFocused(uiWindow *w);
+_UI_EXTERN int uiWindowFocused(const uiWindow *w);
 
 /**
  * Returns whether or not the window is borderless.
@@ -462,7 +462,7 @@ _UI_EXTERN int uiWindowFocused(uiWindow *w);
  * @returns `TRUE` if window is borderless, `FALSE` otherwise. [Default: `TODO`]
  * @memberof uiWindow
  */
-_UI_EXTERN int uiWindowBorderless(uiWindow *w);
+_UI_EXTERN int uiWindowBorderless(const uiWindow *w);
 
 /**
  * Sets whether or not the window is borderless.
@@ -490,7 +490,7 @@ _UI_EXTERN void uiWindowSetChild(uiWindow *w, uiControl *child);
  * @returns `TRUE` if window has a margin, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiWindow
  */
-_UI_EXTERN int uiWindowMargined(uiWindow *w);
+_UI_EXTERN int uiWindowMargined(const uiWindow *w);
 
 /**
  * Sets whether or not the window has a margin.
@@ -510,7 +510,7 @@ _UI_EXTERN void uiWindowSetMargined(uiWindow *w, int margined);
  * @returns `TRUE` if window is resizable, `FALSE` otherwise. [Default: `TRUE`]
  * @memberof uiWindow
  */
-_UI_EXTERN int uiWindowResizeable(uiWindow *w);
+_UI_EXTERN int uiWindowResizeable(const uiWindow *w);
 
 /**
  * Sets whether or not the window is user resizeable.
@@ -556,7 +556,7 @@ typedef struct uiButton uiButton;
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiButton
  */
-_UI_EXTERN char *uiButtonText(uiButton *b);
+_UI_EXTERN char *uiButtonText(const uiButton *b);
 
 /**
  * Sets the button label text.
@@ -629,7 +629,7 @@ _UI_EXTERN void uiBoxAppend(uiBox *b, uiControl *child, int stretchy);
  * @returns Number of children.
  * @memberof uiBox
  */
-_UI_EXTERN int uiBoxNumChildren(uiBox *b);
+_UI_EXTERN int uiBoxNumChildren(const uiBox *b);
 
 /**
  * Removes the control at @p index from the box.
@@ -650,7 +650,7 @@ _UI_EXTERN void uiBoxDelete(uiBox *b, int index);
  * @returns `TRUE` if controls are padded, `FALSE` otherwise. [Default: `TODO`]
  * @memberof uiBox
  */
-_UI_EXTERN int uiBoxPadded(uiBox *b);
+_UI_EXTERN int uiBoxPadded(const uiBox *b);
 
 /**
  * Sets whether or not controls within the box are padded.
@@ -704,7 +704,7 @@ typedef struct uiCheckbox uiCheckbox;
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiCheckbox
  */
-_UI_EXTERN char *uiCheckboxText(uiCheckbox *c);
+_UI_EXTERN char *uiCheckboxText(const uiCheckbox *c);
 
 /**
  * Sets the checkbox label text.
@@ -740,7 +740,7 @@ _UI_EXTERN void uiCheckboxOnToggled(uiCheckbox *c,
  * @returns `TRUE` if checked, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiCheckbox
  */
-_UI_EXTERN int uiCheckboxChecked(uiCheckbox *c);
+_UI_EXTERN int uiCheckboxChecked(const uiCheckbox *c);
 
 /**
  * Sets whether or not the checkbox is checked.
@@ -782,7 +782,7 @@ typedef struct uiEntry uiEntry;
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiEntry
  */
-_UI_EXTERN char *uiEntryText(uiEntry *e);
+_UI_EXTERN char *uiEntryText(const uiEntry *e);
 
 /**
  * Sets the entry's text.
@@ -817,7 +817,7 @@ _UI_EXTERN void uiEntryOnChanged(uiEntry *e,
  * @returns `TRUE` if read only, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiEntry
  */
-_UI_EXTERN int uiEntryReadOnly(uiEntry *e);
+_UI_EXTERN int uiEntryReadOnly(const uiEntry *e);
 
 /**
  * Sets whether or not the entry's text is read only.
@@ -877,7 +877,7 @@ typedef struct uiLabel uiLabel;
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiLabel
  */
-_UI_EXTERN char *uiLabelText(uiLabel *l);
+_UI_EXTERN char *uiLabelText(const uiLabel *l);
 
 /**
  * Sets the label text.
@@ -993,7 +993,7 @@ _UI_EXTERN void uiTabDelete(uiTab *t, int index);
  * @returns Number of pages.
  * @memberof uiTab
  */
-_UI_EXTERN int uiTabNumPages(uiTab *t);
+_UI_EXTERN int uiTabNumPages(const uiTab *t);
 
 /**
  * Returns whether or not the page/tab at @p index has a margin.
@@ -1003,7 +1003,7 @@ _UI_EXTERN int uiTabNumPages(uiTab *t);
  * @returns `TRUE` if the tab has a margin, `FALSE` otherwise. [Default: `TODO`]
  * @memberof uiTab
  */
-_UI_EXTERN int uiTabMargined(uiTab *t, int index);
+_UI_EXTERN int uiTabMargined(const uiTab *t, int index);
 
 /**
  * Sets whether or not the page/tab at @p index has a margin.
@@ -1051,7 +1051,7 @@ typedef struct uiGroup uiGroup;
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiGroup
  */
-_UI_EXTERN char *uiGroupTitle(uiGroup *g);
+_UI_EXTERN char *uiGroupTitle(const uiGroup *g);
 
 /**
  * Sets the group title.
@@ -1080,7 +1080,7 @@ _UI_EXTERN void uiGroupSetChild(uiGroup *g, uiControl *c);
  * @returns `TRUE` if the group has a margin, `FALSE` otherwise. [Default: `TODO`]
  * @memberof uiGroup
  */
-_UI_EXTERN int uiGroupMargined(uiGroup *g);
+_UI_EXTERN int uiGroupMargined(const uiGroup *g);
 
 /**
  * Sets whether or not the group has a margin.
@@ -1130,7 +1130,7 @@ typedef struct uiSpinbox uiSpinbox;
  * @returns Spinbox value.
  * @memberof uiSpinbox
  */
-_UI_EXTERN int uiSpinboxValue(uiSpinbox *s);
+_UI_EXTERN int uiSpinboxValue(const uiSpinbox *s);
 
 /**
  * Sets the spinbox value.
@@ -1199,7 +1199,7 @@ typedef struct uiSlider uiSlider;
  * @returns Slider value.
  * @memberof uiSlider
  */
-_UI_EXTERN int uiSliderValue(uiSlider *s);
+_UI_EXTERN int uiSliderValue(const uiSlider *s);
 
 /**
  * Sets the slider value.
@@ -1217,7 +1217,7 @@ _UI_EXTERN void uiSliderSetValue(uiSlider *s, int value);
  * @returns `TRUE` if a tool tip is present, `FALSE` otherwise. [Default `TRUE`]
  * @memberof uiSlider
  */
-_UI_EXTERN int uiSliderHasToolTip(uiSlider *s);
+_UI_EXTERN int uiSliderHasToolTip(const uiSlider *s);
 
 /**
  * Sets whether or not the slider has a tool tip.
@@ -1307,7 +1307,7 @@ typedef struct uiProgressBar uiProgressBar;
  * @returns Progress bar value. `[Default 0]`
  * @memberof uiProgressBar
  */
-_UI_EXTERN int uiProgressBarValue(uiProgressBar *p);
+_UI_EXTERN int uiProgressBarValue(const uiProgressBar *p);
 
 /**
  * Sets the progress bar value.
@@ -1421,7 +1421,7 @@ _UI_EXTERN void uiComboboxClear(uiCombobox *c);
  * @returns Number of items.
  * @memberof uiCombobox
  */
-_UI_EXTERN int uiComboboxNumItems(uiCombobox *c);
+_UI_EXTERN int uiComboboxNumItems(const uiCombobox *c);
 
 /**
  * Returns the index of the item selected.
@@ -1430,7 +1430,7 @@ _UI_EXTERN int uiComboboxNumItems(uiCombobox *c);
  * @returns Index of the item selected, `-1` on empty selection. [Default `-1`]
  * @memberof uiCombobox
  */
-_UI_EXTERN int uiComboboxSelected(uiCombobox *c);
+_UI_EXTERN int uiComboboxSelected(const uiCombobox *c);
 
 /**
  * Sets the item selected.
@@ -1505,7 +1505,7 @@ _UI_EXTERN void uiEditableComboboxAppend(uiEditableCombobox *c, const char *text
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiEditableCombobox
  */
-_UI_EXTERN char *uiEditableComboboxText(uiEditableCombobox *c);
+_UI_EXTERN char *uiEditableComboboxText(const uiEditableCombobox *c);
 
 /**
  * Sets the editable combo box text.
@@ -1574,7 +1574,7 @@ _UI_EXTERN void uiRadioButtonsAppend(uiRadioButtons *r, const char *text);
  * @returns Index of the item selected, `-1` on empty selection.
  * @memberof uiRadioButtons
  */
-_UI_EXTERN int uiRadioButtonsSelected(uiRadioButtons *r);
+_UI_EXTERN int uiRadioButtonsSelected(const uiRadioButtons *r);
 
 /**
  * Sets the item selected.
@@ -1637,7 +1637,7 @@ typedef struct uiDateTimePicker uiDateTimePicker;
  * @warning The `struct tm` members `tm_wday` and `tm_yday` are undefined.
  * @memberof uiDateTimePicker
  */
-_UI_EXTERN void uiDateTimePickerTime(uiDateTimePicker *d, struct tm *time);
+_UI_EXTERN void uiDateTimePickerTime(const uiDateTimePicker *d, struct tm *time);
 
 /**
  * Sets date and time of the data time picker.
@@ -1711,7 +1711,7 @@ typedef struct uiMultilineEntry uiMultilineEntry;
  *          Caller is responsible for freeing the data with `uiFreeText()`.
  * @memberof uiMultilineEntry
  */
-_UI_EXTERN char *uiMultilineEntryText(uiMultilineEntry *e);
+_UI_EXTERN char *uiMultilineEntryText(const uiMultilineEntry *e);
 
 /**
  * Sets the multi line entry's text.
@@ -1759,7 +1759,7 @@ _UI_EXTERN void uiMultilineEntryOnChanged(uiMultilineEntry *e,
  * @returns `TRUE` if read only, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiMultilineEntry
  */
-_UI_EXTERN int uiMultilineEntryReadOnly(uiMultilineEntry *e);
+_UI_EXTERN int uiMultilineEntryReadOnly(const uiMultilineEntry *e);
 
 /**
  * Sets whether or not the multi line entry's text is read only.
@@ -1841,7 +1841,7 @@ _UI_EXTERN void uiMenuItemOnClicked(uiMenuItem *m,
  * @returns `TRUE` if checked, `FALSE` otherwise. [Default: `FALSE`]
  * @memberof uiMenuItem
  */
-_UI_EXTERN int uiMenuItemChecked(uiMenuItem *m);
+_UI_EXTERN int uiMenuItemChecked(const uiMenuItem *m);
 
 /**
  * Sets whether or not the menu item's checkbox is checked.
