@@ -39,7 +39,7 @@ See [CHANGELOG.md](CHANGELOG.md)
 
 libui-ng mainly uses [the standard Meson build options](https://mesonbuild.com/Builtin-options.html).
 
-```
+```shell-session
 $ # in the top-level libui-ng directory run:
 $ meson setup build [options]
 $ ninja -C build
@@ -67,6 +67,30 @@ The Meson website and documentation has more in-depth usage instructions.
 For the sake of completeness, I should note that the default value of `--layout` is `flat`, not the usual `mirror`. This is done both to make creating the release archives easier as well as to reduce the chance that shared library builds will fail to start on Windows because the DLL is in another directory. You can always specify this manually if you want.
 
 Backends other than `ninja` should work, but are untested by me.
+
+### Build with Zig Toolchain
+
+An alternative to using meson is to use the zig compiler and toolchain, specifically the `0.12.0` stable release of zig.
+
+```shell-session
+$ # in the top-level libui-ng directory run:
+$ zig build
+$ # this should build the library and put it in ./zig-out/lib
+$ # the examples will be located in ./zig-out/bin
+$ # to compile for a specific platform:
+$ zig build -Dtarget=x86_64-windows
+$ # to change the optimization mode, use -Doptimize:
+$ zig build -Doptimize=ReleaseSafe
+```
+
+#### Requirements
+On all hosts, [zig 0.12.0](https://ziglang.org/download/#release-0.12.0) must be installed.
+
+To compile for Unix platforms, `gtk+-3.0` and `pkg-config` packages must be installed.
+
+Cross compilation for windows should work from all platforms where zig is supported due to the built-in resource compiler.
+
+Cross compilation for macOS targets from other platforms is not supported at this time. Apple macOS SDK is only licensed for use from Apple devices.
 
 ## Testing
 

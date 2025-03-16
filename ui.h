@@ -1124,13 +1124,45 @@ typedef struct uiSpinbox uiSpinbox;
 #define uiSpinbox(this) ((uiSpinbox *) (this))
 
 /**
- * Returns the spinbox value.
+ * Returns the spinbox value as an integer.
  *
  * @param s uiSpinbox instance.
  * @returns Spinbox value.
  * @memberof uiSpinbox
  */
 _UI_EXTERN int uiSpinboxValue(uiSpinbox *s);
+
+
+/**
+ * Returns the spinbox value as a double-precision floating point number.
+ *
+ * @param s uiSpinbox instance.
+ * @returns Spinbox value.
+ * @memberof uiSpinbox
+ */
+_UI_EXTERN double uiSpinboxValueDouble(uiSpinbox *s);
+
+/**
+ * Returns the spinbox value as a string.
+ *
+ * @param s uiSpinbox instance.
+ * @returns The text of the spinbox's entry.
+ *          A `NUL` terminated string.\n
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
+ * @memberof uiSpinbox
+ */
+_UI_EXTERN char* uiSpinboxValueText(uiSpinbox *s);
+
+/**
+ * Returns the spinbox value as a string.
+ *
+ * @param s uiSpinbox instance.
+ * @returns The text of the spinbox's entry.
+ *          A `NUL` terminated string.\n
+ *          Caller is responsible for freeing the data with `uiFreeText()`.
+ * @memberof uiSpinbox
+ */
+_UI_EXTERN char* uiSpinboxValueText(uiSpinbox *s);
 
 /**
  * Sets the spinbox value.
@@ -1141,6 +1173,16 @@ _UI_EXTERN int uiSpinboxValue(uiSpinbox *s);
  * @memberof uiSpinbox
  */
 _UI_EXTERN void uiSpinboxSetValue(uiSpinbox *s, int value);
+
+/**
+ * Sets the spinbox value.
+ *
+ * @param s uiSpinbox instance.
+ * @param value Value to set.
+ * @note Setting a value out of range will clamp to the nearest value in range.
+ * @memberof uiSpinbox
+ */
+_UI_EXTERN void uiSpinboxSetValueDouble(uiSpinbox *s, double value);
 
 /**
  * Registers a callback for when the spinbox value is changed by the user.
@@ -1173,6 +1215,23 @@ _UI_EXTERN void uiSpinboxOnChanged(uiSpinbox *s,
  * @memberof uiSpinbox @static
  */
 _UI_EXTERN uiSpinbox *uiNewSpinbox(int min, int max);
+
+/**
+ * Creates a new spinbox.
+ *
+ * The initial spinbox value equals the minimum value.
+ *
+ * In the current implementation @p min and @p max are swapped if `min>max`.
+ * This may change in the future though. See TODO.
+ *
+ * @param min Minimum value.
+ * @param max Maximum value.
+ * @param precision Allowed number of digits for value.
+ * @returns A new uiSpinbox instance.
+ * @todo complain or disallow min>max?
+ * @memberof uiSpinbox @static
+ */
+_UI_EXTERN uiSpinbox *uiNewSpinboxDouble(double min, double max, int precision);
 
 
 /**
