@@ -19,11 +19,13 @@ struct uiWindow {
 	void (*onPositionChanged)(uiWindow*, void *);
 	void *onPositionChangedData;
 	BOOL suppressPositionChanged;
-	int fullscreen;
-	int borderless;
-	int resizeable;
+	BOOL fullscreen;
+	BOOL borderless;
+	BOOL resizeable;
 	int focused;
 };
+
+static void updateStyleMask(uiWindow *w);
 
 @implementation uiprivNSWindow
 
@@ -85,16 +87,16 @@ struct uiWindow {
 {
 	uiWindow *w = self->window;
 
-	if (!w->suppressSizeChanged)
-		w->fullscreen = 1;
+	w->fullscreen = YES;
+	updateStyleMask(w);
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)note
 {
 	uiWindow *w = self->window;
 
-	if (!w->suppressSizeChanged)
-		w->fullscreen = 0;
+	w->fullscreen = NO;
+	updateStyleMask(w);
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)note
@@ -304,25 +306,53 @@ void uiWindowSetContentSize(uiWindow *w, int width, int height)
 	w->suppressSizeChanged = NO;
 }
 
+static void updateStyleMask(uiWindow *w)
+{
+	int mask = NSClosableWindowMask | NSMiniaturizableWindowMask;
+
+	// Set fullscreen
+	if (w->fullscreen != uiWindowFullscreen(w)) {
+		if (w->fullscreen && w->borderless) {
+			// Unset borderless and make resizeable to transition into fullscreen
+			[w->window setStyleMask:mask | NSTitledWindowMask | NSResizableWindowMask];
+		} else {
+			// Make resizeable in all cases to toggle fullscreen
+			if (!uiWindowResizeable(w))
+				[w->window setStyleMask:[w->window styleMask] | NSResizableWindowMask];
+		}
+
+		w->suppressSizeChanged = YES;
+		[w->window toggleFullScreen:w->window];
+		w->suppressSizeChanged = NO;
+	}
+
+	// Ignore borderless and resizeable in fullscreen.
+	if (uiWindowFullscreen(w))
+		return;
+
+	if (w->resizeable)
+		mask |= NSResizableWindowMask;
+
+	if (w->borderless)
+		mask = NSBorderlessWindowMask;
+	else
+		mask |= NSTitledWindowMask;
+
+	[w->window setStyleMask:mask];
+}
+
 int uiWindowFullscreen(uiWindow *w)
 {
-	return w->fullscreen;
+	return (BOOL)([w->window styleMask] & NSFullScreenWindowMask);
 }
 
 void uiWindowSetFullscreen(uiWindow *w, int fullscreen)
 {
-	if (w->fullscreen && fullscreen)
+	if (uiWindowFullscreen(w) == (BOOL)fullscreen)
 		return;
-	if (!w->fullscreen && !fullscreen)
-		return;
+
 	w->fullscreen = fullscreen;
-	if (w->fullscreen && w->borderless)		// borderless doesn't play nice with fullscreen; don't toggle while borderless
-		return;
-	w->suppressSizeChanged = YES;
-	[w->window toggleFullScreen:w->window];
-	w->suppressSizeChanged = NO;
-	if (!w->fullscreen && w->borderless)		// borderless doesn't play nice with fullscreen; restore borderless after removing
-		[w->window setStyleMask:NSBorderlessWindowMask];
+	updateStyleMask(w);
 }
 
 void uiWindowOnContentSizeChanged(uiWindow *w, void (*f)(uiWindow *, void *), void *data)
@@ -356,19 +386,7 @@ int uiWindowBorderless(uiWindow *w)
 void uiWindowSetBorderless(uiWindow *w, int borderless)
 {
 	w->borderless = borderless;
-	if (w->borderless) {
-		// borderless doesn't play nice with fullscreen; wait for later
-		if (!w->fullscreen)
-			[w->window setStyleMask:NSBorderlessWindowMask];
-	} else {
-		[w->window setStyleMask:defaultStyleMask];
-		// borderless doesn't play nice with fullscreen; restore state
-		if (w->fullscreen) {
-			w->suppressSizeChanged = YES;
-			[w->window toggleFullScreen:w->window];
-			w->suppressSizeChanged = NO;
-		}
-	}
+	updateStyleMask(w);
 }
 
 void uiWindowSetChild(uiWindow *w, uiControl *child)
@@ -409,11 +427,7 @@ int uiWindowResizeable(uiWindow *w)
 void uiWindowSetResizeable(uiWindow *w, int resizeable)
 {
 	w->resizeable = resizeable;
-	if(resizeable) {
-		[w->window setStyleMask:[w->window styleMask] | NSResizableWindowMask];
-	} else {
-		[w->window setStyleMask:[w->window styleMask] & ~NSResizableWindowMask];
-	}
+	updateStyleMask(w);
 }
 
 static int defaultOnClosing(uiWindow *w, void *data)
