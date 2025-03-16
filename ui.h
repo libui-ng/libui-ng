@@ -1822,11 +1822,14 @@ _UI_EXTERN void uiMenuItemDisable(uiMenuItem *m);
  * @param m uiMenuItem instance.
  * @param f Callback function.\n
  *          @p sender Back reference to the instance that triggered the callback.\n
- *          @p window Reference to the window from which the callback got triggered.\
+ *          @p window Reference to the window from which the callback got triggered
+ *                    or `NULL` under rare circumstances.\n
  *          @p senderData User data registered with the sender instance.
  * @param data User data to be passed to the callback.
  *
  * @note Only one callback can be registered at a time.
+ * @todo Find a way of triggering `window` being `NULL` on darwin or remove the
+ *       comment and code.
  * @memberof uiMenuItem
  */
 _UI_EXTERN void uiMenuItemOnClicked(uiMenuItem *m,
