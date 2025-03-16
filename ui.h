@@ -523,6 +523,25 @@ _UI_EXTERN int uiWindowResizeable(uiWindow *w);
 _UI_EXTERN void uiWindowSetResizeable(uiWindow *w, int resizeable);
 
 /**
+ * Returns whether or not the window is kept in front of other windows.
+ *
+ * @param w uiWindow instance.
+ * @returns `TRUE` if window is kept in front, `FALSE` otherwise. [Default: `FALSE`]
+ * @memberof uiWindow
+ */
+_UI_EXTERN int uiWindowKeepAbove(const uiWindow *w);
+
+/**
+ * Sets whether or not the window is kept in front of other windows.
+ *
+ * @param w uiWindow instance.
+ * @param keepAbove `TRUE` to keep window in front of others, `FALSE` otherwise.
+ * @note This method is merely a hint and may be ignored by the system.
+ * @memberof uiWindow
+ */
+_UI_EXTERN void uiWindowSetKeepAbove(uiWindow *w, int keepAbove);
+
+/**
  * Creates a new uiWindow.
  *
  * @param title Window title text.\n
