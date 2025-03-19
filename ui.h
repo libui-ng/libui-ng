@@ -2108,6 +2108,8 @@ typedef struct uiDrawMatrix uiDrawMatrix;
 
 typedef struct uiDrawBrushGradientStop uiDrawBrushGradientStop;
 
+typedef struct uiImageBuffer uiImageBuffer;
+
 _UI_ENUM(uiDrawBrushType) {
 	uiDrawBrushTypeSolid,
 	uiDrawBrushTypeLinearGradient,
@@ -2195,6 +2197,15 @@ struct uiDrawStrokeParams {
 	double DashPhase;
 };
 
+struct uiRect {
+	int X;
+	int Y;
+	int Width;
+	int Height;
+};
+
+typedef struct uiRect uiRect;
+
 _UI_EXTERN uiDrawPath *uiDrawNewPath(uiDrawFillMode fillMode);
 _UI_EXTERN void uiDrawFreePath(uiDrawPath *p);
 
@@ -2241,6 +2252,12 @@ _UI_EXTERN void uiDrawClip(uiDrawContext *c, uiDrawPath *path);
 
 _UI_EXTERN void uiDrawSave(uiDrawContext *c);
 _UI_EXTERN void uiDrawRestore(uiDrawContext *c);
+
+// ImageBuffer API
+_UI_EXTERN uiImageBuffer *uiNewImageBuffer(uiDrawContext *c, int width, int height, int alpha);
+_UI_EXTERN void uiImageBufferUpdate(uiImageBuffer *buf, const void *data);
+_UI_EXTERN void uiImageBufferDraw(uiDrawContext *c, uiImageBuffer *buf, uiRect *srcrect, uiRect *dstrect, int filter);
+_UI_EXTERN void uiFreeImageBuffer(uiImageBuffer *buf);
 
 // uiAttribute stores information about an attribute in a
 // uiAttributedString.
